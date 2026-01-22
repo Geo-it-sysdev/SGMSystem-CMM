@@ -83,25 +83,23 @@
                                     <!-- ================= TAB CONTENT ================= -->
                                     <div class="tab-content">
                                         <?php
-                            $tab_first = true;
-                            foreach ($all_grades as $grade):
-                                if ($is_all || in_array($grade, $grade_levels)):
-                                    $grade_id = strtolower(str_replace(' ', '', $grade));
-                                    $show_class = $tab_first ? 'show active' : '';
-                                    $tab_first = false;
-                            ?>
+    $tab_first = true;
+    foreach ($all_grades as $grade):
+        if ($is_all || in_array($grade, $grade_levels)):
+            $grade_id = strtolower(str_replace(' ', '', $grade));
+            $show_class = $tab_first ? 'show active' : '';
+            $tab_first = false;
+    ?>
                                         <div class="tab-pane fade <?= $show_class ?>" id="<?= $grade_id ?>-student">
                                             <div class="card p-3">
                                                 <h5 class="mb-3"><?= $grade ?> Students</h5>
-
 
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                                     <!-- Left side: Add Button -->
                                                     <div>
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill"
-                                                            id="addBtn" data-bs-toggle="modal"
-                                                            data-bs-target="#studentModal">
+                                                            data-bs-toggle="modal" data-bs-target="#studentModal">
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
                                                     </div>
@@ -110,13 +108,13 @@
                                                     <div class="flex-shrink-0">
                                                         <div
                                                             class="form-check form-switch form-switch-right form-switch-md">
-                                                            <label for="inactive-active" class="form-label">Show Inactive User</label>
+                                                            <label for="student_history" class="form-label">Show
+                                                                Inactive User</label>
                                                             <input class="form-check-input code-switcher"
-                                                                type="checkbox" id="inactive-active" />
+                                                                type="checkbox" id="student_history" />
                                                         </div>
                                                     </div>
                                                 </div>
-
 
                                                 <table id="List_Student_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle"
@@ -131,8 +129,7 @@
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody>
-                                                    </tbody>
+                                                    <tbody></tbody>
                                                 </table>
                                             </div>
                                         </div>
@@ -360,8 +357,10 @@
 
         <script>
         $(document).ready(function() {
-            var tables = {};
 
+            let tables = {};
+
+            // Initialize DataTables for each tab
             $('.tab-pane').each(function() {
                 let tabPane = $(this);
                 let tableEl = tabPane.find('table');
@@ -371,11 +370,10 @@
                     ajax: {
                         url: "<?= site_url('StudentController/fetch_students'); ?>",
                         type: "GET",
-                        data: {
-                            grade_level: gradeLevel;
-                            d.status = tabPane.find('#inactive-active').is(':checked')
-                            ? 'inactive'
-                            : 'active';
+                        data: function(d) {
+                            d.grade_level = gradeLevel;
+                            d.status = tabPane.find('#student_history').is(':checked') ?
+                                'inactive' : 'active';
                         }
                     },
                     columns: [{
@@ -388,9 +386,9 @@
                             data: 'gender',
                             render: function(data) {
                                 if (data === 'Male')
-                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
+                                return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
                                 if (data === 'Female')
-                                    return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
+                                return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
                                 return data;
                             }
                         },
@@ -412,15 +410,15 @@
                                 // Edit / Delete buttons
                                 if (['Principal', 'Guidance Counselor', 'Registrar']
                                     .includes(userType) || data.user_id == currentUser
-                                ) {
+                                    ) {
                                     buttons += `
-                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                    <i class="bx bx-edit me-1"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                    <i class="bx bx-trash me-1"></i> Delete
-                </button>
-            `;
+                                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                    <i class="bx bx-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                    <i class="bx bx-trash me-1"></i>Delete
+                                </button>
+                            `;
                                 }
 
                                 // Status button
@@ -432,19 +430,14 @@
                                     'bx-x-circle';
 
                                 buttons += `
-            <button
-                class="btn btn-sm ${statusClass} toggleStatusBtn"
-                data-id="${data.id}"
-                data-status="${data.status}"
-            >
-                <i class="bx ${statusIcon} me-1"></i>${statusText}
-            </button>
-        `;
+                            <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
+                                <i class="bx ${statusIcon} me-1"></i>${statusText}
+                            </button>
+                        `;
 
                                 return buttons;
                             }
                         }
-
                     ],
                     responsive: true,
                     paging: true,
@@ -460,17 +453,16 @@
                 });
             });
 
+            // Reload DataTable when switch is toggled
+            $(document).on('change', '#student_history', function() {
+                let tabPane = $(this).closest('.tab-pane');
+                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-            $(document).on('change', '#inactive-active', function () {
+                if (tables[gradeLevel]) {
+                    tables[gradeLevel].ajax.reload();
+                }
+            });
 
-    let tabPane = $(this).closest('.tab-pane');
-    let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-
-    if (tables[gradeLevel]) {
-        tables[gradeLevel].ajax.reload();
-    }
-
-});
 
 
 

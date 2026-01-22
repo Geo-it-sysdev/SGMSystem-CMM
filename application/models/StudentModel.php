@@ -32,7 +32,6 @@ public function get_all_students($grade_level = null, $section = null, $status =
         $this->db->where('section', $section);
     }
 
-    // ⭐ DEFAULT ACTIVE
     $this->db->where('status', $status ?: 'active');
 
     return $this->db->get()->result();

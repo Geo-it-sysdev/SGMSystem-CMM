@@ -190,9 +190,8 @@ public function fetch_students()
 {
     $section = $this->input->get('section');
     $activity_type_id = $this->input->get('activity_type_id');
-    $user_id = $this->session->userdata('po_user'); // Teacher's user_id
+    $user_id = $this->session->userdata('po_user'); 
 
-    // Get students already graded for this activity
     $graded = $this->db->select('student_id')
                        ->where('activities_id_header', $activity_type_id)
                        ->get('tbl_activities_lines')
@@ -200,13 +199,11 @@ public function fetch_students()
 
     $graded_ids = array_column($graded, 'student_id');
 
-    // Fetch students in this section and assigned to this teacher
     $this->db->select('id, fullname, section, gender')
              ->from('tbl_students')
              ->where('section', $section)
-             ->where('user_id', $user_id); // Only students assigned to this teacher
+             ->where('user_id', $user_id); 
 
-    // Exclude students who are already graded
     if (!empty($graded_ids)) {
         $this->db->where_not_in('id', $graded_ids);
     }
@@ -219,68 +216,70 @@ public function fetch_students()
 
 
     // ✅ Save Grade
-    public function save_grade_bulk()
-    {
-        $activity_type_id = $this->input->post('activity_type_id');
-        $section = $this->input->post('section');
-        $scores = $this->input->post('scores'); 
+  public function save_grade_bulk()
+{
+    $activity_type_id = $this->input->post('activity_type_id');
+    $section = $this->input->post('section');
+    $scores = $this->input->post('scores'); 
 
-        if (!is_array($scores) || empty($scores)) {
-            echo json_encode(['status' => 'error', 'message' => 'No scores submitted.']);
-            return;
-        }
-
-        $activity = $this->db->where('id', $activity_type_id)
-                            ->get('tbl_activities_header')
-                            ->row();
-        if (!$activity) {
-            echo json_encode(['status' => 'error', 'message' => 'Activity not found.']);
-            return;
-        }
-        $overall = $activity->overall;
-
-        foreach ($scores as $student_id => $score) {
-
-            if ($score === "" || $score === null) {
-                continue; 
-            }
-
-            if ($score > $overall) {
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => "Score for student exceeds the maximum allowed ({$overall})."
-                ]);
-                return;
-            }
-
-            $exist = $this->db->where([
-                'activities_id_header' => $activity_type_id,
-                'user_id' => $student_id
-            ])->get('tbl_activities_lines')->row();
-
-            if ($exist) {
-                continue; 
-            }
-
-            $student = $this->db->where('id', $student_id)
-                                ->get('tbl_students')
-                                ->row();
-            if (!$student) continue;
-
-            $data = [
-                'activities_id_header' => $activity_type_id,
-                'student_id' => $student_id,
-                'student_name' => $student->fullname,
-                'section' => $student->section,
-                'score' => $score,
-                'date_created' => date('Y-m-d H:i:s')
-            ];
-
-            $this->db->insert('tbl_activities_lines', $data);
-        }
-
-        echo json_encode(['status' => 'success']);
+    if (!is_array($scores) || empty($scores)) {
+        echo json_encode(['status' => 'error', 'message' => 'No scores submitted.']);
+        return;
     }
+
+    $activity = $this->db->where('id', $activity_type_id)
+                        ->get('tbl_activities_header')
+                        ->row();
+    if (!$activity) {
+        echo json_encode(['status' => 'error', 'message' => 'Activity not found.']);
+        return;
+    }
+    $overall = $activity->overall;
+
+    foreach ($scores as $student_id => $score) {
+
+        if ($score === "" || $score === null) {
+            continue; 
+        }
+
+        if ($score > $overall) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => "Score for student exceeds the maximum allowed ({$overall})."
+            ]);
+            return;
+        }
+
+        $exist = $this->db->where([
+            'activities_id_header' => $activity_type_id,
+            'student_id' => $student_id
+        ])->get('tbl_activities_lines')->row();
+
+        if ($exist) {
+            continue; 
+        }
+
+        $student = $this->db->where('id', $student_id)
+                            ->get('tbl_students')
+                            ->row();
+        if (!$student) continue;
+
+        $data = [
+            'activities_id_header' => $activity_type_id,
+            'student_id' => $student_id,
+            'student_name' => $student->fullname,
+            'section' => $student->section,
+            'score' => $score,
+            'remarks' => null, // optional, you can fill if needed
+            'date_created' => date('Y-m-d H:i:s')
+        ];
+
+        $this->db->insert('tbl_activities_lines', $data);
+    }
+
+    echo json_encode(['status' => 'success']);
+}
+
 
 
     

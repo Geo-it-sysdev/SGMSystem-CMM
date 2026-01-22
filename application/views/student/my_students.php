@@ -51,7 +51,8 @@
                         </div>
                     </div>
                     <!-- end page title -->
-
+  <div id="alertContainer" class="position-fixed top-0 end-0 p-3"
+                                                    style="z-index: 1050;"></div>
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card">
@@ -105,8 +106,7 @@
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
                                                     </div>
-                                                     <div id="alertContainer" class="position-fixed top-0 end-0 p-3"
-                                                    style="z-index: 1050;"></div>
+                                                   
 
                                                     <!-- Right side: Switch -->
                                                     <div class="flex-shrink-0">

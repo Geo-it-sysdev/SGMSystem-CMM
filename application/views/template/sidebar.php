@@ -61,6 +61,7 @@
            
 
                    <!--============================ User List ====================================-->
+                    <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                    <li class="nav-item">
                         <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/classrooms') ? 'active' : ''; ?>"
                             href="<?php echo site_url('GradingSystem/classrooms'); ?>">
@@ -71,6 +72,7 @@
                             <span>Classrooms</span>
                         </a>
                     </li>
+                     <?php endif; ?>
 
                     <li class="nav-item">
                     <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/my_students') ? 'active' : ''; ?>"

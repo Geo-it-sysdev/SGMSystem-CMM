@@ -1,2 +1,0 @@
-# SGMSystem-CMM
-SGMSystemCMM

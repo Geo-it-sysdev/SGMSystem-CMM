@@ -131,8 +131,6 @@
                                                         </ul>
                                                     </div> -->
                                                 </div>
-                                                <div class="card-header align-items-center d-flex">
-                                                    <h4 class="card-title mb-0 flex-grow-1"></h4>
                                                     <div class="flex-shrink-0">
                                                         <div
                                                             class="form-check form-switch form-switch-right form-switch-md">
@@ -142,7 +140,6 @@
                                                                 type="checkbox" id="mnl-switch" />
                                                         </div>
                                                     </div>
-                                                </div>
                                                 <table id="List_Student_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle"
                                                     style="width:100%">

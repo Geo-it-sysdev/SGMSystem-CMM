@@ -95,36 +95,48 @@
                                                 <h5 class="mb-3"><?= $grade ?> Students</h5>
 
 
-                                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                                    <!-- Left side: Add Button -->
-                                                    <div>
-                                                        <button type="button"
-                                                            class="btn btn-outline-success add-btn rounded-pill"
-                                                            id="addBtn" data-bs-toggle="modal"
-                                                            data-bs-target="#studentModal">
-                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
+                                                <div class="d-flex align-items-center gap-2 mb-3">
+                                                    <button type="button"
+                                                        class="btn btn-outline-success add-btn me-2 rounded-pill"
+                                                        id="addBtn" data-bs-toggle="modal"
+                                                        data-bs-target="#studentModal">
+                                                        <i class="ri-add-line align-bottom me-1"></i>Add Student
+                                                    </button>
+
+
+                                                    <!-- <div class="dropdown">
+                                                        <button
+                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                            type="button" id="filterG8Button" data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                            <i class="ri-filter-3-line"></i> Filter Section
                                                         </button>
-                                                    </div>
-
-                                                    <!-- Right side: Switch -->
-                                                    <div class="flex-shrink-0">
-                                                        <div
-                                                            class="form-check form-switch form-switch-right form-switch-md">
-                                                            <label for="student-inactive" class="form-label">Show
-                                                                Inactive Student</label>
-                                                            <input class="form-check-input code-switcher"
-                                                                type="checkbox" id="student-inactive" />
-                                                        </div>
-                                                    </div>
+                                                        <ul class="dropdown-menu" aria-labelledby="filterG8Button">
+                                                            <li><a class="dropdown-item" href="#"
+                                                                    onclick="setFilter('Section 1')">Section 1</a></li>
+                                                            <li><a class="dropdown-item" href="#"
+                                                                    onclick="setFilter('Section 2')">Section 2</a></li>
+                                                            <li><a class="dropdown-item" href="#"
+                                                                    onclick="setFilter('Section 3')">Section 3</a></li>
+                                                            <li><a class="dropdown-item" href="#"
+                                                                    onclick="setFilter('Section 4')">Section 4</a></li>
+                                                            <li>
+                                                                <hr class="dropdown-divider">
+                                                            </li>
+                                                            <div class="d-flex justify-content-center mt-2 mb-2">
+                                                                <button type="button"
+                                                                    class="btn btn-outline-danger btn-sm"
+                                                                    onclick="clearFilter()">Clear Filter</button>
+                                                            </div>
+                                                        </ul>
+                                                    </div> -->
                                                 </div>
-
 
                                                 <table id="List_Student_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle"
                                                     style="width:100%">
                                                     <thead class="table-light">
                                                         <tr>
-                                                            <th><input type="checkbox" id="selectAll"></th>
                                                             <th>Student Name</th>
                                                             <th>Age</th>
                                                             <th>Gender</th>
@@ -133,13 +145,9 @@
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody></tbody>
+                                                    <tbody>
+                                                    </tbody>
                                                 </table>
-                                                <div class="mt-2">
-                                                    <button id="makeInactiveBtn" class="btn btn-warning"
-                                                        style="display:none;">Make Inactive</button>
-                                                </div>
-
                                             </div>
                                         </div>
                                         <?php endif; endforeach; ?>
@@ -273,8 +281,7 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="studentName" class="form-label">Student Name</label>
-                                            <input type="text" class="form-control" id="studentName"
-                                                value="Juan Dela Cruz">
+                                            <input type="text" class="form-control" id="studentName" value="Juan Dela Cruz">
                                         </div>
                                         <div class="col-md-6">
                                             <label for="gender" class="form-label">Gender</label>
@@ -374,24 +381,15 @@
                 let tableEl = tabPane.find('table');
                 let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-                let table = tableEl.DataTable({
+                tables[gradeLevel] = tableEl.DataTable({
                     ajax: {
                         url: "<?= site_url('StudentController/fetch_students'); ?>",
                         type: "GET",
-                        data: function(d) {
-                            d.grade_level = gradeLevel;
-                            d.show_inactive = $('#student-inactive').is(':checked') ? 1 :
-                            0; // add status param
+                        data: {
+                            grade_level: gradeLevel
                         }
                     },
                     columns: [{
-                            data: null,
-                            orderable: false,
-                            render: function(data) {
-                                return `<input type="checkbox" class="rowCheckbox" data-id="${data.id}">`;
-                            }
-                        },
-                        {
                             data: 'fullname'
                         },
                         {
@@ -399,12 +397,13 @@
                         },
                         {
                             data: 'gender',
-                            render: function(data) {
-                                if (data === 'Male')
+                            render: function(data, type, row) {
+                                if (data === 'Male') {
                                     return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
-                                if (data === 'Female')
+                                } else if (data === 'Female') {
                                     return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
-                                return data;
+                                }
+                                return data; // default
                             }
                         },
                         {
@@ -418,24 +417,40 @@
                             render: function(data) {
                                 let buttons = '';
                                 let userType =
-                                    "<?= $this->session->userdata('user_type'); ?>";
+                                    "<?= $this->session->userdata('user_type'); ?>"; // get user type from session
                                 let currentUser =
                                     <?= $this->session->userdata('po_user'); ?>;
+
                                 if (['Principal', 'Guidance Counselor', 'Registrar']
-                                    .includes(userType) || data.user_id == currentUser
-                                    ) {
+                                    .includes(userType)) {
                                     buttons += `
-                            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                <i class="bx bx-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                <i class="bx bx-trash"></i> Delete
-                            </button>
-                        `;
+                                  
+                                    <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                        <i class="bx bx-edit"></i> Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                        <i class="bx bx-trash"></i> Delete
+                                    </button>
+                                `;
+                                                    } else {
+                                                        if (data.user_id == currentUser) {
+                                                            buttons += `
+                                    
+                                        <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                            <i class="bx bx-edit"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                            <i class="bx bx-trash"></i> Delete
+                                        </button>
+                                    `;
+                                    }
                                 }
+
                                 return buttons;
                             }
                         }
+
+
                     ],
                     responsive: true,
                     paging: true,
@@ -449,65 +464,12 @@
                         processing: '<div class="table-loader"></div>'
                     }
                 });
-
-                // Reload table on switch toggle
-                $('#student-inactive').on('change', function() {
-                    table.ajax.reload();
-                });
-
-                tables[gradeLevel] = table;
             });
-
-
 
 
             // <button class="btn btn-sm btn-outline-success AddAddressBtn">
             //                             <i class="bx bx-plus-circle"></i> View / Add Info
             //                         </button>
-
-
-            $(document).on('change', '.rowCheckbox', function() {
-                let anyChecked = $('.rowCheckbox:checked').length > 0;
-                $('#makeInactiveBtn').toggle(anyChecked);
-            });
-
-            $('#selectAll').on('change', function() {
-                let checked = $(this).is(':checked');
-                $('.rowCheckbox').prop('checked', checked).trigger('change');
-            });
-
-            $('#makeInactiveBtn').on('click', function() {
-                let ids = [];
-                $('.rowCheckbox:checked').each(function() {
-                    ids.push($(this).data('id'));
-                });
-
-                if (ids.length === 0) return;
-
-                if (confirm('Are you sure you want to make inactive?')) {
-                    $.ajax({
-                        url: "<?= site_url('StudentController/make_inactive'); ?>",
-                        type: "POST",
-                        data: {
-                            ids: ids
-                        },
-                        success: function(res) {
-                            res = JSON.parse(res);
-                            if (res.status === 'success') {
-                                alert('Selected students are now inactive.');
-                                // Refresh the table
-                                tableEl.DataTable().ajax.reload(null, false);
-                                $('#makeInactiveBtn').hide();
-                                $('#selectAll').prop('checked', false);
-                            } else {
-                                alert('Error: ' + res.message);
-                            }
-                        }
-                    });
-                }
-            });
-
-
 
             // Open modal on AddAddressBtn click
             $(document).on('click', '.AddAddressBtn', function() {

@@ -264,7 +264,7 @@ public function fetch_students()
 
             $data = [
                 'activities_id_header' => $activity_type_id,
-                'user_id' => $student_id,
+                'student_id' => $student_id,
                 'student_name' => $student->fullname,
                 'section' => $student->section,
                 'score' => $score,

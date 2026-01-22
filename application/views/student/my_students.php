@@ -51,7 +51,7 @@
                         </div>
                     </div>
                     <!-- end page title -->
-                    <div id="alertContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card">
@@ -83,40 +83,53 @@
                                     <!-- ================= TAB CONTENT ================= -->
                                     <div class="tab-content">
                                         <?php
-    $tab_first = true;
-    foreach ($all_grades as $grade):
-        if ($is_all || in_array($grade, $grade_levels)):
-            $grade_id = strtolower(str_replace(' ', '', $grade));
-            $show_class = $tab_first ? 'show active' : '';
-            $tab_first = false;
-    ?>
+                            $tab_first = true;
+                            foreach ($all_grades as $grade):
+                                if ($is_all || in_array($grade, $grade_levels)):
+                                    $grade_id = strtolower(str_replace(' ', '', $grade));
+                                    $show_class = $tab_first ? 'show active' : '';
+                                    $tab_first = false;
+                            ?>
                                         <div class="tab-pane fade <?= $show_class ?>" id="<?= $grade_id ?>-student">
                                             <div class="card p-3">
                                                 <h5 class="mb-3"><?= $grade ?> Students</h5>
 
 
+                                                <div class="d-flex align-items-center gap-2 mb-3">
+                                                    <button type="button"
+                                                        class="btn btn-outline-success add-btn me-2 rounded-pill"
+                                                        id="addBtn" data-bs-toggle="modal"
+                                                        data-bs-target="#studentModal">
+                                                        <i class="ri-add-line align-bottom me-1"></i>Add Student
+                                                    </button>
 
-                                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                                    <!-- Left side: Add Button -->
-                                                    <div>
-                                                        <button type="button"
-                                                            class="btn btn-outline-success add-btn rounded-pill"
-                                                            data-bs-toggle="modal" data-bs-target="#studentModal">
-                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
+
+                                                    <!-- <div class="dropdown">
+                                                        <button
+                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                            type="button" id="filterG8Button" data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                            <i class="ri-filter-3-line"></i> Filter Section
                                                         </button>
-                                                    </div>
-
-
-                                                    <!-- Right side: Switch -->
-                                                    <div class="flex-shrink-0">
-                                                        <div
-                                                            class="form-check form-switch form-switch-right form-switch-md">
-                                                            <label for="student_history" class="form-label">Show
-                                                                Inactive Student</label>
-                                                            <input class="form-check-input code-switcher"
-                                                                type="checkbox" id="student_history" />
-                                                        </div>
-                                                    </div>
+                                                        <ul class="dropdown-menu" aria-labelledby="filterG8Button">
+                                                            <li><a class="dropdown-item" href="#"
+                                                                    onclick="setFilter('Section 1')">Section 1</a></li>
+                                                            <li><a class="dropdown-item" href="#"
+                                                                    onclick="setFilter('Section 2')">Section 2</a></li>
+                                                            <li><a class="dropdown-item" href="#"
+                                                                    onclick="setFilter('Section 3')">Section 3</a></li>
+                                                            <li><a class="dropdown-item" href="#"
+                                                                    onclick="setFilter('Section 4')">Section 4</a></li>
+                                                            <li>
+                                                                <hr class="dropdown-divider">
+                                                            </li>
+                                                            <div class="d-flex justify-content-center mt-2 mb-2">
+                                                                <button type="button"
+                                                                    class="btn btn-outline-danger btn-sm"
+                                                                    onclick="clearFilter()">Clear Filter</button>
+                                                            </div>
+                                                        </ul>
+                                                    </div> -->
                                                 </div>
 
                                                 <table id="List_Student_<?= $grade_id ?>"
@@ -132,7 +145,8 @@
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody></tbody>
+                                                    <tbody>
+                                                    </tbody>
                                                 </table>
                                             </div>
                                         </div>
@@ -267,8 +281,7 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="studentName" class="form-label">Student Name</label>
-                                            <input type="text" class="form-control" id="studentName"
-                                                value="Juan Dela Cruz">
+                                            <input type="text" class="form-control" id="studentName" value="Juan Dela Cruz">
                                         </div>
                                         <div class="col-md-6">
                                             <label for="gender" class="form-label">Gender</label>
@@ -360,10 +373,9 @@
 
         <script>
         $(document).ready(function() {
-
             let tables = {};
 
-            // Initialize DataTables for each tab
+            // ================== INITIALIZE DATATABLES ===================
             $('.tab-pane').each(function() {
                 let tabPane = $(this);
                 let tableEl = tabPane.find('table');
@@ -373,10 +385,8 @@
                     ajax: {
                         url: "<?= site_url('StudentController/fetch_students'); ?>",
                         type: "GET",
-                        data: function(d) {
-                            d.grade_level = gradeLevel;
-                            d.status = tabPane.find('#student_history').is(':checked') ?
-                                'inactive' : 'active';
+                        data: {
+                            grade_level: gradeLevel
                         }
                     },
                     columns: [{
@@ -387,12 +397,13 @@
                         },
                         {
                             data: 'gender',
-                            render: function(data) {
-                                if (data === 'Male')
-                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
-                                if (data === 'Female')
-                                    return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
-                                return data;
+                            render: function(data, type, row) {
+                                if (data === 'Male') {
+                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
+                                } else if (data === 'Female') {
+                                    return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
+                                }
+                                return data; // default
                             }
                         },
                         {
@@ -406,41 +417,40 @@
                             render: function(data) {
                                 let buttons = '';
                                 let userType =
-                                    "<?= $this->session->userdata('user_type'); ?>";
+                                    "<?= $this->session->userdata('user_type'); ?>"; // get user type from session
                                 let currentUser =
-                                    <?= (int) $this->session->userdata('po_user'); ?>;
+                                    <?= $this->session->userdata('po_user'); ?>;
 
-                                // Edit / Delete buttons
                                 if (['Principal', 'Guidance Counselor', 'Registrar']
-                                    .includes(userType) || data.user_id == currentUser
-                                ) {
+                                    .includes(userType)) {
                                     buttons += `
-                                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                    <i class="bx bx-edit me-1"></i>Edit
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                    <i class="bx bx-trash me-1"></i>Delete
-                                </button>
-                            `;
+                                  
+                                    <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                        <i class="bx bx-edit"></i> Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                        <i class="bx bx-trash"></i> Delete
+                                    </button>
+                                `;
+                                                    } else {
+                                                        if (data.user_id == currentUser) {
+                                                            buttons += `
+                                    
+                                        <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                            <i class="bx bx-edit"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                            <i class="bx bx-trash"></i> Delete
+                                        </button>
+                                    `;
+                                    }
                                 }
-
-                                // Status button
-                                let isActive = data.status === 'active';
-                                let statusClass = isActive ? 'btn-outline-success' :
-                                    'btn-outline-secondary';
-                                let statusText = isActive ? 'Active' : 'Inactive';
-                                let statusIcon = isActive ? 'bx-check-circle' :
-                                    'bx-x-circle';
-
-                                buttons += `
-                            <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
-                                <i class="bx ${statusIcon} me-1"></i>${statusText}
-                            </button>
-                        `;
 
                                 return buttons;
                             }
                         }
+
+
                     ],
                     responsive: true,
                     paging: true,
@@ -455,18 +465,6 @@
                     }
                 });
             });
-
-            // Reload DataTable when switch is toggled
-            $(document).on('change', '#student_history', function() {
-                let tabPane = $(this).closest('.tab-pane');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-
-                if (tables[gradeLevel]) {
-                    tables[gradeLevel].ajax.reload();
-                }
-            });
-
-
 
 
             // <button class="btn btn-sm btn-outline-success AddAddressBtn">
@@ -491,71 +489,6 @@
                 // Show modal
                 $('#addressModal').modal('show');
             });
-
-
-            // Toggle Status Button
-            $(document).on('click', '.toggleStatusBtn', function() {
-                let btn = $(this);
-                let studentId = btn.data('id');
-                let currentStatus = btn.data('status');
-                let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-
-                $.ajax({
-                    url: "<?= site_url('StudentController/toggle_status'); ?>",
-                    type: "POST",
-                    data: {
-                        id: studentId,
-                        status: newStatus
-                    },
-                    success: function(response) {
-                        let res = JSON.parse(response);
-
-                        if (res.status === 'success') {
-                            // Show alert based on new status
-                            let alertClass = newStatus === 'inactive' ? 'alert-success' :
-                                'alert-secondary';
-                            let alertText = newStatus === 'inactive' ?
-                                'Student set to Inactive!' : 'Student set to Active!';
-
-                            // Create alert element
-                            let alertEl = $(`
-                    <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                        ${alertText}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                `);
-
-                            // Append to a container (make sure you have #alertContainer in your HTML)
-                            $('#alertContainer').append(alertEl);
-
-                            // Automatically remove after 3 seconds
-                            setTimeout(() => {
-                                alertEl.alert('close');
-                            }, 3000);
-
-                            // Reload the DataTable of the current tab
-                            let tabPane = btn.closest('.tab-pane');
-                            let gradeLevel = tabPane.find('h5').text().replace(' Students',
-                                '').trim();
-
-                            if (tables[gradeLevel]) {
-                                tables[gradeLevel].ajax.reload(null,
-                                    false); // false = keep current pagination
-                            }
-
-                            // Update the button data-status to the new status
-                            btn.data('status', newStatus);
-                        } else {
-                            alert(res.message || 'Error updating status.');
-                        }
-                    },
-                    error: function() {
-                        alert('AJAX error. Could not update status.');
-                    }
-                });
-            });
-
-
 
 
             // ================== RESET MODAL ===================

@@ -967,179 +967,136 @@
 
 
 
-            const addGradesModal = new bootstrap.Modal(document.getElementById('addGradesModal'));
+           const addGradesModal = new bootstrap.Modal(document.getElementById('addGradesModal'));
 
-            // -------------------------------
-            // OPEN MODAL
-            // -------------------------------
-            $('#openAddGradesBtn').click(function() {
-                let activeTab = $('.arrow-navtabs .nav-link.active').text().trim();
-                let gradeLevel = activeTab.replace(' Activity', '');
+// -------------------------------
+// OPEN MODAL
+// -------------------------------
+$('#openAddGradesBtn').click(function() {
+    let activeTab = $('.arrow-navtabs .nav-link.active').text().trim();
+    let gradeLevel = activeTab.replace(' Activity', '');
 
-                $.ajax({
-                    url: '<?= base_url("StudentController/get_sections") ?>',
-                    method: 'GET',
-                    data: {
-                        grade_level: gradeLevel
-                    },
-                    dataType: 'json',
-                    success: function(sections) {
-                        let options =
-                            '<option value="" disabled selected>Select Section</option>';
-                        sections.forEach(sec => {
-                            options += `<option value="${sec}">${sec}</option>`;
-                        });
-                        $('#section').html(options);
+    $.ajax({
+        url: '<?= base_url("StudentController/get_sections") ?>',
+        method: 'GET',
+        data: { grade_level: gradeLevel },
+        dataType: 'json',
+        success: function(sections) {
+            let options = '<option value="" disabled selected>Select Section</option>';
+            sections.forEach(sec => {
+                options += `<option value="${sec}">${sec}</option>`;
+            });
+            $('#section').html(options);
 
-                        // Reset table
-                        $('#EnterScoreTable tbody').html(`
+            $('#EnterScoreTable tbody').html(`
                 <tr><td colspan="2" class="text-center text-muted">Select a section</td></tr>
             `);
-                    }
-                });
+        }
+    });
 
-                addGradesModal.show();
+    addGradesModal.show();
+});
+
+// -------------------------------
+// LOAD STUDENTS INTO TABLE
+// -------------------------------
+$('#section').change(function() {
+    const section = $(this).val();
+    const activityTypeId = $('#activity_type_id').val();
+
+    $.ajax({
+        url: '<?= base_url("StudentController/get_students_by_section") ?>',
+        method: 'GET',
+        data: { section, activity_type_id: activityTypeId },
+        dataType: 'json',
+        success: function(students) {
+
+            students.sort((a, b) => {
+                let nameA = a.fullname.split(' ')[0].toLowerCase();
+                let nameB = b.fullname.split(' ')[0].toLowerCase();
+                return nameA.localeCompare(nameB);
             });
 
-            // -------------------------------
-            // LOAD STUDENTS INTO TABLE
-            // -------------------------------
-            $('#section').change(function() {
-                const section = $(this).val();
-                const activityTypeId = $('#activity_type_id').val();
+            let males = students.filter(s => s.gender === "Male");
+            let females = students.filter(s => s.gender === "Female");
 
-                $.ajax({
-                    url: '<?= base_url("StudentController/get_students_by_section") ?>',
-                    method: 'GET',
-                    data: {
-                        section,
-                        activity_type_id: activityTypeId
-                    },
-                    dataType: 'json',
-                    success: function(students) {
+            let rows = "";
 
-                        // Sort students by first name (alphabetically)
-                        students.sort((a, b) => {
-                            let nameA = a.fullname.split(' ')[0].toLowerCase();
-                            let nameB = b.fullname.split(' ')[0].toLowerCase();
-                            return nameA.localeCompare(nameB);
-                        });
-
-                        // Split into genders
-                        let males = students.filter(s => s.gender === "Male");
-                        let females = students.filter(s => s.gender === "Female");
-
-                        let rows = "";
-
-                        // ----- MALE GROUP -----
-                        if (males.length > 0) {
-                            rows += `
-        <tr class="table-primary">
-            <td colspan="2"><strong>Male</strong></td>
-        </tr>
-    `;
-
-                            males.forEach(s => {
-                                rows += `
-            <tr>
-                <td>${s.fullname}</td>
-                <td>
-                    <input type="number" 
-                           class="form-control score-input"
-                           data-id="${s.id}"
-                           placeholder="Enter score">
-                </td>
-            </tr>
-        `;
-                            });
-                        }
-
-                        // ----- FEMALE GROUP -----
-                        if (females.length > 0) {
-                            rows += `
-        <tr class="table-danger">
-            <td colspan="2"><strong>Female</strong></td>
-        </tr>
-    `;
-
-                            females.forEach(s => {
-                                rows += `
-            <tr>
-                <td>${s.fullname}</td>
-                <td>
-                    <input type="number" 
-                           class="form-control score-input"
-                           data-id="${s.id}"
-                           placeholder="Enter score">
-                </td>
-            </tr>
-        `;
-                            });
-                        }
-
-                        // If no students
-                        if (students.length === 0) {
-                            rows = `
-        <tr>
-            <td colspan="2" class="text-center text-muted">No available students</td>
-        </tr>
-    `;
-                        }
-
-                        $('#EnterScoreTable tbody').html(rows);
-                    }
-
+            if (males.length > 0) {
+                rows += `<tr class="table-primary"><td colspan="2"><strong>Male</strong></td></tr>`;
+                males.forEach(s => {
+                    rows += `
+                        <tr>
+                            <td>${s.fullname}</td>
+                            <td><input type="number" class="form-control score-input" data-id="${s.id}" placeholder="Enter score"></td>
+                        </tr>`;
                 });
-            });
+            }
 
-            // -------------------------------
-            // SAVE ALL
-            // -------------------------------
-            $('#saveGradeBtn').click(function() {
+            if (females.length > 0) {
+                rows += `<tr class="table-danger"><td colspan="2"><strong>Female</strong></td></tr>`;
+                females.forEach(s => {
+                    rows += `
+                        <tr>
+                            <td>${s.fullname}</td>
+                            <td><input type="number" class="form-control score-input" data-id="${s.id}" placeholder="Enter score"></td>
+                        </tr>`;
+                });
+            }
 
-                let payload = {
-                    activity_type_id: $('#activity_type_id').val(),
-                    section: $('#section').val(),
-                    scores: {}
-                };
+            if (students.length === 0) {
+                rows = `<tr><td colspan="2" class="text-center text-muted">No available students</td></tr>`;
+            }
 
-                $('.score-input').each(function() {
-                    const sid = $(this).data('id');
-                    const scr = $(this).val();
-                    payload.scores[sid] = scr;
+            $('#EnterScoreTable tbody').html(rows);
+        }
+    });
+});
+
+// -------------------------------
+// SAVE ALL SCORES
+// -------------------------------
+$('#saveGradeBtn').click(function() {
+    let payload = {
+        activity_type_id: $('#activity_type_id').val(),
+        section: $('#section').val(),
+        scores: {}
+    };
+
+    $('.score-input').each(function() {
+        const sid = $(this).data('id');
+        const scr = $(this).val();
+        payload.scores[sid] = scr;
+    });
+
+    $.ajax({
+        url: '<?= base_url("StudentController/save_grade_bulk") ?>',
+        method: 'POST',
+        data: payload,
+        dataType: 'json',
+        success: function(res) {
+            if (res.status === "success") {
+                Swal.fire({
+                    icon: "success",
+                    title: "Saved!",
+                    text: "All students' scores saved successfully!"
                 });
 
-                $.ajax({
-                    url: '<?= base_url("StudentController/save_grade_bulk") ?>',
-                    method: 'POST',
-                    data: payload,
-                    dataType: 'json',
-                    success: function(res) {
-                        if (res.status === "success") {
+                addGradesModal.hide();
 
-                            Swal.fire({
-                                icon: "success",
-                                title: "Saved!",
-                                text: "All students' scores saved successfully!"
-                            });
-
-                            addGradesModal.hide();
-
-                            // 🔄 RELOAD TABLE AFTER SAVING
-                            let activityTypeId = $('#activity_type_id').val();
-                            loadGradesTable(activityTypeId);
-
-                        } else {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Error",
-                                text: res.message
-                            });
-                        }
-                    }
+                // Reload table after saving
+                let activityTypeId = $('#activity_type_id').val();
+                loadGradesTable(activityTypeId); // Your existing function
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: res.message
                 });
-
-            });
+            }
+        }
+    });
+});
 
 
         });

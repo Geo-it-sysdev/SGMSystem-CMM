@@ -31,12 +31,15 @@
 </div>
 
 
-    <?php
-            $user_id = $this->session->userdata("po_user");
-            if (isset($user_id)) {
-                $user = $this->AuthModel->get_user_by_user_id($user_id);
-            }
-            ?>
+  <?php
+$user_id = $this->session->userdata("po_user");
+$user_type = null;
+
+if (isset($user_id)) {
+    $user = $this->AuthModel->get_user_by_user_id($user_id);
+    $user_type = $user->user_type ?? null; 
+}
+?>
 
     <div id="scrollbar">
         <div class="container-fluid">

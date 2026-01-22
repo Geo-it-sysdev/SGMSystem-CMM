@@ -121,15 +121,7 @@ if (isset($user_id)) {
 
                                                     <div>
                                                         <?php if ($user_type === 'Admin'): ?>
-                                                        <button type="button"
-                                                            class="btn btn-outline-success add-btn rounded-pill"
-                                                            data-bs-toggle="modal" data-bs-target="#studentModal">
-                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
-                                                        </button>
-                                                        <?php endif; ?>
-                                                    </div>
-
-                                                     <div class="dropdown">
+                                                    <div class="dropdown">
                                                 <button id="sectionDropdownBtnCeb"
                                                     class="btn btn-soft-primary btn-sm dropdown-toggle" type="button"
                                                     data-bs-toggle="dropdown"><i class="ri-filter-3-line me-1"></i>
@@ -147,6 +139,10 @@ if (isset($user_id)) {
                                                         style="max-height:200px; overflow-y:auto;"></div>
                                                 </ul>
                                             </div>
+                                                        <?php endif; ?>
+                                                    </div>
+
+                                                    
 
 
                                                     <!-- Right side: Switch -->

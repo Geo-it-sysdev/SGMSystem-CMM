@@ -19,7 +19,7 @@ public function get_all_students($grade_level = null, $section = null, $status =
     $this->db->select('id, fullname, age, gender, section, grade_level, user_id, status')
              ->from('tbl_students');
 
-    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor'])) {
+    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor','Admin'])) {
         if (!$user_id) return [];
         $this->db->where('user_id', $user_id);
     }

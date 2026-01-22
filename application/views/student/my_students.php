@@ -136,8 +136,8 @@
                                                     <tbody></tbody>
                                                 </table>
                                                 <div class="mt-2">
-                                                    <button id="toggleStatusBtn" class="btn"
-                                                        style="display:none;"></button>
+                                                    <button id="makeInactiveBtn" class="btn btn-warning"
+                                                        style="display:none;">Make Inactive</button>
                                                 </div>
 
                                             </div>
@@ -381,7 +381,7 @@
                         data: function(d) {
                             d.grade_level = gradeLevel;
                             d.show_inactive = $('#student-inactive').is(':checked') ? 1 :
-                                0; // add status param
+                            0; // add status param
                         }
                     },
                     columns: [{
@@ -423,7 +423,7 @@
                                     <?= $this->session->userdata('po_user'); ?>;
                                 if (['Principal', 'Guidance Counselor', 'Registrar']
                                     .includes(userType) || data.user_id == currentUser
-                                ) {
+                                    ) {
                                     buttons += `
                             <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
                                 <i class="bx bx-edit"></i> Edit
@@ -466,89 +466,47 @@
             //                         </button>
 
 
-            // Checkbox click -> show/hide toggle button
-            $(document).on('change', '.rowCheckbox', updateToggleButton);
-
-            // Select All checkbox
-            $(document).on('change', '.selectAll', function() {
-                let checked = $(this).is(':checked');
-                $(this).closest('table').find('.rowCheckbox').prop('checked', checked).trigger(
-                'change');
+            $(document).on('change', '.rowCheckbox', function() {
+                let anyChecked = $('.rowCheckbox:checked').length > 0;
+                $('#makeInactiveBtn').toggle(anyChecked);
             });
 
-            // Update toggle button dynamically
-            function updateToggleButton() {
-                let checkedRows = $('.rowCheckbox:checked');
-                if (checkedRows.length === 0) {
-                    $('#toggleStatusBtn').hide();
-                    return;
-                }
+            $('#selectAll').on('change', function() {
+                let checked = $(this).is(':checked');
+                $('.rowCheckbox').prop('checked', checked).trigger('change');
+            });
 
-                let allActive = true;
-                let allInactive = true;
-
-                checkedRows.each(function() {
-                    let status = $(this).data('status');
-                    if (status === 'active') allInactive = false;
-                    if (status === 'inactive') allActive = false;
-                });
-
-                if (allActive) {
-                    $('#toggleStatusBtn')
-                        .text('Make Inactive')
-                        .removeClass('btn-success')
-                        .addClass('btn-danger')
-                        .data('new-status', 'inactive')
-                        .show();
-                } else if (allInactive) {
-                    $('#toggleStatusBtn')
-                        .text('Make Active')
-                        .removeClass('btn-danger')
-                        .addClass('btn-success')
-                        .data('new-status', 'active')
-                        .show();
-                } else {
-                    $('#toggleStatusBtn').hide(); // mixed selection
-                }
-            }
-
-            // Button click -> toggle status
-            $('#toggleStatusBtn').on('click', function() {
+            $('#makeInactiveBtn').on('click', function() {
                 let ids = [];
-                let newStatus = $(this).data('new-status');
-
                 $('.rowCheckbox:checked').each(function() {
                     ids.push($(this).data('id'));
                 });
 
                 if (ids.length === 0) return;
 
-                if (confirm(`Are you sure you want to make these students ${newStatus}?`)) {
+                if (confirm('Are you sure you want to make inactive?')) {
                     $.ajax({
-                        url: "<?= site_url('StudentController/toggle_status'); ?>",
+                        url: "<?= site_url('StudentController/make_inactive'); ?>",
                         type: "POST",
                         data: {
-                            ids: ids,
-                            status: newStatus
+                            ids: ids
                         },
                         success: function(res) {
                             res = JSON.parse(res);
                             if (res.status === 'success') {
-                                alert(`Selected students are now ${newStatus}.`);
-                                Object.values(tables).forEach(tbl => tbl.ajax.reload(null,
-                                    false));
-                                $('#toggleStatusBtn').hide();
-                                $('.selectAll').prop('checked', false);
+                                alert('Selected students are now inactive.');
+                                // Refresh the table
+                                tableEl.DataTable().ajax.reload(null, false);
+                                $('#makeInactiveBtn').hide();
+                                $('#selectAll').prop('checked', false);
                             } else {
                                 alert('Error: ' + res.message);
                             }
-                        },
-                        error: function() {
-                            alert('AJAX request failed.');
                         }
                     });
                 }
             });
+
 
 
             // Open modal on AddAddressBtn click

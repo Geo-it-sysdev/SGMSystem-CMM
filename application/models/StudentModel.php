@@ -10,23 +10,24 @@ class StudentModel extends CI_Model {
    }
 
     //    Add / edit / delete - student
-public function get_all_students($grade_level=null, $section=null, $show_inactive=0){
+  public function get_all_students($grade_level = null, $section = null, $show_inactive = 0) {
     $user_id = $this->session->userdata('po_user');
-    $user_type = $this->session->userdata('user_type');
+    $user_type = $this->session->userdata('user_type'); 
 
     $this->db->select('*')->from('tbl_students');
 
-    // Limit for non-admin users
-    if(!in_array($user_type,['Principal','Registrar','Guidance Counselor'])){
-        if(!$user_id) return [];
-        $this->db->where('user_id',$user_id);
+    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor'])) {
+        if (!$user_id) return [];
+        $this->db->where('user_id', $user_id);
     }
 
-    if($grade_level) $this->db->where('grade_level',$grade_level);
-    if($section) $this->db->where('section',$section);
+    if ($grade_level) $this->db->where('grade_level', $grade_level);
+    if ($section) $this->db->where('section', $section);
 
-    // Only active if switch off
-    if(!$show_inactive) $this->db->where('status','active');
+    // Only active students if switch is off
+    if (!$show_inactive) {
+        $this->db->where('status', 'active');
+    }
 
     return $this->db->get()->result();
 }

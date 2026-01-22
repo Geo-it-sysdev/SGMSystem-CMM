@@ -14,13 +14,13 @@ class StudentController extends CI_Controller {
 
    
     //    start add / edit / delete student
-public function fetch_students(){
+   public function fetch_students() {
     $grade_level = $this->input->get('grade_level');
-    $section = $this->input->get('section');
-    $show_inactive = $this->input->get('show_inactive') ?: 0;
+    $section = $this->input->get('section'); 
+    $show_inactive = $this->input->get('show_inactive'); // 0 or 1
 
     $students = $this->StudentModel->get_all_students($grade_level, $section, $show_inactive);
-    echo json_encode(['data'=>$students]);
+    echo json_encode(['data' => $students]);
 }
 
 
@@ -106,24 +106,25 @@ public function fetch_students(){
         echo json_encode(['status' => $deleted ? 'deleted' : 'unauthorized']);
     }
 
- public function toggle_status(){
-    $ids = $this->input->post('ids');
-    $status = $this->input->post('status');
+    public function make_inactive()
+    {
+        $ids = $this->input->post('ids');
 
-    if(!$ids || !is_array($ids) || !$status){
-        echo json_encode(['status'=>'error','message'=>'Invalid data']);
-        return;
+        if(!$ids || !is_array($ids)) {
+            echo json_encode(['status'=>'error','message'=>'No students selected']);
+            return;
+        }
+
+        $this->db->where_in('id', $ids)
+                ->update('tbl_students', ['status' => 'inactive']);
+
+        if($this->db->affected_rows() > 0){
+            echo json_encode(['status'=>'success']);
+        } else {
+            echo json_encode(['status'=>'error','message'=>'Update failed']);
+        }
     }
 
-    $this->db->where_in('id',$ids)
-             ->update('tbl_students',['status'=>$status]);
-
-    if($this->db->affected_rows()>0){
-        echo json_encode(['status'=>'success']);
-    } else {
-        echo json_encode(['status'=>'error','message'=>'Update failed']);
-    }
-}
 
     // end add / edit / delete student
 

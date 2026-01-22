@@ -489,7 +489,7 @@ $('.tab-pane').each(function() {
                         if (res.status === 'success') {
                             btn.data('status', newStatus);
                             btn.text(newStatus === 'active' ? 'Active' : 'Inactive');
-                            btn.removeClass('btn-success btn-outline-secondary')
+                            btn.removeClass('btn-outline-success btn-outline-secondary')
                             .addClass(newStatus === 'active' ? 'btn-outline-success' : 'btn-secondary');
                         } else {
                             alert(res.message || 'Error updating status.');

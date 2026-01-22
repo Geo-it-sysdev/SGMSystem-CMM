@@ -137,6 +137,7 @@
                                                     style="width:100%">
                                                     <thead class="table-light">
                                                         <tr>
+                                                            <th><input type="checkbox" id="selectAll"></th>
                                                             <th>Student Name</th>
                                                             <th>Age</th>
                                                             <th>Gender</th>
@@ -145,9 +146,13 @@
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody>
-                                                    </tbody>
+                                                    <tbody></tbody>
                                                 </table>
+                                                <div class="mt-2">
+                                                    <button id="makeInactiveBtn" class="btn btn-warning"
+                                                        style="display:none;">Make Inactive</button>
+                                                </div>
+
                                             </div>
                                         </div>
                                         <?php endif; endforeach; ?>
@@ -281,7 +286,8 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="studentName" class="form-label">Student Name</label>
-                                            <input type="text" class="form-control" id="studentName" value="Juan Dela Cruz">
+                                            <input type="text" class="form-control" id="studentName"
+                                                value="Juan Dela Cruz">
                                         </div>
                                         <div class="col-md-6">
                                             <label for="gender" class="form-label">Gender</label>
@@ -390,6 +396,13 @@
                         }
                     },
                     columns: [{
+                            data: null,
+                            orderable: false,
+                            render: function(data) {
+                                return `<input type="checkbox" class="rowCheckbox" data-id="${data.id}">`;
+                            }
+                        },
+                        {
                             data: 'fullname'
                         },
                         {
@@ -397,13 +410,12 @@
                         },
                         {
                             data: 'gender',
-                            render: function(data, type, row) {
-                                if (data === 'Male') {
-                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
-                                } else if (data === 'Female') {
-                                    return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
-                                }
-                                return data; // default
+                            render: function(data) {
+                                if (data === 'Male')
+                                return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
+                                if (data === 'Female')
+                                return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
+                                return data;
                             }
                         },
                         {
@@ -417,40 +429,25 @@
                             render: function(data) {
                                 let buttons = '';
                                 let userType =
-                                    "<?= $this->session->userdata('user_type'); ?>"; // get user type from session
+                                    "<?= $this->session->userdata('user_type'); ?>";
                                 let currentUser =
                                     <?= $this->session->userdata('po_user'); ?>;
 
                                 if (['Principal', 'Guidance Counselor', 'Registrar']
-                                    .includes(userType)) {
+                                    .includes(userType) || data.user_id == currentUser
+                                    ) {
                                     buttons += `
-                                  
-                                    <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                        <i class="bx bx-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                        <i class="bx bx-trash"></i> Delete
-                                    </button>
-                                `;
-                                                    } else {
-                                                        if (data.user_id == currentUser) {
-                                                            buttons += `
-                                    
-                                        <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                            <i class="bx bx-edit"></i> Edit
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                            <i class="bx bx-trash"></i> Delete
-                                        </button>
-                                    `;
-                                    }
+                        <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                            <i class="bx bx-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                            <i class="bx bx-trash"></i> Delete
+                        </button>
+                    `;
                                 }
-
                                 return buttons;
                             }
                         }
-
-
                     ],
                     responsive: true,
                     paging: true,
@@ -464,12 +461,56 @@
                         processing: '<div class="table-loader"></div>'
                     }
                 });
+
             });
+
 
 
             // <button class="btn btn-sm btn-outline-success AddAddressBtn">
             //                             <i class="bx bx-plus-circle"></i> View / Add Info
             //                         </button>
+
+
+            $(document).on('change', '.rowCheckbox', function() {
+                let anyChecked = $('.rowCheckbox:checked').length > 0;
+                $('#makeInactiveBtn').toggle(anyChecked);
+            });
+
+            $('#selectAll').on('change', function() {
+                let checked = $(this).is(':checked');
+                $('.rowCheckbox').prop('checked', checked).trigger('change');
+            });
+
+$('#makeInactiveBtn').on('click', function() {
+    let ids = [];
+    $('.rowCheckbox:checked').each(function() {
+        ids.push($(this).data('id'));
+    });
+
+    if(ids.length === 0) return;
+
+    if(confirm('Are you sure you want to make inactive?')) {
+        $.ajax({
+            url: "<?= site_url('StudentController/make_inactive'); ?>",
+            type: "POST",
+            data: { ids: ids },
+            success: function(res) {
+                res = JSON.parse(res);
+                if(res.status === 'success') {
+                    alert('Selected students are now inactive.');
+                    // Refresh the table
+                    tableEl.DataTable().ajax.reload(null, false);
+                    $('#makeInactiveBtn').hide();
+                    $('#selectAll').prop('checked', false);
+                } else {
+                    alert('Error: ' + res.message);
+                }
+            }
+        });
+    }
+});
+
+
 
             // Open modal on AddAddressBtn click
             $(document).on('click', '.AddAddressBtn', function() {

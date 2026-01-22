@@ -14,6 +14,17 @@
 }
 </style>
 
+<?php
+$user_id = $this->session->userdata("po_user");
+$user_type = null;
+
+if (isset($user_id)) {
+    $user = $this->AuthModel->get_user_by_user_id($user_id);
+    $user_type = $user->user_type ?? null; 
+}
+?>
+
+
 <body>
 
     <!-- Begin page -->
@@ -129,7 +140,9 @@
                                                             <th>Gender</th>
                                                             <th>Section</th>
                                                             <th>Grade Level</th>
+                                                            <?php if ($user_type === 'Teacher'): ?>
                                                             <th>Action</th>
+                                                            <?php endif; ?>
                                                         </tr>
                                                     </thead>
                                                     <tbody></tbody>
@@ -401,7 +414,7 @@
                         {
                             data: 'grade_level'
                         },
-                        {
+                        <?php if ($user_type === 'Teacher'): ?> {
                             data: null,
                             render: function(data) {
                                 let buttons = '';
@@ -441,6 +454,8 @@
                                 return buttons;
                             }
                         }
+                        <?php endif; ?>
+
                     ],
                     responsive: true,
                     paging: true,

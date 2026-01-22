@@ -420,7 +420,7 @@ $('.tab-pane').each(function() {
                     }
 
                     // Activate/Deactivate button
-                    let statusClass = data.status === 'active' ? 'btn-success' : 'btn-secondary';
+                    let statusClass = data.status === 'active' ? 'btn-outline-success' : 'btn-outline-secondary';
                     let statusText = data.status === 'active' ? 'Active' : 'Inactive';
                     buttons += `
                         <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">

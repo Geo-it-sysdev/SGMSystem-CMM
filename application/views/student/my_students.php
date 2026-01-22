@@ -119,6 +119,25 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
+                                                     <div class="dropdown">
+                                                <button id="sectionDropdownBtnCeb"
+                                                    class="btn btn-soft-primary btn-sm dropdown-toggle" type="button"
+                                                    data-bs-toggle="dropdown"><i class="ri-filter-3-line me-1"></i>
+                                                    Select BU</button>
+                                                <ul class="dropdown-menu p-3" style="min-width:300px;">
+                                                    <div class="d-flex gap-2 mb-2">
+                                                        <input type="text" id="searchSectionCeb" class="form-control"
+                                                            placeholder="Search BU...">
+                                                        <button class="btn btn-primary btn-sm d-flex align-items-center"
+                                                            id="ClearFilterCeb">
+                                                            <i class="ri-close-circle-line me-1"></i> Clear
+                                                        </button>
+                                                    </div>
+                                                    <div id="sectionDropdownListCeb"
+                                                        style="max-height:200px; overflow-y:auto;"></div>
+                                                </ul>
+                                            </div>
+
 
                                                     <!-- Right side: Switch -->
                                                     <div class="flex-shrink-0">

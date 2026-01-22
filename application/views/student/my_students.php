@@ -426,7 +426,7 @@ if (isset($user_id)) {
                                     <?= (int) $this->session->userdata('po_user'); ?>;
 
                                 // Edit / Delete buttons
-                                if (['Principal', 'Guidance Counselor', 'Registrar']
+                                if (['Principal', 'Guidance Counselor', 'Registrar', 'Admin']
                                     .includes(userType) || data.user_id == currentUser
                                 ) {
                                     buttons += `

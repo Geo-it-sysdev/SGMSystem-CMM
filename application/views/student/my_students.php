@@ -281,7 +281,8 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="studentName" class="form-label">Student Name</label>
-                                            <input type="text" class="form-control" id="studentName" value="Juan Dela Cruz">
+                                            <input type="text" class="form-control" id="studentName"
+                                                value="Juan Dela Cruz">
                                         </div>
                                         <div class="col-md-6">
                                             <label for="gender" class="form-label">Gender</label>
@@ -412,42 +413,38 @@
                         {
                             data: 'grade_level'
                         },
-                        {
-                            data: null,
-                            render: function(data) {
-                                let buttons = '';
-                                let userType =
-                                    "<?= $this->session->userdata('user_type'); ?>"; // get user type from session
-                                let currentUser =
-                                    <?= $this->session->userdata('po_user'); ?>;
+                        data: null,
+                        render: function(data) {
+                            let buttons = '';
+                            let userType =
+                            "<?= $this->session->userdata('user_type'); ?>"; // session user type
+                            let currentUser = <?= $this->session->userdata('po_user'); ?>;
 
-                                if (['Principal', 'Guidance Counselor', 'Registrar']
-                                    .includes(userType)) {
-                                    buttons += `
-                                  
-                                    <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                        <i class="bx bx-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                        <i class="bx bx-trash"></i> Delete
-                                    </button>
-                                `;
-                                                    } else {
-                                                        if (data.user_id == currentUser) {
-                                                            buttons += `
-                                    
-                                        <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                            <i class="bx bx-edit"></i> Edit
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                            <i class="bx bx-trash"></i> Delete
-                                        </button>
-                                    `;
-                                    }
-                                }
-
-                                return buttons;
+                            // Edit/Delete logic
+                            if (['Principal', 'Guidance Counselor', 'Registrar'].includes(
+                                    userType) || data.user_id == currentUser) {
+                                buttons += `
+            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                <i class="bx bx-edit"></i> Edit
+            </button>
+            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                <i class="bx bx-trash"></i> Delete
+            </button>
+        `;
                             }
+
+                            // Activate/Deactivate button
+                            let statusClass = data.status === 'active' ? 'btn-success' :
+                                'btn-secondary';
+                            let statusText = data.status === 'active' ? 'Active' :
+                                'Inactive';
+                            buttons += `
+        <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
+            ${statusText}
+        </button>
+    `;
+
+                            return buttons;
                         }
 
 
@@ -465,6 +462,36 @@
                     }
                 });
             });
+
+
+            $(document).on('click', '.toggleStatusBtn', function() {
+    let btn = $(this);
+    let studentId = btn.data('id');
+    let currentStatus = btn.data('status');
+
+    let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+
+    $.ajax({
+        url: "<?= site_url('StudentController/toggle_status'); ?>",
+        type: "POST",
+        data: { id: studentId, status: newStatus },
+        success: function(response) {
+            let res = JSON.parse(response);
+            if (res.status === 'success') {
+                // Update button appearance
+                btn.data('status', newStatus);
+                btn.text(newStatus === 'active' ? 'Active' : 'Inactive');
+                btn.removeClass('btn-success btn-secondary')
+                   .addClass(newStatus === 'active' ? 'btn-success' : 'btn-secondary');
+            } else {
+                alert(res.message || 'Error updating status.');
+            }
+        },
+        error: function() {
+            alert('AJAX error. Could not update status.');
+        }
+    });
+});
 
 
             // <button class="btn btn-sm btn-outline-success AddAddressBtn">

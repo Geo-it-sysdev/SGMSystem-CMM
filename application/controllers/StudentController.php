@@ -56,30 +56,31 @@ public function fetch_students()
     }
 
     public function add_student()
-    {
-        $user_id = $this->session->userdata('po_user');
-        $fullname = $this->input->post('fullname');
-        $gmail = $this->input->post('gmail');
+{
+    $user_id = $this->session->userdata('po_user');
+    $fullname = $this->input->post('fullname');
+    $gmail = $this->input->post('gmail');
 
-        if ($this->StudentModel->check_duplicate($fullname, $gmail)) {
-            echo json_encode(['status' => 'duplicate']);
-            return;
-        }
-
-        $data = [
-            'user_id'     => $user_id,
-            'fullname'    => $fullname,
-            'age'         => $this->input->post('age'),
-            'gender'      => $this->input->post('gender'),
-            'section'     => $this->input->post('section'),
-            'grade_level' => $this->input->post('grade_level'),
-            'contact_no'  => $this->input->post('contact_no'),
-            'gmail'       => $gmail
-        ];
-
-        $this->StudentModel->insert_student($data);
-        echo json_encode(['status' => 'success']);
+    if ($this->StudentModel->check_duplicate($user_id, $fullname, $gmail)) {
+        echo json_encode(['status' => 'duplicate']);
+        return;
     }
+
+    $data = [
+        'user_id'     => $user_id,
+        'fullname'    => $fullname,
+        'age'         => $this->input->post('age'),
+        'gender'      => $this->input->post('gender'),
+        'section'     => $this->input->post('section'),
+        'grade_level' => $this->input->post('grade_level'),
+        'contact_no'  => $this->input->post('contact_no'),
+        'gmail'       => $gmail
+    ];
+
+    $this->StudentModel->insert_student($data);
+    echo json_encode(['status' => 'success']);
+}
+
 
     public function update_student()
     {

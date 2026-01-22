@@ -119,19 +119,6 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
-                                                    <div>
-                                                        <?php if ($user_type === 'Admin'): ?>
-                                                        <button type="button"
-                                                                class="btn btn-outline-primary filter-btn rounded-pill"
-                                                                    data-bs-toggle="modal" data-bs-target="#filterModal">
-                                                                <i class="ri-filter-line align-bottom me-1"></i>Filter
-                                                            </button>
-
-                                                        <?php endif; ?>
-                                                    </div>
-
-                                                    
-
 
                                                     <!-- Right side: Switch -->
                                                     <div class="flex-shrink-0">

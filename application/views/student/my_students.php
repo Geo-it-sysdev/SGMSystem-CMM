@@ -110,11 +110,13 @@ if (isset($user_id)) {
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                                     <!-- Left side: Add Button -->
                                                     <div>
+                                                        <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill"
                                                             data-bs-toggle="modal" data-bs-target="#studentModal">
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
+                                                        <?php endif; ?>
                                                     </div>
 
 

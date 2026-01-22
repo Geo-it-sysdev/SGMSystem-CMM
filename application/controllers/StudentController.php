@@ -190,7 +190,7 @@ public function fetch_students()
 {
     $section = $this->input->get('section');
     $activity_type_id = $this->input->get('activity_type_id');
-    $user_id = $this->session->userdata('po_user'); // Assuming teacher's user_id
+    $user_id = $this->session->userdata('po_user'); // Teacher's user_id
 
     // Get students already graded for this activity
     $graded = $this->db->select('student_id')
@@ -200,10 +200,11 @@ public function fetch_students()
 
     $graded_ids = array_column($graded, 'student_id');
 
-    // Fetch students in this section
+    // Fetch students in this section and assigned to this teacher
     $this->db->select('id, fullname, section, gender')
              ->from('tbl_students')
-             ->where('section', $section);
+             ->where('section', $section)
+             ->where('user_id', $user_id); // Only students assigned to this teacher
 
     // Exclude students who are already graded
     if (!empty($graded_ids)) {

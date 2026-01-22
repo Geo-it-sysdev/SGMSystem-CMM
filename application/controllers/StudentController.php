@@ -590,7 +590,7 @@ public function fetch_students()
             $weight_QA = 0.25;
         }
 
-        $this->db->select('a.id, a.description AS activity_type, a.overall AS overall_score, b.student_name, b.score, b.section, b.user_id AS student_id, c.full_name');
+        $this->db->select('a.id, a.description AS activity_type, a.overall AS overall_score, b.student_name, b.score, b.section, b.student_id, c.full_name');
         $this->db->from('tbl_activities_header AS a');
         $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
         $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');

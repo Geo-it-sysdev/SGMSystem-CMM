@@ -33,7 +33,7 @@ public function get_all_students($grade_level = null, $section = null, $status =
     }
 
     $this->db->where('status', $status ?: 'active');
-    $this->db->group_by('fullname');
+    
 
     return $this->db->get()->result();
 }

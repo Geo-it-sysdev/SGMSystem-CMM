@@ -119,6 +119,16 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
+                                                    <div>
+                                                        <?php if ($user_type === 'Admin'): ?>
+                                                        <button type="button"
+                                                            class="btn btn-outline-success add-btn rounded-pill"
+                                                            data-bs-toggle="modal" data-bs-target="#studentModal">
+                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
+                                                        </button>
+                                                        <?php endif; ?>
+                                                    </div>
+
                                                      <div class="dropdown">
                                                 <button id="sectionDropdownBtnCeb"
                                                     class="btn btn-soft-primary btn-sm dropdown-toggle" type="button"

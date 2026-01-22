@@ -14,13 +14,21 @@ class StudentController extends CI_Controller {
 
    
     //    start add / edit / delete student
-       public function fetch_students() {
+    public function fetch_students()
+    {
         $grade_level = $this->input->get('grade_level');
-        $section = $this->input->get('section');
+        $section     = $this->input->get('section');
+        $status      = $this->input->get('status'); // active / inactive
 
-        $students = $this->StudentModel->get_all_students($grade_level, $section);
+        $students = $this->StudentModel->get_all_students(
+            $grade_level,
+            $section,
+            $status
+        );
+
         echo json_encode(['data' => $students]);
     }
+
 
 
     public function get_section_by_grade()

@@ -108,13 +108,15 @@
 
                                                     <!-- Right side: Switch -->
                                                     <div class="flex-shrink-0">
-                                                        <div
-                                                            class="form-check form-switch form-switch-right form-switch-md">
-                                                            <label for="mnl-switch" class="form-label">Show Manila
-                                                                History</label>
-                                                            <input class="form-check-input code-switcher"
-                                                                type="checkbox" id="mnl-switch" />
-                                                        </div>
+                                                       <div class="form-check form-switch form-switch-right form-switch-md">
+    <label for="inactive-active" class="form-label">Show Inactive User</label>
+    <input
+        class="form-check-input code-switcher"
+        type="checkbox"
+        id="inactive-active"
+    />
+</div>
+
                                                     </div>
                                                 </div>
 
@@ -361,102 +363,91 @@
 
         <script>
         $(document).ready(function() {
-            var tables = {};
+           var tables = {};
 
-            $('.tab-pane').each(function() {
-                let tabPane = $(this);
-                let tableEl = tabPane.find('table');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+$('.tab-pane').each(function () {
+    let tabPane = $(this);
+    let tableEl = tabPane.find('table');
+    let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-                tables[gradeLevel] = tableEl.DataTable({
-                    ajax: {
-                        url: "<?= site_url('StudentController/fetch_students'); ?>",
-                        type: "GET",
-                        data: {
-                            grade_level: gradeLevel
-                        }
-                    },
-                    columns: [{
-                            data: 'fullname'
-                        },
-                        {
-                            data: 'age'
-                        },
-                        {
-                            data: 'gender',
-                            render: function(data) {
-                                if (data === 'Male')
-                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
-                                if (data === 'Female')
-                                    return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
-                                return data;
-                            }
-                        },
-                        {
-                            data: 'section'
-                        },
-                        {
-                            data: 'grade_level'
-                        },
-                        {
-                            data: null,
-                            render: function(data) {
-                                let buttons = '';
-                                let userType =
-                                    "<?= $this->session->userdata('user_type'); ?>";
-                                let currentUser =
-                                    <?= (int) $this->session->userdata('po_user'); ?>;
+    tables[gradeLevel] = tableEl.DataTable({
+        ajax: {
+            url: "<?= site_url('StudentController/fetch_students'); ?>",
+            type: "GET",
+            data: function (d) {
+                d.grade_level = gradeLevel;
+                d.status = tabPane.find('.status-filter').is(':checked')
+                    ? 'inactive'
+                    : 'active';
+            }
+        },
+        columns: [
+            { data: 'fullname' },
+            { data: 'age' },
+            {
+                data: 'gender',
+                render: function (data) {
+                    if (data === 'Male')
+                        return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
+                    if (data === 'Female')
+                        return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
+                    return data;
+                }
+            },
+            { data: 'section' },
+            { data: 'grade_level' },
+            {
+                data: null,
+                render: function (data) {
+                    let buttons = '';
+                    let userType = "<?= $this->session->userdata('user_type'); ?>";
+                    let currentUser = <?= (int)$this->session->userdata('po_user'); ?>;
 
-                                // Edit / Delete buttons
-                                if (['Principal', 'Guidance Counselor', 'Registrar']
-                                    .includes(userType) || data.user_id == currentUser
-                                ) {
-                                    buttons += `
-                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                    <i class="bx bx-edit me-1"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                    <i class="bx bx-trash me-1"></i> Delete
-                </button>
-            `;
-                                }
-
-                                // Status button
-                                let isActive = data.status === 'active';
-                                let statusClass = isActive ? 'btn-outline-success' :
-                                    'btn-outline-secondary';
-                                let statusText = isActive ? 'Active' : 'Inactive';
-                                let statusIcon = isActive ? 'bx-check-circle' :
-                                    'bx-x-circle';
-
-                                buttons += `
-            <button
-                class="btn btn-sm ${statusClass} toggleStatusBtn"
-                data-id="${data.id}"
-                data-status="${data.status}"
-            >
-                <i class="bx ${statusIcon} me-1"></i>${statusText}
-            </button>
-        `;
-
-                                return buttons;
-                            }
-                        }
-
-                    ],
-                    responsive: true,
-                    paging: true,
-                    searching: true,
-                    ordering: true,
-                    info: true,
-                    processing: true,
-                    language: {
-                        search: '',
-                        searchPlaceholder: ' Search...',
-                        processing: '<div class="table-loader"></div>'
+                    if (
+                        ['Principal', 'Guidance Counselor', 'Registrar'].includes(userType) ||
+                        data.user_id == currentUser
+                    ) {
+                        buttons += `
+                            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                <i class="bx bx-edit me-1"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                <i class="bx bx-trash me-1"></i> Delete
+                            </button>
+                        `;
                     }
-                });
-            });
+
+                    let isActive = data.status === 'active';
+                    buttons += `
+                        <button class="btn btn-sm ${isActive ? 'btn-outline-success' : 'btn-outline-secondary'}">
+                            <i class="bx ${isActive ? 'bx-check-circle' : 'bx-x-circle'} me-1"></i>
+                            ${isActive ? 'Active' : 'Inactive'}
+                        </button>
+                    `;
+
+                    return buttons;
+                }
+            }
+        ],
+        responsive: true,
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        processing: true
+    });
+});
+
+
+$(document).on('change', '#inactive-active', function () {
+    let tabPane = $(this).closest('.tab-pane');
+    let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+
+    if (tables[gradeLevel]) {
+        tables[gradeLevel].ajax.reload();
+    }
+});
+
 
 
 

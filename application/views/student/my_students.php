@@ -95,51 +95,29 @@
                                                 <h5 class="mb-3"><?= $grade ?> Students</h5>
 
 
-                                                <div class="d-flex align-items-center gap-2 mb-3">
-                                                    <button type="button"
-                                                        class="btn btn-outline-success add-btn me-2 rounded-pill"
-                                                        id="addBtn" data-bs-toggle="modal"
-                                                        data-bs-target="#studentModal">
-                                                        <i class="ri-add-line align-bottom me-1"></i>Add Student
-                                                    </button>
-
-
-                                                    <!-- <div class="dropdown">
-                                                        <button
-                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button" id="filterG8Button" data-bs-toggle="dropdown"
-                                                            aria-expanded="false">
-                                                            <i class="ri-filter-3-line"></i> Filter Section
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <!-- Left side: Add Button -->
+                                                    <div>
+                                                        <button type="button"
+                                                            class="btn btn-outline-success add-btn rounded-pill"
+                                                            id="addBtn" data-bs-toggle="modal"
+                                                            data-bs-target="#studentModal">
+                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
-                                                        <ul class="dropdown-menu" aria-labelledby="filterG8Button">
-                                                            <li><a class="dropdown-item" href="#"
-                                                                    onclick="setFilter('Section 1')">Section 1</a></li>
-                                                            <li><a class="dropdown-item" href="#"
-                                                                    onclick="setFilter('Section 2')">Section 2</a></li>
-                                                            <li><a class="dropdown-item" href="#"
-                                                                    onclick="setFilter('Section 3')">Section 3</a></li>
-                                                            <li><a class="dropdown-item" href="#"
-                                                                    onclick="setFilter('Section 4')">Section 4</a></li>
-                                                            <li>
-                                                                <hr class="dropdown-divider">
-                                                            </li>
-                                                            <div class="d-flex justify-content-center mt-2 mb-2">
-                                                                <button type="button"
-                                                                    class="btn btn-outline-danger btn-sm"
-                                                                    onclick="clearFilter()">Clear Filter</button>
-                                                            </div>
-                                                        </ul>
-                                                    </div> -->
-                                                </div>
+                                                    </div>
+
+                                                    <!-- Right side: Switch -->
                                                     <div class="flex-shrink-0">
                                                         <div
                                                             class="form-check form-switch form-switch-right form-switch-md">
-                                                            <label for="mnl-switch" class="form-label">Show Manila
-                                                                History</label>
+                                                            <label for="student-inactive" class="form-label">Show Inactive Student</label>
                                                             <input class="form-check-input code-switcher"
-                                                                type="checkbox" id="mnl-switch" />
+                                                                type="checkbox" id="student-inactive" />
                                                         </div>
                                                     </div>
+                                                </div>
+
+
                                                 <table id="List_Student_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle"
                                                     style="width:100%">

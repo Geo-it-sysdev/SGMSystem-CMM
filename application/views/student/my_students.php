@@ -131,7 +131,18 @@
                                                         </ul>
                                                     </div> -->
                                                 </div>
-
+                                                <div class="card-header align-items-center d-flex">
+                                                    <h4 class="card-title mb-0 flex-grow-1"></h4>
+                                                    <div class="flex-shrink-0">
+                                                        <div
+                                                            class="form-check form-switch form-switch-right form-switch-md">
+                                                            <label for="mnl-switch" class="form-label">Show Manila
+                                                                History</label>
+                                                            <input class="form-check-input code-switcher"
+                                                                type="checkbox" id="mnl-switch" />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <table id="List_Student_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle"
                                                     style="width:100%">
@@ -412,9 +423,9 @@
                             data: 'gender',
                             render: function(data) {
                                 if (data === 'Male')
-                                return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
+                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
                                 if (data === 'Female')
-                                return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
+                                    return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
                                 return data;
                             }
                         },
@@ -435,7 +446,7 @@
 
                                 if (['Principal', 'Guidance Counselor', 'Registrar']
                                     .includes(userType) || data.user_id == currentUser
-                                    ) {
+                                ) {
                                     buttons += `
                         <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
                             <i class="bx bx-edit"></i> Edit
@@ -481,34 +492,36 @@
                 $('.rowCheckbox').prop('checked', checked).trigger('change');
             });
 
-$('#makeInactiveBtn').on('click', function() {
-    let ids = [];
-    $('.rowCheckbox:checked').each(function() {
-        ids.push($(this).data('id'));
-    });
+            $('#makeInactiveBtn').on('click', function() {
+                let ids = [];
+                $('.rowCheckbox:checked').each(function() {
+                    ids.push($(this).data('id'));
+                });
 
-    if(ids.length === 0) return;
+                if (ids.length === 0) return;
 
-    if(confirm('Are you sure you want to make inactive?')) {
-        $.ajax({
-            url: "<?= site_url('StudentController/make_inactive'); ?>",
-            type: "POST",
-            data: { ids: ids },
-            success: function(res) {
-                res = JSON.parse(res);
-                if(res.status === 'success') {
-                    alert('Selected students are now inactive.');
-                    // Refresh the table
-                    tableEl.DataTable().ajax.reload(null, false);
-                    $('#makeInactiveBtn').hide();
-                    $('#selectAll').prop('checked', false);
-                } else {
-                    alert('Error: ' + res.message);
+                if (confirm('Are you sure you want to make inactive?')) {
+                    $.ajax({
+                        url: "<?= site_url('StudentController/make_inactive'); ?>",
+                        type: "POST",
+                        data: {
+                            ids: ids
+                        },
+                        success: function(res) {
+                            res = JSON.parse(res);
+                            if (res.status === 'success') {
+                                alert('Selected students are now inactive.');
+                                // Refresh the table
+                                tableEl.DataTable().ajax.reload(null, false);
+                                $('#makeInactiveBtn').hide();
+                                $('#selectAll').prop('checked', false);
+                            } else {
+                                alert('Error: ' + res.message);
+                            }
+                        }
+                    });
                 }
-            }
-        });
-    }
-});
+            });
 
 
 

@@ -105,23 +105,23 @@ class StudentController extends CI_Controller {
     }
 
     public function make_inactive()
-{
-    $ids = $this->input->post('ids');
+    {
+        $ids = $this->input->post('ids');
 
-    if(!$ids || !is_array($ids)) {
-        echo json_encode(['status'=>'error','message'=>'No students selected']);
-        return;
+        if(!$ids || !is_array($ids)) {
+            echo json_encode(['status'=>'error','message'=>'No students selected']);
+            return;
+        }
+
+        $this->db->where_in('id', $ids)
+                ->update('tbl_students', ['status' => 'inactive']);
+
+        if($this->db->affected_rows() > 0){
+            echo json_encode(['status'=>'success']);
+        } else {
+            echo json_encode(['status'=>'error','message'=>'Update failed']);
+        }
     }
-
-    $this->db->where_in('id', $ids)
-             ->update('tbl_students', ['status' => 'inactive']);
-
-    if($this->db->affected_rows() > 0){
-        echo json_encode(['status'=>'success']);
-    } else {
-        echo json_encode(['status'=>'error','message'=>'Update failed']);
-    }
-}
 
 
     // end add / edit / delete student

@@ -14,13 +14,21 @@ class StudentController extends CI_Controller {
 
    
     //    start add / edit / delete student
-    public function fetch_students() {
-        $grade_level = $this->input->get('grade_level');
-        $section = $this->input->get('section'); 
+public function fetch_students()
+{
+    $grade_level = $this->input->get('grade_level');
+    $status      = $this->input->get('status'); // active | inactive
 
-        $students = $this->StudentModel->get_all_students($grade_level, $section);
-        echo json_encode(['data' => $students]);
-    }
+    $students = $this->StudentModel->get_all_students(
+        $grade_level,
+        null, // section optional
+        $status
+    );
+
+    echo json_encode(['data' => $students]);
+}
+
+
 
 
     public function get_section_by_grade()
@@ -48,30 +56,31 @@ class StudentController extends CI_Controller {
     }
 
     public function add_student()
-    {
-        $user_id = $this->session->userdata('po_user');
-        $fullname = $this->input->post('fullname');
-        $gmail = $this->input->post('gmail');
+{
+    $user_id = $this->session->userdata('po_user');
+    $fullname = $this->input->post('fullname');
+    $gmail = $this->input->post('gmail');
 
-        if ($this->StudentModel->check_duplicate($fullname, $gmail)) {
-            echo json_encode(['status' => 'duplicate']);
-            return;
-        }
-
-        $data = [
-            'user_id'     => $user_id,
-            'fullname'    => $fullname,
-            'age'         => $this->input->post('age'),
-            'gender'      => $this->input->post('gender'),
-            'section'     => $this->input->post('section'),
-            'grade_level' => $this->input->post('grade_level'),
-            'contact_no'  => $this->input->post('contact_no'),
-            'gmail'       => $gmail
-        ];
-
-        $this->StudentModel->insert_student($data);
-        echo json_encode(['status' => 'success']);
+    if ($this->StudentModel->check_duplicate($user_id, $fullname, $gmail)) {
+        echo json_encode(['status' => 'duplicate']);
+        return;
     }
+
+    $data = [
+        'user_id'     => $user_id,
+        'fullname'    => $fullname,
+        'age'         => $this->input->post('age'),
+        'gender'      => $this->input->post('gender'),
+        'section'     => $this->input->post('section'),
+        'grade_level' => $this->input->post('grade_level'),
+        'contact_no'  => $this->input->post('contact_no'),
+        'gmail'       => $gmail
+    ];
+
+    $this->StudentModel->insert_student($data);
+    echo json_encode(['status' => 'success']);
+}
+
 
     public function update_student()
     {
@@ -103,6 +112,25 @@ class StudentController extends CI_Controller {
         $deleted = $this->StudentModel->delete_student($id);
         echo json_encode(['status' => $deleted ? 'deleted' : 'unauthorized']);
     }
+
+  public function toggle_status() {
+        $id = $this->input->post('id');
+        $status = $this->input->post('status');
+
+        if (!$id || !in_array($status, ['active', 'inactive'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid data.']);
+            return;
+        }
+
+        $this->db->where('id', $id)->update('tbl_students', ['status' => $status]);
+
+        if ($this->db->affected_rows() > 0) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'No changes made.']);
+        }
+    }
+
 
     // end add / edit / delete student
 
@@ -158,31 +186,35 @@ class StudentController extends CI_Controller {
     }
     
 
-    public function get_students_by_section()
-    {
-        $section = $this->input->get('section');
-        $activity_type_id = $this->input->get('activity_type_id');
-        $user_id = $this->session->userdata('po_user'); 
+   public function get_students_by_section()
+{
+    $section = $this->input->get('section');
+    $activity_type_id = $this->input->get('activity_type_id');
+    $user_id = $this->session->userdata('po_user'); // Assuming teacher's user_id
 
-        $graded = $this->db->select('user_id')
-                        ->where('activities_id_header', $activity_type_id)
-                        ->get('tbl_activities_lines')
-                        ->result_array();
+    // Get students already graded for this activity
+    $graded = $this->db->select('student_id')
+                       ->where('activities_id_header', $activity_type_id)
+                       ->get('tbl_activities_lines')
+                       ->result_array();
 
-        $graded_ids = array_column($graded, 'user_id');
+    $graded_ids = array_column($graded, 'student_id');
 
-        $this->db->select('id, fullname, section, gender')
-                ->where('section', $section)
-                ->where('user_id', $user_id);
+    // Fetch students in this section
+    $this->db->select('id, fullname, section, gender')
+             ->from('tbl_students')
+             ->where('section', $section);
 
-        if (!empty($graded_ids)) {
-            $this->db->where_not_in('id', $graded_ids);
-        }
-
-        $students = $this->db->get('tbl_students')->result_array();
-
-        echo json_encode($students);
+    // Exclude students who are already graded
+    if (!empty($graded_ids)) {
+        $this->db->where_not_in('id', $graded_ids);
     }
+
+    $students = $this->db->get()->result_array();
+
+    echo json_encode($students);
+}
+
 
 
     // ✅ Save Grade
@@ -236,7 +268,7 @@ class StudentController extends CI_Controller {
 
             $data = [
                 'activities_id_header' => $activity_type_id,
-                'user_id' => $student_id,
+                'student_id' => $student_id,
                 'student_name' => $student->fullname,
                 'section' => $student->section,
                 'score' => $score,

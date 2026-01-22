@@ -93,6 +93,8 @@
                                         <div class="tab-pane fade <?= $show_class ?>" id="<?= $grade_id ?>-student">
                                             <div class="card p-3">
                                                 <h5 class="mb-3"><?= $grade ?> Students</h5>
+                                                <div id="alertContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+
 
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                                     <!-- Left side: Add Button -->
@@ -491,7 +493,7 @@
 
 
             // Toggle Status Button
-           $(document).on('click', '.toggleStatusBtn', function() {
+  $(document).on('click', '.toggleStatusBtn', function() {
     let btn = $(this);
     let studentId = btn.data('id');
     let currentStatus = btn.data('status');
@@ -508,6 +510,26 @@
             let res = JSON.parse(response);
 
             if (res.status === 'success') {
+                // Show alert based on new status
+                let alertClass = newStatus === 'inactive' ? 'alert-success' : 'alert-secondary';
+                let alertText = newStatus === 'inactive' ? 'Student set to Inactive!' : 'Student set to Active!';
+                
+                // Create alert element
+                let alertEl = $(`
+                    <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                        ${alertText}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `);
+
+                // Append to a container (make sure you have #alertContainer in your HTML)
+                $('#alertContainer').append(alertEl);
+
+                // Automatically remove after 3 seconds
+                setTimeout(() => {
+                    alertEl.alert('close');
+                }, 3000);
+
                 // Reload the DataTable of the current tab
                 let tabPane = btn.closest('.tab-pane');
                 let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
@@ -515,6 +537,9 @@
                 if (tables[gradeLevel]) {
                     tables[gradeLevel].ajax.reload(null, false); // false = keep current pagination
                 }
+
+                // Update the button data-status to the new status
+                btn.data('status', newStatus);
             } else {
                 alert(res.message || 'Error updating status.');
             }
@@ -524,6 +549,7 @@
         }
     });
 });
+
 
 
 

@@ -111,7 +111,7 @@
                                                         <div
                                                             class="form-check form-switch form-switch-right form-switch-md">
                                                             <label for="student_history" class="form-label">Show
-                                                                Inactive User</label>
+                                                                Inactive Student</label>
                                                             <input class="form-check-input code-switcher"
                                                                 type="checkbox" id="student_history" />
                                                         </div>

@@ -110,7 +110,8 @@
                                                     <div class="flex-shrink-0">
                                                         <div
                                                             class="form-check form-switch form-switch-right form-switch-md">
-                                                            <label for="student-inactive" class="form-label">Show Inactive Student</label>
+                                                            <label for="student-inactive" class="form-label">Show
+                                                                Inactive Student</label>
                                                             <input class="form-check-input code-switcher"
                                                                 type="checkbox" id="student-inactive" />
                                                         </div>
@@ -373,12 +374,14 @@
                 let tableEl = tabPane.find('table');
                 let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-                tables[gradeLevel] = tableEl.DataTable({
+                let table = tableEl.DataTable({
                     ajax: {
                         url: "<?= site_url('StudentController/fetch_students'); ?>",
                         type: "GET",
-                        data: {
-                            grade_level: gradeLevel
+                        data: function(d) {
+                            d.grade_level = gradeLevel;
+                            d.show_inactive = $('#student-inactive').is(':checked') ? 1 :
+                            0; // add status param
                         }
                     },
                     columns: [{
@@ -418,18 +421,17 @@
                                     "<?= $this->session->userdata('user_type'); ?>";
                                 let currentUser =
                                     <?= $this->session->userdata('po_user'); ?>;
-
                                 if (['Principal', 'Guidance Counselor', 'Registrar']
                                     .includes(userType) || data.user_id == currentUser
-                                ) {
+                                    ) {
                                     buttons += `
-                        <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                            <i class="bx bx-edit"></i> Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                            <i class="bx bx-trash"></i> Delete
-                        </button>
-                    `;
+                            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                <i class="bx bx-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                <i class="bx bx-trash"></i> Delete
+                            </button>
+                        `;
                                 }
                                 return buttons;
                             }
@@ -448,7 +450,14 @@
                     }
                 });
 
+                // Reload table on switch toggle
+                $('#student-inactive').on('change', function() {
+                    table.ajax.reload();
+                });
+
+                tables[gradeLevel] = table;
             });
+
 
 
 

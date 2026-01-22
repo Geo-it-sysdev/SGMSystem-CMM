@@ -14,9 +14,9 @@ class StudentController extends CI_Controller {
 
    
     //    start add / edit / delete student
-    public function fetch_students() {
+       public function fetch_students() {
         $grade_level = $this->input->get('grade_level');
-        $section = $this->input->get('section'); 
+        $section = $this->input->get('section');
 
         $students = $this->StudentModel->get_all_students($grade_level, $section);
         echo json_encode(['data' => $students]);
@@ -104,23 +104,23 @@ class StudentController extends CI_Controller {
         echo json_encode(['status' => $deleted ? 'deleted' : 'unauthorized']);
     }
 
-    public function toggle_status() {
-    $id = $this->input->post('id');
-    $status = $this->input->post('status'); // 'active' or 'inactive'
+  public function toggle_status() {
+        $id = $this->input->post('id');
+        $status = $this->input->post('status');
 
-    if (!$id || !in_array($status, ['active', 'inactive'])) {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid data.']);
-        return;
+        if (!$id || !in_array($status, ['active', 'inactive'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid data.']);
+            return;
+        }
+
+        $this->db->where('id', $id)->update('tbl_students', ['status' => $status]);
+
+        if ($this->db->affected_rows() > 0) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'No changes made.']);
+        }
     }
-
-    $this->db->where('id', $id)->update('tbl_students', ['status' => $status]);
-
-    if ($this->db->affected_rows() > 0) {
-        echo json_encode(['status' => 'success']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'No changes made.']);
-    }
-}
 
 
     // end add / edit / delete student

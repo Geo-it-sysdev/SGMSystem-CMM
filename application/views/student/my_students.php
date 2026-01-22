@@ -374,125 +374,80 @@
 
         <script>
         $(document).ready(function() {
-            let tables = {};
+           var tables = {};
 
-            // ================== INITIALIZE DATATABLES ===================
-            $('.tab-pane').each(function() {
-                let tabPane = $(this);
-                let tableEl = tabPane.find('table');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+$('.tab-pane').each(function() {
+    let tabPane = $(this);
+    let tableEl = tabPane.find('table');
+    let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-                tables[gradeLevel] = tableEl.DataTable({
-                    ajax: {
-                        url: "<?= site_url('StudentController/fetch_students'); ?>",
-                        type: "GET",
-                        data: {
-                            grade_level: gradeLevel
-                        }
-                    },
-                    columns: [{
-                            data: 'fullname'
-                        },
-                        {
-                            data: 'age'
-                        },
-                        {
-                            data: 'gender',
-                            render: function(data, type, row) {
-                                if (data === 'Male') {
-                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
-                                } else if (data === 'Female') {
-                                    return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
-                                }
-                                return data; // default
-                            }
-                        },
-                        {
-                            data: 'section'
-                        },
-                        {
-                            data: 'grade_level'
-                        },
-                        data: null,
-                        render: function(data) {
-                            let buttons = '';
-                            let userType =
-                            "<?= $this->session->userdata('user_type'); ?>"; // session user type
-                            let currentUser = <?= $this->session->userdata('po_user'); ?>;
-
-                            // Edit/Delete logic
-                            if (['Principal', 'Guidance Counselor', 'Registrar'].includes(
-                                    userType) || data.user_id == currentUser) {
-                                buttons += `
-            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                <i class="bx bx-edit"></i> Edit
-            </button>
-            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                <i class="bx bx-trash"></i> Delete
-            </button>
-        `;
-                            }
-
-                            // Activate/Deactivate button
-                            let statusClass = data.status === 'active' ? 'btn-success' :
-                                'btn-secondary';
-                            let statusText = data.status === 'active' ? 'Active' :
-                                'Inactive';
-                            buttons += `
-        <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
-            ${statusText}
-        </button>
-    `;
-
-                            return buttons;
-                        }
-
-
-                    ],
-                    responsive: true,
-                    paging: true,
-                    searching: true,
-                    ordering: true,
-                    info: true,
-                    processing: true,
-                    language: {
-                        search: '',
-                        searchPlaceholder: ' Search...',
-                        processing: '<div class="table-loader"></div>'
-                    }
-                });
-            });
-
-
-            $(document).on('click', '.toggleStatusBtn', function() {
-    let btn = $(this);
-    let studentId = btn.data('id');
-    let currentStatus = btn.data('status');
-
-    let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-
-    $.ajax({
-        url: "<?= site_url('StudentController/toggle_status'); ?>",
-        type: "POST",
-        data: { id: studentId, status: newStatus },
-        success: function(response) {
-            let res = JSON.parse(response);
-            if (res.status === 'success') {
-                // Update button appearance
-                btn.data('status', newStatus);
-                btn.text(newStatus === 'active' ? 'Active' : 'Inactive');
-                btn.removeClass('btn-success btn-secondary')
-                   .addClass(newStatus === 'active' ? 'btn-success' : 'btn-secondary');
-            } else {
-                alert(res.message || 'Error updating status.');
-            }
+    tables[gradeLevel] = tableEl.DataTable({
+        ajax: {
+            url: "<?= site_url('StudentController/fetch_students'); ?>",
+            type: "GET",
+            data: { grade_level: gradeLevel }
         },
-        error: function() {
-            alert('AJAX error. Could not update status.');
+        columns: [
+            { data: 'fullname' },
+            { data: 'age' },
+            { 
+                data: 'gender',
+                render: function(data) {
+                    if (data === 'Male') return `<span class="badge bg-primary"><i class="bi bi-person-fill"></i> ${data}</span>`;
+                    if (data === 'Female') return `<span class="badge bg-danger"><i class="bi bi-person"></i> ${data}</span>`;
+                    return data;
+                }
+            },
+            { data: 'section' },
+            { data: 'grade_level' },
+            {
+                data: null,
+                render: function(data) {
+                    let buttons = '';
+                    let userType = "<?= $this->session->userdata('user_type'); ?>";
+                    let currentUser = <?= $this->session->userdata('po_user'); ?>;
+
+                    // Edit/Delete buttons
+                    if (['Principal', 'Guidance Counselor', 'Registrar'].includes(userType) || data.user_id == currentUser) {
+                        buttons += `
+                            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                <i class="bx bx-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                <i class="bx bx-trash"></i> Delete
+                            </button>
+                        `;
+                    }
+
+                    // Activate/Deactivate button
+                    let statusClass = data.status === 'active' ? 'btn-success' : 'btn-secondary';
+                    let statusText = data.status === 'active' ? 'Active' : 'Inactive';
+                    buttons += `
+                        <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
+                            ${statusText}
+                        </button>
+                    `;
+
+                    return buttons;
+                }
+            }
+        ],
+        responsive: true,
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        processing: true,
+        language: {
+            search: '',
+            searchPlaceholder: ' Search...',
+            processing: '<div class="table-loader"></div>'
         }
     });
 });
 
+
+            
 
             // <button class="btn btn-sm btn-outline-success AddAddressBtn">
             //                             <i class="bx bx-plus-circle"></i> View / Add Info
@@ -517,6 +472,34 @@
                 $('#addressModal').modal('show');
             });
 
+
+            // Toggle Status Button
+$(document).on('click', '.toggleStatusBtn', function() {
+    let btn = $(this);
+    let studentId = btn.data('id');
+    let currentStatus = btn.data('status');
+    let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+
+    $.ajax({
+        url: "<?= site_url('StudentController/toggle_status'); ?>",
+        type: "POST",
+        data: { id: studentId, status: newStatus },
+        success: function(response) {
+            let res = JSON.parse(response);
+            if (res.status === 'success') {
+                btn.data('status', newStatus);
+                btn.text(newStatus === 'active' ? 'Active' : 'Inactive');
+                btn.removeClass('btn-success btn-secondary')
+                   .addClass(newStatus === 'active' ? 'btn-success' : 'btn-secondary');
+            } else {
+                alert(res.message || 'Error updating status.');
+            }
+        },
+        error: function() {
+            alert('AJAX error. Could not update status.');
+        }
+    });
+});
 
             // ================== RESET MODAL ===================
             function resetStudentModal(activeGrade) {

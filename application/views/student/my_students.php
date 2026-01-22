@@ -474,32 +474,32 @@ $('.tab-pane').each(function() {
 
 
             // Toggle Status Button
-$(document).on('click', '.toggleStatusBtn', function() {
-    let btn = $(this);
-    let studentId = btn.data('id');
-    let currentStatus = btn.data('status');
-    let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            $(document).on('click', '.toggleStatusBtn', function() {
+                let btn = $(this);
+                let studentId = btn.data('id');
+                let currentStatus = btn.data('status');
+                let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 
-    $.ajax({
-        url: "<?= site_url('StudentController/toggle_status'); ?>",
-        type: "POST",
-        data: { id: studentId, status: newStatus },
-        success: function(response) {
-            let res = JSON.parse(response);
-            if (res.status === 'success') {
-                btn.data('status', newStatus);
-                btn.text(newStatus === 'active' ? 'Active' : 'Inactive');
-                btn.removeClass('btn-success btn-secondary')
-                   .addClass(newStatus === 'active' ? 'btn-success' : 'btn-secondary');
-            } else {
-                alert(res.message || 'Error updating status.');
-            }
-        },
-        error: function() {
-            alert('AJAX error. Could not update status.');
-        }
-    });
-});
+                $.ajax({
+                    url: "<?= site_url('StudentController/toggle_status'); ?>",
+                    type: "POST",
+                    data: { id: studentId, status: newStatus },
+                    success: function(response) {
+                        let res = JSON.parse(response);
+                        if (res.status === 'success') {
+                            btn.data('status', newStatus);
+                            btn.text(newStatus === 'active' ? 'Active' : 'Inactive');
+                            btn.removeClass('btn-success btn-outline-secondary')
+                            .addClass(newStatus === 'active' ? 'btn-outline-success' : 'btn-secondary');
+                        } else {
+                            alert(res.message || 'Error updating status.');
+                        }
+                    },
+                    error: function() {
+                        alert('AJAX error. Could not update status.');
+                    }
+                });
+            });
 
             // ================== RESET MODAL ===================
             function resetStudentModal(activeGrade) {

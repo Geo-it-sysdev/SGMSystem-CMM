@@ -400,37 +400,45 @@ $('.tab-pane').each(function() {
             },
             { data: 'section' },
             { data: 'grade_level' },
-            {
-                data: null,
-                render: function(data) {
-                    let buttons = '';
-                    let userType = "<?= $this->session->userdata('user_type'); ?>";
-                    let currentUser = <?= $this->session->userdata('po_user'); ?>;
+           {
+    data: null,
+    render: function (data) {
+        let buttons = '';
+        let userType = "<?= $this->session->userdata('user_type'); ?>";
+        let currentUser = <?= (int) $this->session->userdata('po_user'); ?>;
 
-                    // Edit/Delete buttons
-                    if (['Principal', 'Guidance Counselor', 'Registrar'].includes(userType) || data.user_id == currentUser) {
-                        buttons += `
-                            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                <i class="bx bx-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                <i class="bx bx-trash"></i> Delete
-                            </button>
-                        `;
-                    }
+        // Edit / Delete buttons
+        if (['Principal', 'Guidance Counselor', 'Registrar'].includes(userType) || data.user_id == currentUser) {
+            buttons += `
+                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                    <i class="bx bx-edit"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                    <i class="bx bx-trash"></i> Delete
+                </button>
+            `;
+        }
 
-                    // Activate/Deactivate button
-                    let statusClass = data.status === 'active' ? 'btn-outline-success' : 'btn-outline-secondary';
-                    let statusText = data.status === 'active' ? 'Active' : 'Inactive';
-                    buttons += `
-                        <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
-                            ${statusText}
-                        </button>
-                    `;
+        // Status button (Active / Inactive)
+        let isActive = data.status === 'active';
+        let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
+        let statusText  = isActive ? 'Active' : 'Inactive';
+        let statusIcon  = isActive ? 'bx-check-circle' : 'bx-x-circle';
 
-                    return buttons;
-                }
-            }
+        buttons += `
+            <button
+                class="btn btn-sm ${statusClass} toggleStatusBtn"
+                data-id="${data.id}"
+                data-status="${data.status}"
+            >
+                <i class="bx ${statusIcon}"></i> ${statusText}
+            </button>
+        `;
+
+        return buttons;
+    }
+}
+
         ],
         responsive: true,
         paging: true,
@@ -474,7 +482,7 @@ $('.tab-pane').each(function() {
 
 
             // Toggle Status Button
-           $(document).on('click', '.toggleStatusBtn', function () {
+        $(document).on('click', '.toggleStatusBtn', function () {
     let btn = $(this);
     let studentId = btn.data('id');
     let currentStatus = btn.data('status');
@@ -483,18 +491,29 @@ $('.tab-pane').each(function() {
     $.ajax({
         url: "<?= site_url('StudentController/toggle_status'); ?>",
         type: "POST",
-        data: { id: studentId, status: newStatus },
+        data: {
+            id: studentId,
+            status: newStatus
+        },
         success: function (response) {
             let res = JSON.parse(response);
 
             if (res.status === 'success') {
-                btn.data('status', newStatus);
-                btn.text(newStatus === 'active' ? 'Active' : 'Inactive');
+                let isActive = newStatus === 'active';
 
+                // Update data attribute
+                btn.data('status', newStatus);
+
+                // Update text + icon
+                btn.html(`
+                    <i class="bx ${isActive ? 'bx-check-circle' : 'bx-x-circle'}"></i>
+                    ${isActive ? 'Active' : 'Inactive'}
+                `);
+
+                // Update button class
                 btn.removeClass('btn-outline-success btn-outline-secondary')
-                   .addClass(newStatus === 'active'
-                        ? 'btn-outline-success'
-                        : 'btn-outline-secondary');
+                   .addClass(isActive ? 'btn-outline-success' : 'btn-outline-secondary');
+
             } else {
                 alert(res.message || 'Error updating status.');
             }

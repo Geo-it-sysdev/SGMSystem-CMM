@@ -411,15 +411,15 @@ $('.tab-pane').each(function() {
         if (['Principal', 'Guidance Counselor', 'Registrar'].includes(userType) || data.user_id == currentUser) {
             buttons += `
                 <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                    <i class="bx bx-edit"></i> Edit
+                    <i class="bx bx-edit me-1"></i> Edit
                 </button>
                 <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                    <i class="bx bx-trash"></i> Delete
+                    <i class="bx bx-trash me-1"></i> Delete
                 </button>
             `;
         }
 
-        // Status button (Active / Inactive)
+        // Status button
         let isActive = data.status === 'active';
         let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
         let statusText  = isActive ? 'Active' : 'Inactive';
@@ -431,7 +431,7 @@ $('.tab-pane').each(function() {
                 data-id="${data.id}"
                 data-status="${data.status}"
             >
-                <i class="bx ${statusIcon}"></i> ${statusText}
+                <i class="bx ${statusIcon} me-1"></i>${statusText}
             </button>
         `;
 
@@ -482,7 +482,7 @@ $('.tab-pane').each(function() {
 
 
             // Toggle Status Button
-        $(document).on('click', '.toggleStatusBtn', function () {
+         $(document).on('click', '.toggleStatusBtn', function () {
     let btn = $(this);
     let studentId = btn.data('id');
     let currentStatus = btn.data('status');
@@ -501,19 +501,15 @@ $('.tab-pane').each(function() {
             if (res.status === 'success') {
                 let isActive = newStatus === 'active';
 
-                // Update data attribute
                 btn.data('status', newStatus);
 
-                // Update text + icon
                 btn.html(`
-                    <i class="bx ${isActive ? 'bx-check-circle' : 'bx-x-circle'}"></i>
+                    <i class="bx ${isActive ? 'bx-check-circle' : 'bx-x-circle'} me-1"></i>
                     ${isActive ? 'Active' : 'Inactive'}
                 `);
 
-                // Update button class
                 btn.removeClass('btn-outline-success btn-outline-secondary')
                    .addClass(isActive ? 'btn-outline-success' : 'btn-outline-secondary');
-
             } else {
                 alert(res.message || 'Error updating status.');
             }

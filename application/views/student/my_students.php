@@ -110,11 +110,9 @@
                                                     <div class="flex-shrink-0">
                                                        <div class="form-check form-switch form-switch-right form-switch-md">
     <label for="inactive-active" class="form-label">Show Inactive User</label>
-    <input
-        class="form-check-input code-switcher"
+    <input class="form-check-input code-switcher"
         type="checkbox"
-        id="inactive-active"
-    />
+        id="inactive-active" />
 </div>
 
                                                     </div>
@@ -376,7 +374,7 @@ $('.tab-pane').each(function () {
             type: "GET",
             data: function (d) {
                 d.grade_level = gradeLevel;
-                d.status = tabPane.find('.status-filter').is(':checked')
+                 d.status = tabPane.find('#inactive-active').is(':checked')
                     ? 'inactive'
                     : 'active';
             }
@@ -440,13 +438,16 @@ $('.tab-pane').each(function () {
 
 
 $(document).on('change', '#inactive-active', function () {
+
     let tabPane = $(this).closest('.tab-pane');
     let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
     if (tables[gradeLevel]) {
         tables[gradeLevel].ajax.reload();
     }
+
 });
+
 
 
 

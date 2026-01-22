@@ -11,23 +11,33 @@ class StudentModel extends CI_Model {
 
     //    Add / edit / delete - student
 
-    public function get_all_students($grade_level = null, $section = null) {
-        $user_id = $this->session->userdata('po_user');
-        $user_type = $this->session->userdata('user_type');
+public function get_all_students($grade_level = null, $section = null, $status = 'active')
+{
+    $user_id   = $this->session->userdata('po_user');
+    $user_type = $this->session->userdata('user_type');
 
-        $this->db->select('id, fullname, age, gender, section, grade_level, user_id, status')
-                 ->from('tbl_students');
+    $this->db->select('id, fullname, age, gender, section, grade_level, user_id, status')
+             ->from('tbl_students');
 
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor'])) {
-            if (!$user_id) return [];
-            $this->db->where('user_id', $user_id);
-        }
-
-        if ($grade_level) $this->db->where('grade_level', $grade_level);
-        if ($section) $this->db->where('section', $section);
-
-        return $this->db->get()->result();
+    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor'])) {
+        if (!$user_id) return [];
+        $this->db->where('user_id', $user_id);
     }
+
+    if ($grade_level) {
+        $this->db->where('grade_level', $grade_level);
+    }
+
+    if ($section) {
+        $this->db->where('section', $section);
+    }
+
+    // ⭐ DEFAULT ACTIVE
+    $this->db->where('status', $status ?: 'active');
+
+    return $this->db->get()->result();
+}
+
 
     
 

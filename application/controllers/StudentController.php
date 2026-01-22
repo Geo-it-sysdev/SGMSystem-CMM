@@ -216,7 +216,7 @@ public function fetch_students()
 
 
     // ✅ Save Grade
-  public function save_grade_bulk()
+public function save_grade_bulk()
 {
     $activity_type_id = $this->input->post('activity_type_id');
     $section = $this->input->post('section');
@@ -227,29 +227,32 @@ public function fetch_students()
         return;
     }
 
+    // Get activity header and overall score
     $activity = $this->db->where('id', $activity_type_id)
-                        ->get('tbl_activities_header')
-                        ->row();
+                         ->get('tbl_activities_header')
+                         ->row();
     if (!$activity) {
         echo json_encode(['status' => 'error', 'message' => 'Activity not found.']);
         return;
     }
-    $overall = $activity->overall;
+    $overall = (int)$activity->overall;
 
     foreach ($scores as $student_id => $score) {
-
+        $score = trim($score);
         if ($score === "" || $score === null) {
-            continue; 
+            continue; // skip empty scores
         }
 
+        $score = (int)$score;
         if ($score > $overall) {
             echo json_encode([
                 'status' => 'error',
-                'message' => "Score for student exceeds the maximum allowed ({$overall})."
+                'message' => "Score for a student exceeds the maximum allowed ({$overall})."
             ]);
             return;
         }
 
+        // Skip if already exists
         $exist = $this->db->where([
             'activities_id_header' => $activity_type_id,
             'student_id' => $student_id
@@ -259,6 +262,7 @@ public function fetch_students()
             continue; 
         }
 
+        // Get student details
         $student = $this->db->where('id', $student_id)
                             ->get('tbl_students')
                             ->row();
@@ -270,15 +274,16 @@ public function fetch_students()
             'student_name' => $student->fullname,
             'section' => $student->section,
             'score' => $score,
-            'remarks' => null, // optional, you can fill if needed
-            'date_created' => date('Y-m-d H:i:s')
+            'remarks' => null,
+            'date_created' => date('Y-m-d') // only date, matches table
         ];
 
         $this->db->insert('tbl_activities_lines', $data);
     }
 
-    echo json_encode(['status' => 'success']);
+    echo json_encode(['status' => 'success', 'message' => 'Scores saved successfully.']);
 }
+
 
 
 

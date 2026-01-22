@@ -52,17 +52,14 @@ class AuthController extends CI_Controller {
     
             // Verify password
             if (password_verify($password, $user->password)) {
-                // ✅ Store base session data
                 $this->session->set_userdata("po_user", $user->id);
     
-                // Fetch user details (including user_type and grades)
                 $userDetails = $this->AuthModel->get_user_by_user_id($user->id);
     
                 if ($userDetails) {
-                    // ✅ Store all necessary data in session
                     $this->session->set_userdata('user_full_name', $userDetails->full_name);
                     $this->session->set_userdata('user_type', $userDetails->user_type);
-                    $this->session->set_userdata('grades', $userDetails->grades); // example: "Grade 7, Grade 8"
+                    $this->session->set_userdata('grades', $userDetails->grades); 
     
                     // Greeting logic
                     date_default_timezone_set('Asia/Manila');
@@ -79,7 +76,6 @@ class AuthController extends CI_Controller {
     
                     $this->session->set_flashdata('greeting', "$greeting, {$userDetails->full_name}");
     
-                    // Continue to main dashboard or check logs
                     $this->check_log();
                 } else {
                     $this->session->set_flashdata('swal_error', 'User details not found');

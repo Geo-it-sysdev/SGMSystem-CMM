@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+/** @property CI_DB_query_builder $db */
 class AdminController extends CI_Controller {
 
 	public function __construct() {
@@ -14,11 +15,6 @@ class AdminController extends CI_Controller {
 
     }
     
-
-   
-
-    
-   
 
 
      //=============== User profile function ( view profile, update username & password )=====================\\

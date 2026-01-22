@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+/** @property CI_DB_query_builder $db */
 class GradingSystem extends CI_Controller {
 
 	public function __construct() {

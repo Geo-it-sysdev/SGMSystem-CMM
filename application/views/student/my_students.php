@@ -386,9 +386,9 @@
                             data: 'gender',
                             render: function(data) {
                                 if (data === 'Male')
-                                return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
+                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
                                 if (data === 'Female')
-                                return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
+                                    return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
                                 return data;
                             }
                         },
@@ -410,7 +410,7 @@
                                 // Edit / Delete buttons
                                 if (['Principal', 'Guidance Counselor', 'Registrar']
                                     .includes(userType) || data.user_id == currentUser
-                                    ) {
+                                ) {
                                     buttons += `
                                 <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
                                     <i class="bx bx-edit me-1"></i>Edit
@@ -497,6 +497,9 @@
                 let currentStatus = btn.data('status');
                 let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 
+                // Get the grade level of the table (adjust based on your HTML)
+                let gradeLevel = btn.data('grade'); // make sure you have data-grade on the button
+
                 $.ajax({
                     url: "<?= site_url('StudentController/toggle_status'); ?>",
                     type: "POST",
@@ -520,6 +523,12 @@
                             btn.removeClass('btn-outline-success btn-outline-secondary')
                                 .addClass(isActive ? 'btn-outline-success' :
                                     'btn-outline-secondary');
+
+                            // Reload the DataTable for this grade
+                            if (tables[gradeLevel]) {
+                                tables[gradeLevel].ajax.reload(null,
+                                false); // false keeps current paging
+                            }
                         } else {
                             alert(res.message || 'Error updating status.');
                         }
@@ -529,6 +538,7 @@
                     }
                 });
             });
+
 
 
             // ================== RESET MODAL ===================

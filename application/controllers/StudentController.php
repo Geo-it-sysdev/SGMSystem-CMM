@@ -18,7 +18,7 @@ public function fetch_students()
 {
     $grade_level = $this->input->get('grade_level');
     $section     = $this->input->get('section');
-    $status      = $this->input->get('status'); // active | inactive
+     $status      = $this->input->get('status'); // active | inactive
 
     $students = $this->StudentModel->get_all_students(
         $grade_level,

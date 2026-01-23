@@ -782,7 +782,7 @@ public function update_student()
 
 
     // Fetch students by section
-  public function fetch_students_by_section() {
+public function fetch_students_by_section() {
     $section   = $this->input->post('section');
     $user_id   = $this->session->userdata('po_user');     
     $user_type = $this->session->userdata('user_type');   
@@ -794,7 +794,7 @@ public function update_student()
     $this->db->join('tbl_students AS d', 'd.id = b.student_id', 'left');
     $this->db->where('d.status', 'active'); 
 
-    // Only filter by user_id if the user is NOT in the privileged list
+    // Only restrict for non-privileged users
     $privileged_roles = ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'];
     if (!in_array($user_type, $privileged_roles)) {
         $this->db->where('a.user_id', $user_id);

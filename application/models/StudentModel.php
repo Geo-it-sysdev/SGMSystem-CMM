@@ -43,24 +43,21 @@ public function get_all_students($grade_level = null, $section = null, $status =
     return $this->db->get()->result();
 }
 
+public function get_sections_by_grade() {
+    $grade_level = $this->input->get('grade_level');
+    $user_id = $this->session->userdata('po_user');
 
+    $this->db->select('DISTINCT section');
+    $this->db->from('tbl_students');
+    $this->db->where('user_id', $user_id);
+    $this->db->where('grade_level', $grade_level);
+    $query = $this->db->get()->result();
 
-    
+    $sections = array_map(function($row){ return $row->section; }, $query);
 
-    public function get_sections_by_grade() {
-        $grade_level = $this->input->get('grade_level');
-        $user_id = $this->session->userdata('po_user');
-    
-        $this->db->select('DISTINCT section');
-        $this->db->from('tbl_students');
-        $this->db->where('user_id', $user_id);
-        $this->db->where('grade_level', $grade_level);
-        $query = $this->db->get()->result();
-    
-        $sections = array_map(function($row){ return $row->section; }, $query);
-    
-        echo json_encode($sections);
-    }
+    echo json_encode($sections);
+}
+
 
     public function get_all_sections()
     {

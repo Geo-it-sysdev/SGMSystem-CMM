@@ -169,7 +169,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-2">
                                     <label>Grade Level</label>
-                                    <select name="grade_level" id="grade_level" class="form-control" required readonly>
+                                    <select name="grade_level" id="grade_level" class="form-control" required>
                                         <option value="" selected disabled>-- Select Grade Level --</option>
                                     </select>
                                 </div>
@@ -593,24 +593,26 @@
                     `<label>Activity Type</label><select name="activity_type" id="activity_type" class="form-select" required>${options}</select>`
                 );
 
-                // Fetch grades
-                $.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>", function(grades) {
-                    let gradeSelect = $('#grade_level');
-                    gradeSelect.empty().append(
-                        '<option value="" disabled>-- Select Grade Level --</option>'
-                    );
+// Fetch grades
+$.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>", function(grades) {
+    let gradeSelect = $('#grade_level');
+    gradeSelect.empty(); // remove old options
 
-                    // Determine default grade (active tab)
-                    let defaultGrade = $('.tab-pane.show.active').attr('id'); // e.g., "grade7-student"
-                    defaultGrade = defaultGrade ? defaultGrade.replace('-student', '') : '';
+    // Determine default grade (active tab)
+    let defaultGrade = $('.tab-pane.show.active').attr('id'); // e.g., "grade7-student"
+    defaultGrade = defaultGrade ? defaultGrade.replace('-student', '') : '';
 
-                    grades.forEach(g => {
-                        // Convert grade to lowercase & remove spaces for comparison
-                        let gradeId = g.toLowerCase().replace(/\s+/g,'');
-                        let selected = (gradeId === defaultGrade) ? 'selected' : '';
-                        gradeSelect.append('<option value="' + g + '" ' + selected + '>' + g + '</option>');
-                    });
-                });
+    grades.forEach(g => {
+        // Convert grade to lowercase & remove spaces for comparison
+        let gradeId = g.toLowerCase().replace(/\s+/g,'');
+        let selected = (gradeId === defaultGrade) ? 'selected' : '';
+        gradeSelect.append('<option value="' + g + '" ' + selected + '>' + g + '</option>');
+    });
+
+    // Disable the select so user cannot change it
+    gradeSelect.prop('disabled', true);
+});
+
 
 
                 // Fetch subjects

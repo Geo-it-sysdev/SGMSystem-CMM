@@ -546,7 +546,6 @@ if (isset($user_id)) {
             error: function() { alert('AJAX error. Could not update status.'); }
         });
     });
-});
 
 
 

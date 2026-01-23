@@ -72,11 +72,11 @@ if (isset($user_id)) {
                                         <?php
                             $all_grades = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
                             $is_all = in_array('All', $grade_levels);
-                            $active_set = false; // Track first active tab
+                            $active_set = false; 
 
                             foreach ($all_grades as $grade):
                                 if ($is_all || in_array($grade, $grade_levels)):
-                                    $grade_id = strtolower(str_replace(' ', '', $grade)); // e.g., grade7
+                                    $grade_id = strtolower(str_replace(' ', '', $grade)); 
                                     $active_class = (!$active_set) ? 'active' : '';
                                     $active_set = true;
                             ?>
@@ -196,10 +196,6 @@ if (isset($user_id)) {
 
 
 
-
-
-
-
         <!-- Single Modal for Add/Edit Student -->
         <div class="modal fade" id="studentModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
@@ -245,7 +241,6 @@ if (isset($user_id)) {
                                     </select>
                                 </div>
 
-                                <!-- Grade Level Dropdown (disabled for display) -->
                                 <div class="col-md-6 mb-2">
                                     <label>Grade Level</label>
                                     <select id="grade_level_display" class="form-control" disabled>
@@ -256,13 +251,8 @@ if (isset($user_id)) {
                                         <?php endforeach; ?>
                                         <?php endif; ?>
                                     </select>
-                                    <!-- Hidden input to actually submit grade_level -->
                                     <input type="hidden" name="grade_level" id="grade_level">
                                 </div>
-
-
-
-
 
                             </div>
                         </div>
@@ -658,14 +648,10 @@ if (isset($user_id)) {
 
 
 
-
-
-
-
             // ================== HELPER: SET GRADE LEVEL ===================
             function setGradeLevel(value) {
-                $('#grade_level_display').val(value); // visible
-                $('#grade_level').val(value); // hidden for form submission
+                $('#grade_level_display').val(value);
+                $('#grade_level').val(value);
             }
 
             // ================== INITIAL TAB SETUP ===================
@@ -780,7 +766,7 @@ if (isset($user_id)) {
                 $.ajax({
                     url: url,
                     type: "POST",
-                    data: $(this).serialize(), // grade_level now included via hidden input
+                    data: $(this).serialize(),
                     dataType: "json",
                     success: function(res) {
                         $('#studentModal').modal('hide');

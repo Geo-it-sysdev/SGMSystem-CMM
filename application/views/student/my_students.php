@@ -108,8 +108,9 @@ if (isset($user_id)) {
 
 
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
-                                                    <!-- Left side: Add Button -->
-                                                    <div>
+
+                                                    <!-- Left side: Add Button + Filter Dropdown -->
+                                                    <div class="d-flex align-items-center gap-2">
                                                         <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill"
@@ -117,39 +118,35 @@ if (isset($user_id)) {
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
                                                         <?php endif; ?>
+
+                                                        <div class="dropdown">
+                                                            <button
+                                                                class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                                type="button" id="filterDropdown_<?= $grade_id ?>"
+                                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <i class="ri-filter-line align-bottom me-1"></i> Filter
+                                                                Options
+                                                            </button>
+                                                            <ul class="dropdown-menu p-3"
+                                                                aria-labelledby="filterDropdown_<?= $grade_id ?>">
+                                                                <?php
+                                                                $sections = $this->StudentModel->get_all_students($grade, null, 'active');
+                                                                $unique_sections = array_unique(array_column($sections, 'section'));
+                                                                foreach ($unique_sections as $sec):
+                                                                ?>
+                                                                <li class="form-check">
+                                                                    <input class="form-check-input filter-check"
+                                                                        type="checkbox" value="<?= $sec ?>"
+                                                                        id="<?= $grade_id ?>_chk_<?= $sec ?>" checked>
+                                                                    <label class="form-check-label"
+                                                                        for="<?= $grade_id ?>_chk_<?= $sec ?>">
+                                                                         <?= $sec ?>
+                                                                    </label>
+                                                                </li>
+                                                                <?php endforeach; ?>
+                                                            </ul>
+                                                        </div>
                                                     </div>
-
-                                                    <!-- Dropdown Filter -->
-                                                    <div class="dropdown mb-3">
-                                                        <button
-                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button" id="filterDropdown_<?= $grade_id ?>"
-                                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                                            Filter Options
-                                                        </button>
-                                                        <ul class="dropdown-menu p-3"
-                                                            aria-labelledby="filterDropdown_<?= $grade_id ?>">
-                                                            <?php
-                    // Get sections for this grade dynamically
-                    $sections = $this->StudentModel->get_all_students($grade, null, 'active');
-                    $unique_sections = array_unique(array_column($sections, 'section'));
-                    foreach ($unique_sections as $sec):
-                    ?>
-                                                            <li class="form-check">
-                                                                <input class="form-check-input filter-check"
-                                                                    type="checkbox" value="<?= $sec ?>"
-                                                                    id="<?= $grade_id ?>_chk_<?= $sec ?>"
-                                                                    <?= 'checked' ?>>
-
-                                                                <label class="form-check-label"
-                                                                    for="<?= $grade_id ?>_chk_<?= $sec ?>">
-                                                                    Section <?= $sec ?>
-                                                                </label>
-                                                            </li>
-                                                            <?php endforeach; ?>
-                                                        </ul>
-                                                    </div>
-
 
                                                     <!-- Right side: Switch -->
                                                     <div class="flex-shrink-0">
@@ -161,7 +158,9 @@ if (isset($user_id)) {
                                                                 type="checkbox" id="student_history" />
                                                         </div>
                                                     </div>
+
                                                 </div>
+
 
                                                 <table id="List_Student_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle"
@@ -432,7 +431,7 @@ if (isset($user_id)) {
                             d.status = tabPane.find('#student_history').is(':checked') ?
                                 'inactive' : 'active';
                             d.section = selectedSections.length ? selectedSections :
-                            null; // send sections
+                                null; // send sections
                         }
                     },
                     columns: [{

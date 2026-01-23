@@ -396,6 +396,37 @@ public function update_student()
         echo json_encode(['data'=>$data]);
     }
 
+
+      public function count_incomplete_grades()
+    {
+        $activity_id = $this->input->post('activity_id');
+
+        $this->db->select('COUNT(*) AS incomplete_count');
+        $this->db->from('tbl_activities_lines AS b');
+        $this->db->where('b.activities_id_header', $activity_id);
+        $this->db->where('b.overall IS NULL');
+        $this->db->or_where('b.overall', '');
+        $query = $this->db->get();
+        $result = $query->row();
+
+        echo json_encode(['incomplete_count' => $result->incomplete_count]);
+    }
+
+    // Count completed grades for a specific activity
+    public function count_completed_grades()
+    {
+        $activity_id = $this->input->post('activity_id');
+
+        $this->db->select('COUNT(*) AS completed_count');
+        $this->db->from('tbl_activities_lines AS b');
+        $this->db->where('b.activities_id_header', $activity_id);
+        $this->db->where('b.overall IS NOT NULL');
+        $this->db->where('b.overall !=', '');
+        $query = $this->db->get();
+        $result = $query->row();
+
+        echo json_encode(['completed_count' => $result->completed_count]);
+    }
     public function save_activity() {
         $id = $this->input->post('id');
         $user_id = $this->session->userdata("po_user");

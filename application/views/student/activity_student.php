@@ -531,36 +531,61 @@
                                 return `<span class="badge ${bgClass}">${data} ${percentage}</span>`;
                             }
                         },
-                        <?php if ($is_admin || $grade_levels): ?> {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            render: function(data, type, row) {
-                                return `
-                        <button class="btn btn-sm btn-outline-success tagBtn"
-                            data-id="${row.id}"
-                            data-subject="${row.subject}"
-                            data-activity_type="${row.activity_type}"
-                            data-description="${row.description}"
-                            data-activity_date="${row.activity_date}"
-                            data-overall="${row.overall}"
-                            data-bs-toggle="modal"
-                            data-bs-target="#tagModal">
-                            <i class="bi bi-tag-fill"></i> Add Grade
-                        </button>
-                        <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                        <button class="btn btn-sm btn-outline-primary editBtn" data-id="${row.id}">
-                            <i class="ri-edit-line"></i> Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${row.id}">
-                            <i class="ri-delete-bin-line"></i> Delete
-                        </button>
-                        <?php endif; ?>
+                       <?php if ($is_admin || $grade_levels): ?> {
+    data: null,
+    orderable: false,
+    searchable: false,
+    render: function(data, type, row) {
 
-                    `;
-                            }
-                        }
-                        <?php endif; ?>
+        // Check if the grade is missing
+        let btnClass = 'btn-outline-success'; // default green
+        let alertBadge = '';
+
+        if (!row.overall || row.overall === '') {
+            btnClass = 'btn-outline-danger'; // highlight incomplete
+            alertBadge = `
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger p-1">
+                    <span class="visually-hidden">Incomplete grade</span>
+                </span>
+            `;
+        }
+
+        // Wrap the Add Grade button in a relative container to position the badge
+        let addGradeButton = `
+            <div class="position-relative d-inline-block me-1">
+                <button class="btn btn-sm ${btnClass} tagBtn"
+                    data-id="${row.id}"
+                    data-subject="${row.subject}"
+                    data-activity_type="${row.activity_type}"
+                    data-description="${row.description}"
+                    data-activity_date="${row.activity_date}"
+                    data-overall="${row.overall}"
+                    data-bs-toggle="modal"
+                    data-bs-target="#tagModal">
+                    <i class="bi bi-tag-fill"></i> Add Grade
+                </button>
+                ${alertBadge}
+            </div>
+        `;
+
+        // Include Edit/Delete buttons for teachers
+        let teacherButtons = '';
+        <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+        teacherButtons = `
+            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${row.id}">
+                <i class="ri-edit-line"></i> Edit
+            </button>
+            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${row.id}">
+                <i class="ri-delete-bin-line"></i> Delete
+            </button>
+        `;
+        <?php endif; ?>
+
+        return addGradeButton + teacherButtons;
+    }
+}
+<?php endif; ?>
+
                     ]
                 });
 
@@ -569,6 +594,49 @@
             });
 
             <?php if ($is_admin || $grade_levels): ?>
+
+
+// Function to update a row's Add Grade button badge
+function updateAddGradeBadge(activity_id, table) {
+    $.ajax({
+        url: "<?= site_url('StudentController/fetch_activitie'); ?>",
+        type: 'POST',
+        dataType: 'json',
+        data: { grade_level: table.grade_level }, // optional filter
+        success: function(response) {
+            // Loop through all rows
+            table.rows().every(function() {
+                let rowData = this.data();
+                let $cell = $(this.node()).find('.tagBtn').closest('.position-relative');
+
+                // Remove existing badge
+                $cell.find('.badge').remove();
+
+                // Add badge if grade not added
+                if (!rowData.overall || rowData.overall === '') {
+                    $cell.append(`
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger p-1">
+                            <span class="visually-hidden">Incomplete grade</span>
+                        </span>
+                    `);
+                    $cell.find('.tagBtn').removeClass('btn-outline-success').addClass('btn-outline-danger');
+                } else {
+                    $cell.find('.tagBtn').removeClass('btn-outline-danger').addClass('btn-outline-success');
+                }
+            });
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
 
             // Add Activity button
             $('.addActivityBtn').click(function() {

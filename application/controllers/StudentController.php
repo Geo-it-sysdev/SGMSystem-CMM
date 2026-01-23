@@ -24,7 +24,6 @@ class StudentController extends CI_Controller {
             null, 
             $status
         );
-
         echo json_encode(['data' => $students]);
     }
 
@@ -77,7 +76,6 @@ class StudentController extends CI_Controller {
         $this->StudentModel->insert_student($data);
         echo json_encode(['status' => 'success']);
     }
-
 
     public function update_student()
     {
@@ -143,8 +141,6 @@ class StudentController extends CI_Controller {
         $query = $this->db->get();
         echo json_encode($query->result());
     }
-    
-
 
     public function add_activity() {
         $data = array(
@@ -191,7 +187,6 @@ class StudentController extends CI_Controller {
         $activity_type_id = $this->input->get('activity_type_id');
         $user_id = $this->session->userdata('po_user'); 
 
-        // Get already graded students for this activity (filter by teacher)
         $graded = $this->db->select('al.student_id')
                            ->from('tbl_activities_lines al')
                            ->join('tbl_students s', 's.id = al.student_id')
@@ -202,7 +197,6 @@ class StudentController extends CI_Controller {
 
         $graded_ids = array_column($graded, 'student_id');
 
-        // Get all students in the section for this teacher excluding graded ones
         $this->db->select('id, fullname, section, gender')
                  ->from('tbl_students')
                  ->where('section', $section)
@@ -254,7 +248,6 @@ class StudentController extends CI_Controller {
                 return;
             }
 
-            // Skip if already exists
             $exist = $this->db->where([
                 'activities_id_header' => $activity_type_id,
                 'student_id' => $student_id
@@ -262,7 +255,6 @@ class StudentController extends CI_Controller {
 
             if ($exist) continue;
 
-            // Get student details
             $student = $this->db->where('id', $student_id)
                                 ->get('tbl_students')
                                 ->row();
@@ -275,7 +267,7 @@ class StudentController extends CI_Controller {
                 'section' => $student->section,
                 'score' => $score,
                 'remarks' => null,
-                'date_created' => date('Y-m-d') // match DATE type
+                'date_created' => date('Y-m-d') 
             ];
 
             $this->db->insert('tbl_activities_lines', $data);

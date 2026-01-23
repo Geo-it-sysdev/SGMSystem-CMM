@@ -10,42 +10,36 @@ class StudentModel extends CI_Model {
    }
 
     //    Add / edit / delete - student
+    public function get_all_students($grade_level = null, $section = null, $status = 'active')
+    {
+        $user_id   = $this->session->userdata('po_user');
+        $user_type = $this->session->userdata('user_type');
 
-public function get_all_students($grade_level = null, $section = null, $status = 'active')
-{
-    $user_id   = $this->session->userdata('po_user');
-    $user_type = $this->session->userdata('user_type');
+        $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at AS school_year, status')
+                ->from('tbl_students');
 
-    $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at AS school_year, status')
-             ->from('tbl_students');
+        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor','Admin'])) {
+            if (!$user_id) return [];
+            $this->db->where('user_id', $user_id);
+        }
 
-    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor','Admin'])) {
-        if (!$user_id) return [];
-        $this->db->where('user_id', $user_id);
+        if ($grade_level) {
+            $this->db->where('grade_level', $grade_level);
+        }
+
+        if ($section) {
+            if (is_array($section)) {
+                $this->db->where_in('section', $section);
+            } else {
+                $this->db->where('section', $section);
+            }
+        }
+
+        $this->db->where('status', $status ?: 'active');
+        $this->db->group_by('fullname');
+
+        return $this->db->get()->result();
     }
-
-    if ($grade_level) {
-        $this->db->where('grade_level', $grade_level);
-    }
-
-   if ($section) {
-    if (is_array($section)) {
-        $this->db->where_in('section', $section);
-    } else {
-        $this->db->where('section', $section);
-    }
-}
-
-
-
-    $this->db->where('status', $status ?: 'active');
-    $this->db->group_by('fullname');
-
-    return $this->db->get()->result();
-}
-
-
-
     
 
     public function get_sections_by_grade() {

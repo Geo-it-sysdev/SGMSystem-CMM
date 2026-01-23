@@ -393,7 +393,6 @@ if (isset($user_id)) {
 
             let tables = {};
 
-            // Initialize DataTables for each tab
             $('.tab-pane').each(function() {
                 let tabPane = $(this);
                 let tableEl = tabPane.find('table');
@@ -403,12 +402,12 @@ if (isset($user_id)) {
                     ajax: {
                         url: "<?= site_url('StudentController/fetch_students'); ?>",
                         type: "GET",
-                        data: function(d) {
-                            d.grade_level = gradeLevel;
-                            d.status = tabPane.find('#student_history').is(':checked') ?
-                                'inactive' : 'active';
+                        dataSrc: function(json) {
+                            console.log('AJAX DATA:', json.data); // 🔍 DEBUG
+                            return json.data;
                         }
                     },
+
                     columns: [{
                             data: 'fullname'
                         },
@@ -416,130 +415,54 @@ if (isset($user_id)) {
                             data: 'age'
                         },
                         {
-                            data: 'gender',
-                            render: function(data) {
-                                if (data === 'Male')
-                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
-                                if (data === 'Female')
-                                    return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
-                                return data;
-                            }
+                            data: 'gender'
                         },
                         {
                             data: 'section'
-                        },
+                        }, // ⭐ THIS IS THE SOURCE
                         {
                             data: 'grade_level'
                         },
                         {
-                            data: 'school_year',
-                            render: function(data) {
-                                if (!data) return '';
-                                return new Date(data).getFullYear();
-                            }
+                            data: 'school_year'
                         },
                         {
-                            data: 'status',
-                            render: function(data, type, row) {
-                                if (data === 'active') {
-                                    return '<span class="badge bg-success">Active</span>';
-                                } else if (data === 'inactive') {
-                                    return '<span class="badge bg-secondary">Inactive</span>';
-                                }
-                                return data;
-                            }
-                        },
-                        <?php if ($user_type === 'Teacher'): ?> {
-                            data: null,
-                            render: function(data) {
-                                let buttons = '';
-                                let userType =
-                                    "<?= $this->session->userdata('user_type'); ?>";
-                                let currentUser =
-                                    <?= (int) $this->session->userdata('po_user'); ?>;
-
-                                // Edit / Delete buttons
-                                if (['Principal', 'Guidance Counselor', 'Registrar',
-                                        'Admin'
-                                    ]
-                                    .includes(userType) || data.user_id == currentUser
-                                ) {
-                                    buttons += `
-                                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                    <i class="bx bx-edit me-1"></i>Edit
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                    <i class="bx bx-trash me-1"></i>Delete
-                                </button>
-                            `;
-                                }
-
-                                // Status button
-                                let isActive = data.status === 'active';
-                                let statusClass = isActive ? 'btn-outline-success' :
-                                    'btn-outline-secondary';
-                                let statusText = isActive ? 'Active' : 'Inactive';
-                                let statusIcon = isActive ? 'bx-check-circle' :
-                                    'bx-x-circle';
-
-                                buttons += `
-                            <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
-                                <i class="bx ${statusIcon} me-1"></i>${statusText}
-                            </button>
-                        `;
-
-                                return buttons;
-                            }
+                            data: 'status'
                         }
-                        <?php endif; ?>
-
                     ],
-                    responsive: true,
-                    paging: true,
-                    searching: true,
-                    ordering: true,
-                    info: true,
-                    processing: true,
-                    language: {
-                        search: '',
-                        searchPlaceholder: ' Search...',
-                        processing: '<div class="table-loader"></div>'
+
+                    initComplete: function() {
+                        let table = this.api();
+                        let sectionColumnIndex = 3;
+
+                        // GET UNIQUE SECTIONS
+                        let sections = table
+                            .column(sectionColumnIndex)
+                            .data()
+                            .unique()
+                            .sort();
+
+                        let sectionFilter = $('#sectionFilter');
+                        sectionFilter.empty();
+
+                        sections.each(function(section) {
+                            if (!section) return;
+
+                            sectionFilter.append(`
+                    <li class="form-check">
+                        <input class="form-check-input section-check"
+                            type="checkbox"
+                            value="${section}">
+                        <label class="form-check-label">
+                            ${section}
+                        </label>
+                    </li>
+                `);
+                        });
                     }
                 });
             });
 
-
-            let sectionColumnIndex = 3; // adjust if section column index changes
-
-            tables[gradeLevel].on('xhr.dt', function() {
-                let table = tables[gradeLevel];
-                let sectionFilter = $('#sectionFilter');
-
-                sectionFilter.empty();
-
-                // Get UNIQUE section values
-                let sections = table
-                    .column(sectionColumnIndex)
-                    .data()
-                    .unique()
-                    .sort();
-
-                sections.each(function(section) {
-                    if (!section) return;
-
-                    sectionFilter.append(`
-            <li class="form-check">
-                <input class="form-check-input section-check"
-                    type="checkbox"
-                    value="${section}"
-                    id="sec_${section}">
-                <label class="form-check-label" for="sec_${section}">
-                    ${section}
-                </label>
-            </li>
-        `);
-                });
-            });
 
 
 

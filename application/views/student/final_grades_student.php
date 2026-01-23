@@ -725,7 +725,7 @@ let finalGradesTableInstance = null;
 
 
             $('#finalGradesModal').on('hidden.bs.modal', function () {
-                if (isSwitchingModal) return; // ← DO NOT destroy when switching
+                if (isSwitchingModal) return; 
 
                 // Real close → clean up
                 if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
@@ -740,7 +740,6 @@ let finalGradesTableInstance = null;
 
                 $('#finalGradesModal').modal('show');
 
-                // Fix DataTable layout after modal reopens
                 setTimeout(() => {
                     if (finalGradesTableInstance) {
                         finalGradesTableInstance.columns.adjust().responsive.recalc();

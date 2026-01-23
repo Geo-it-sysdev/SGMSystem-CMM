@@ -583,10 +583,12 @@ public function update_student()
         $this->db->from('tbl_activities_header AS a');
         $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
         $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
+        $this->db->join('tbl_students AS d', 'd.id = b.student_id', 'left');
         $this->db->where('a.subject', $subject);
         $this->db->where('a.quarter', $quarter);
         $this->db->where('a.grade_level', $grade_level);
         $this->db->where('b.section', $section);
+        $this->db->where('d.status', 'active');
 
         // Only filter by user_id if the user is NOT Principal, Registrar, or Guidance Councilor
         if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {

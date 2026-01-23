@@ -111,7 +111,6 @@ if (isset($user_id)) {
 
                                                     <!-- Left side: Add Button + Filter Dropdown -->
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <!-- Add Student Button (only for Teachers) -->
                                                         <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
                                                             class="btn btn-outline-success rounded-pill"
@@ -126,16 +125,14 @@ if (isset($user_id)) {
                                                                 class="btn btn-outline-primary dropdown-toggle rounded-pill"
                                                                 type="button" id="filterDropdown_<?= $grade_id ?>"
                                                                 data-bs-toggle="dropdown" aria-expanded="false">
-                                                                Filter Sections
+                                                                 <i class="ri-filter-line align-bottom me-1"></i>Filter Sections
                                                             </button>
                                                             <ul class="dropdown-menu p-3"
                                                                 aria-labelledby="filterDropdown_<?= $grade_id ?>">
-                                                                <!-- Checkboxes will be generated dynamically with JS -->
                                                             </ul>
                                                         </div>
                                                     </div>
 
-                                                    <!-- Right side: Show Inactive Student Switch -->
                                                     <div class="flex-shrink-0">
                                                         <div
                                                             class="form-check form-switch form-switch-right form-switch-md">

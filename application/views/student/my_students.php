@@ -674,6 +674,12 @@ if (isset($user_id)) {
                 loadSections(null);
             }
 
+            // ================== RELOAD PAGE ON MODAL CLOSE ===================
+$('#studentModal').on('hidden.bs.modal', function () {
+    // Reload the whole page
+    location.reload();
+});
+
             // ================== LOAD SECTIONS ===================
             function loadSections(selectedSection, callback) {
                 let gradeLevel = $('#grade_level').val();

@@ -119,17 +119,31 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
-                                                  <div class="dropdown mb-3">
-    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
-        type="button" data-bs-toggle="dropdown">
-        Filter by Section
-    </button>
+                                                    <div class="dropdown">
+                                                    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                            type="button"
+                                                            id="filterDropdown"
+                                                            data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                        Filter Options
+                                                    </button>
 
-    <ul class="dropdown-menu p-3" id="sectionFilter">
-        <!-- dynamically generated -->
-    </ul>
-</div>
+                                                    <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown">
+                                                        <li class="form-check">
+                                                            <input class="form-check-input filter-check" type="checkbox" value="active" id="chkActive">
+                                                            <label class="form-check-label" for="chkActive">
+                                                                Section A
+                                                            </label>
+                                                        </li>
 
+                                                        <li class="form-check">
+                                                            <input class="form-check-input filter-check" type="checkbox" value="inactive" id="chkInactive">
+                                                            <label class="form-check-label" for="chkInactive">
+                                                                Section B
+                                                            </label>
+                                                        </li>
+                                                    </ul>
+                                                </div>
 
 
                                                     <!-- Right side: Switch -->
@@ -391,13 +405,9 @@ if (isset($user_id)) {
         $(document).ready(function() {
 
             let tables = {};
-            let activeGrade = null;
 
-            // ===============================
-            // INIT DATATABLES (YOUR CODE)
-            // ===============================
+            // Initialize DataTables for each tab
             $('.tab-pane').each(function() {
-
                 let tabPane = $(this);
                 let tableEl = tabPane.find('table');
                 let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
@@ -409,11 +419,9 @@ if (isset($user_id)) {
                         data: function(d) {
                             d.grade_level = gradeLevel;
                             d.status = tabPane.find('#student_history').is(':checked') ?
-                                'inactive' :
-                                'active';
+                                'inactive' : 'active';
                         }
                     },
-
                     columns: [{
                             data: 'fullname'
                         },
@@ -421,35 +429,94 @@ if (isset($user_id)) {
                             data: 'age'
                         },
                         {
-                            data: 'gender'
+                            data: 'gender',
+                            render: function(data) {
+                                if (data === 'Male')
+                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
+                                if (data === 'Female')
+                                    return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
+                                return data;
+                            }
                         },
                         {
                             data: 'section'
-                        }, // ⭐ SOURCE OF FILTER DATA
+                        },
                         {
                             data: 'grade_level'
                         },
-                        {
+                       {
                             data: 'school_year',
-                            render: function(data) {
-                                return data ? new Date(data).getFullYear() : '';
+                            render: function (data) {
+                                if (!data) return '';
+                                return new Date(data).getFullYear();
                             }
                         },
                         {
                             data: 'status',
+                            render: function (data, type, row) {
+                                if (data === 'active') {
+                                    return '<span class="badge bg-success">Active</span>';
+                                } else if (data === 'inactive') {
+                                    return '<span class="badge bg-secondary">Inactive</span>';
+                                }
+                                return data;
+                            }
+                        },
+                        <?php if ($user_type === 'Teacher'): ?> {
+                            data: null,
                             render: function(data) {
-                                return data === 'active' ?
-                                    '<span class="badge bg-success">Active</span>' :
-                                    '<span class="badge bg-secondary">Inactive</span>';
+                                let buttons = '';
+                                let userType =
+                                    "<?= $this->session->userdata('user_type'); ?>";
+                                let currentUser =
+                                    <?= (int) $this->session->userdata('po_user'); ?>;
+
+                                // Edit / Delete buttons
+                                if (['Principal', 'Guidance Counselor', 'Registrar',
+                                        'Admin'
+                                    ]
+                                    .includes(userType) || data.user_id == currentUser
+                                ) {
+                                    buttons += `
+                                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                    <i class="bx bx-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                    <i class="bx bx-trash me-1"></i>Delete
+                                </button>
+                            `;
+                                }
+
+                                // Status button
+                                let isActive = data.status === 'active';
+                                let statusClass = isActive ? 'btn-outline-success' :
+                                    'btn-outline-secondary';
+                                let statusText = isActive ? 'Active' : 'Inactive';
+                                let statusIcon = isActive ? 'bx-check-circle' :
+                                    'bx-x-circle';
+
+                                buttons += `
+                            <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
+                                <i class="bx ${statusIcon} me-1"></i>${statusText}
+                            </button>
+                        `;
+
+                                return buttons;
                             }
                         }
-                    ],
+                        <?php endif; ?>
 
-                    initComplete: function() {
-                        if (!activeGrade) {
-                            activeGrade = gradeLevel;
-                            buildSectionFilter(gradeLevel);
-                        }
+                    ],
+                    responsive: true,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    processing: true,
+                    language: {
+                        search: '',
+                        searchPlaceholder: ' Search...',
+                        processing: '<div class="table-loader"></div>'
                     }
                 });
             });
@@ -464,50 +531,6 @@ if (isset($user_id)) {
                 }
             });
 
-            function buildSectionFilter(gradeLevel) {
-
-                let table = tables[gradeLevel];
-                let filterBox = $('#sectionFilter');
-
-                filterBox.empty();
-
-                let sections = table
-                    .column(3) // section column index
-                    .data()
-                    .unique()
-                    .sort();
-
-                sections.each(function(section) {
-                    if (!section) return;
-
-                    filterBox.append(`
-            <li class="form-check">
-                <input class="form-check-input section-check"
-                    type="checkbox"
-                    value="${section}">
-                <label class="form-check-label">${section}</label>
-            </li>
-        `);
-                });
-            }
-
-
-            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
-
-                let target = $(e.target).attr('data-bs-target');
-                let gradeText = $(target).find('h5').text();
-
-                activeGrade = gradeText.replace(' Students', '').trim();
-
-                $('#sectionFilter').empty();
-
-                tables[activeGrade]
-                    .column(3)
-                    .search('')
-                    .draw();
-
-                buildSectionFilter(activeGrade);
-            });
 
 
 

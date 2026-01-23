@@ -78,11 +78,11 @@ if (isset($user_id)) {
                 </li>
 
                  <li class="nav-item">
-                    <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/students_setups') ? 'active' : ''; ?>"
-                        href="<?php echo site_url('GradingSystem/students_setups'); ?>">
+                    <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/my_students') ? 'active' : ''; ?>"
+                        href="<?php echo site_url('GradingSystem/my_students'); ?>">
                         <i
                             class="bx bxs-group bx-sm 
-                        <?php echo (uri_string() === 'GradingSystem/students_setups') ? 'animate__animated animate__heartBeat animate__infinite' : ''; ?>">
+                        <?php echo (uri_string() === 'GradingSystem/my_students') ? 'animate__animated animate__heartBeat animate__infinite' : ''; ?>">
                         </i>
                         <span> Students’ Setup</span>
                     </a>

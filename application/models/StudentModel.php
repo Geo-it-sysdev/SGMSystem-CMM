@@ -47,7 +47,8 @@ public function get_sections_by_grade() {
     $grade_level = $this->input->get('grade_level');
     $user_id = $this->session->userdata('po_user');
 
-    $this->db->select('DISTINCT section');
+    $this->db->distinct(); // ✅ use distinct() method
+    $this->db->select('section'); // just the column
     $this->db->from('tbl_students');
     $this->db->where('user_id', $user_id);
     $this->db->where('grade_level', $grade_level);
@@ -57,6 +58,7 @@ public function get_sections_by_grade() {
 
     echo json_encode($sections);
 }
+
 
 
     public function get_all_sections()

@@ -124,7 +124,7 @@ if (isset($user_id)) {
                                                                 type="button" id="filterDropdown_<?= $grade_id ?>"
                                                                 data-bs-toggle="dropdown" aria-expanded="false">
                                                                 <i class="ri-filter-line align-bottom me-1"></i> Filter
-                                                                Options
+                                                                Sections
                                                             </button>
                                                             <ul class="dropdown-menu p-3"
                                                                 aria-labelledby="filterDropdown_<?= $grade_id ?>">

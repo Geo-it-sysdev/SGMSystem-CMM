@@ -116,6 +116,12 @@ if (isset($user_id)) {
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
 
+                                                        <button type="button"
+                                                            class="btn btn-outline-success add-btn rounded-pill"
+                                                            data-bs-toggle="modal" data-bs-target="#TagstudentModal">
+                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
+                                                        </button>
+
                                                         <div class="dropdown">
                                                             <button
                                                                 class="btn btn-outline-primary dropdown-toggle rounded-pill"

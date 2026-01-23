@@ -548,6 +548,30 @@ if (isset($user_id)) {
             });
 
 
+            $(document).on('change', '.filter-check', function() {
+    let tabPane = $(this).closest('.tab-pane');
+    let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+
+    // Get all checked sections
+    let selectedSections = [];
+    tabPane.find('.filter-check:checked').each(function() {
+        selectedSections.push($(this).val());
+    });
+
+    // If nothing is checked, send null to hide all rows
+    if (tables[gradeLevel]) {
+        tables[gradeLevel].ajax.reload();
+    }
+
+    // Modify DataTable ajax to include selected sections dynamically
+    tables[gradeLevel].settings()[0].ajax.data = function(d) {
+        d.grade_level = gradeLevel;
+        d.status = tabPane.find('#student_history').is(':checked') ? 'inactive' : 'active';
+        d.section = selectedSections.length ? selectedSections : null; // null will hide rows
+    };
+});
+
+
 
 
             // <button class="btn btn-sm btn-outline-success AddAddressBtn">

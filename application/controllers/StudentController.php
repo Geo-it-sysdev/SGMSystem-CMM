@@ -17,11 +17,11 @@ class StudentController extends CI_Controller {
 public function fetch_students()
 {
     $grade_level = $this->input->get('grade_level');
-    $status      = $this->input->get('status'); // active | inactive
+    $status      = $this->input->get('status');
 
     $students = $this->StudentModel->get_all_students(
         $grade_level,
-        null, // section optional
+        null, 
         $status
     );
 

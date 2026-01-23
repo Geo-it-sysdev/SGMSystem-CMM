@@ -119,31 +119,31 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
-                                                    <div class="dropdown">
-                                                    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button"
-                                                            id="filterDropdown"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false">
-                                                        Filter Options
-                                                    </button>
-
-                                                    <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown">
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="active" id="chkActive">
-                                                            <label class="form-check-label" for="chkActive">
-                                                                Section A
-                                                            </label>
-                                                        </li>
-
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="inactive" id="chkInactive">
-                                                            <label class="form-check-label" for="chkInactive">
-                                                                Section B
-                                                            </label>
-                                                        </li>
-                                                    </ul>
-                                                </div>
+                                                         <!-- Dropdown Filter -->
+            <div class="dropdown mb-3">
+                <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                        type="button"
+                        id="filterDropdown_<?= $grade_id ?>"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    Filter Options
+                </button>
+                <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown_<?= $grade_id ?>">
+                    <?php
+                    // Get sections for this grade dynamically
+                    $sections = $this->StudentModel->get_all_students($grade, null, 'active');
+                    $unique_sections = array_unique(array_column($sections, 'section'));
+                    foreach ($unique_sections as $sec):
+                    ?>
+                    <li class="form-check">
+                        <input class="form-check-input filter-check" type="checkbox" value="<?= $sec ?>" id="<?= $grade_id ?>_chk_<?= $sec ?>">
+                        <label class="form-check-label" for="<?= $grade_id ?>_chk_<?= $sec ?>">
+                            Section <?= $sec ?>
+                        </label>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
 
 
                                                     <!-- Right side: Switch -->
@@ -417,9 +417,15 @@ if (isset($user_id)) {
                         url: "<?= site_url('StudentController/fetch_students'); ?>",
                         type: "GET",
                         data: function(d) {
+                            // Get selected sections
+                            let selectedSections = [];
+                            tabPane.find('.filter-check:checked').each(function() {
+                                selectedSections.push($(this).val());
+                            });
+
                             d.grade_level = gradeLevel;
-                            d.status = tabPane.find('#student_history').is(':checked') ?
-                                'inactive' : 'active';
+                            d.status = tabPane.find('#student_history').is(':checked') ? 'inactive' : 'active';
+                            d.section = selectedSections.length ? selectedSections : null; // send sections
                         }
                     },
                     columns: [{
@@ -520,6 +526,16 @@ if (isset($user_id)) {
                     }
                 });
             });
+
+            // Reload table on section filter change
+            $(document).on('change', '.filter-check', function() {
+                let tabPane = $(this).closest('.tab-pane');
+                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+                if (tables[gradeLevel]) {
+                    tables[gradeLevel].ajax.reload();
+                }
+            });
+
 
             // Reload DataTable when switch is toggled
             $(document).on('change', '#student_history', function() {

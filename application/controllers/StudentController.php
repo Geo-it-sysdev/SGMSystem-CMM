@@ -119,8 +119,6 @@ class StudentController extends CI_Controller {
             echo json_encode(['status' => 'error', 'message' => 'Invalid data.']);
             return;
         }
-
-
         $update = $this->db->set('status', $status)
                         ->where('id', $id)
                         ->update('tbl_students');

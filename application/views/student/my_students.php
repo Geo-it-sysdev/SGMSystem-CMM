@@ -119,19 +119,19 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
-                                             <div class="dropdown">
-    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
-            type="button"
-            id="filterDropdown_<?= $grade_id ?>"
-            data-bs-toggle="dropdown"
-            aria-expanded="false">
-        Filter Sections
-    </button>
+                                                    <div class="dropdown">
+                                                        <button
+                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                            type="button" id="filterDropdown_<?= $grade_id ?>"
+                                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Filter Sections
+                                                        </button>
 
-    <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown_<?= $grade_id ?>">
-        <!-- We'll generate checkboxes dynamically with JS -->
-    </ul>
-</div>
+                                                        <ul class="dropdown-menu p-3"
+                                                            aria-labelledby="filterDropdown_<?= $grade_id ?>">
+                                                            <!-- We'll generate checkboxes dynamically with JS -->
+                                                        </ul>
+                                                    </div>
 
 
 
@@ -391,125 +391,157 @@ if (isset($user_id)) {
 
 
         <script>
-       $(document).ready(function() {
+        $(document).ready(function() {
 
-    let tables = {};
+            let tables = {};
 
-    $('.tab-pane').each(function() {
-        let tabPane = $(this);
-        let tableEl = tabPane.find('table');
-        let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-        let gradeId = tabPane.attr('id');
+            $('.tab-pane').each(function() {
+                let tabPane = $(this);
+                let tableEl = tabPane.find('table');
+                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+                let gradeId = tabPane.attr('id');
 
-        tables[gradeLevel] = tableEl.DataTable({
-            ajax: {
-                url: "<?= site_url('StudentController/fetch_students'); ?>",
-                type: "GET",
-                data: function(d) {
-                    d.grade_level = gradeLevel;
-                    d.status = tabPane.find(`#student_history_${gradeId}`).is(':checked') ? 'inactive' : 'active';
-                }
-            },
-            columns: [
-                { data: 'fullname' },
-                { data: 'age' },
-                { 
-                    data: 'gender',
-                    render: function(data) {
-                        if (data === 'Male') return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
-                        if (data === 'Female') return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
-                        return data;
-                    }
-                },
-                { data: 'section' },
-                { data: 'grade_level' },
-                { 
-                    data: 'school_year',
-                    render: function(data) { return data ? new Date(data).getFullYear() : ''; }
-                },
-                { 
-                    data: 'status',
-                    render: function(data) {
-                        if (data === 'active') return '<span class="badge bg-success">Active</span>';
-                        if (data === 'inactive') return '<span class="badge bg-secondary">Inactive</span>';
-                        return data;
-                    }
-                },
-                <?php if ($user_type === 'Teacher'): ?>
-               {
-    data: null,
-    render: function(data) {
-        let buttons = '';
-        let userType = "<?= $this->session->userdata('user_type'); ?>";
-        let currentUser = <?= (int)$this->session->userdata('po_user'); ?>;
+                tables[gradeLevel] = tableEl.DataTable({
+                    ajax: {
+                        url: "<?= site_url('StudentController/fetch_students'); ?>",
+                        type: "GET",
+                        data: function(d) {
+                            d.grade_level = gradeLevel;
+                            d.status = tabPane.find(`#student_history_${gradeId}`).is(
+                                ':checked') ? 'inactive' : 'active';
+                        }
+                    },
+                    columns: [{
+                            data: 'fullname'
+                        },
+                        {
+                            data: 'age'
+                        },
+                        {
+                            data: 'gender',
+                            render: function(data) {
+                                if (data === 'Male')
+                                return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
+                                if (data === 'Female')
+                                return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
+                                return data;
+                            }
+                        },
+                        {
+                            data: 'section'
+                        },
+                        {
+                            data: 'grade_level'
+                        },
+                        {
+                            data: 'school_year',
+                            render: function(data) {
+                                return data ? new Date(data).getFullYear() : '';
+                            }
+                        },
+                        {
+                            data: 'status',
+                            render: function(data) {
+                                if (data === 'active')
+                                return '<span class="badge bg-success">Active</span>';
+                                if (data === 'inactive')
+                                return '<span class="badge bg-secondary">Inactive</span>';
+                                return data;
+                            }
+                        },
+                        <?php if ($user_type === 'Teacher'): ?> {
+                            data: null,
+                            render: function(data) {
+                                let buttons = '';
+                                let userType =
+                                    "<?= $this->session->userdata('user_type'); ?>";
+                                let currentUser =
+                                    <?= (int)$this->session->userdata('po_user'); ?>;
 
-        // Buttons string
-        let btns = '';
+                                // Buttons string
+                                let btns = '';
 
-        if (['Principal','Guidance Counselor','Registrar','Admin'].includes(userType) || data.user_id == currentUser) {
-            btns += `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-2"></i>Edit</button>`;
-            btns += `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-2"></i>Delete</button>`;
-        }
+                                if (['Principal', 'Guidance Counselor', 'Registrar',
+                                        'Admin'
+                                    ].includes(userType) || data.user_id ==
+                                    currentUser) {
+                                    btns +=
+                                        `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-2"></i>Edit</button>`;
+                                    btns +=
+                                        `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-2"></i>Delete</button>`;
+                                }
 
-        let isActive = data.status === 'active';
-        let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
-        let statusText = isActive ? 'Active' : 'Inactive';
-        let statusIcon = isActive ? 'bx-check-circle' : 'bx-x-circle';
+                                let isActive = data.status === 'active';
+                                let statusClass = isActive ? 'btn-outline-success' :
+                                    'btn-outline-secondary';
+                                let statusText = isActive ? 'Active' : 'Inactive';
+                                let statusIcon = isActive ? 'bx-check-circle' :
+                                    'bx-x-circle';
 
-        btns += `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-2"></i>${statusText}</button>`;
+                                btns +=
+                                    `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-2"></i>${statusText}</button>`;
 
-        // Wrap buttons in flex container with spacing
-        buttons = `<div class="d-flex gap-2 flex-wrap">${btns}</div>`;
+                                buttons =
+                                    `<div class="d-flex gap-2 flex-wrap">${btns}</div>`;
 
-        return buttons;
-    }
-}
+                                return buttons;
+                            }
+                        }
 
-                <?php endif; ?>
-            ],
-            responsive: true,
-            paging: true,
-            searching: true,
-            ordering: true,
-            info: true,
-            processing: true,
-            language: { search: '', searchPlaceholder: ' Search...', processing: '<div class="table-loader"></div>' },
-            initComplete: function() {
-                // Get unique sections from DataTable
-                let sectionDropdown = tabPane.find('.dropdown-menu');
-                let sections = this.api().column(3, {search:'applied'}).data().unique().sort();
-                sectionDropdown.empty();
+                        <?php endif; ?>
+                    ],
+                    responsive: true,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    processing: true,
+                    language: {
+                        search: '',
+                        searchPlaceholder: ' Search...',
+                        processing: '<div class="table-loader"></div>'
+                    },
+                    initComplete: function() {
+                        // Get unique sections from DataTable
+                        let sectionDropdown = tabPane.find('.dropdown-menu');
+                        let sections = this.api().column(3, {
+                            search: 'applied'
+                        }).data().unique().sort();
+                        sectionDropdown.empty();
 
-                sections.each(function(section) {
-                    let checkboxId = 'chk_' + gradeId + '_' + section.replace(/\s+/g,'');
-                    sectionDropdown.append(`
+                        sections.each(function(section) {
+                            let checkboxId = 'chk_' + gradeId + '_' + section
+                                .replace(/\s+/g, '');
+                            sectionDropdown.append(`
                         <li class="form-check">
                             <input class="form-check-input filter-check" type="checkbox" value="${section}" id="${checkboxId}" checked>
                             <label class="form-check-label" for="${checkboxId}">${section}</label>
                         </li>
                     `);
+                        });
+
+                        // Apply filtering when checkbox changes
+                        sectionDropdown.find('.filter-check').on('change', function() {
+                            let selected = [];
+                            sectionDropdown.find('.filter-check:checked').each(
+                                function() {
+                                    selected.push($(this).val());
+                                });
+
+                            tables[gradeLevel].column(3).search(selected.join('|'),
+                                true, false).draw(); // regex search
+                        });
+
+                        // Trigger initial filter to show all
+                        sectionDropdown.find('.filter-check').trigger('change');
+                    }
                 });
 
-                // Apply filtering when checkbox changes
-                sectionDropdown.find('.filter-check').on('change', function() {
-                    let selected = [];
-                    sectionDropdown.find('.filter-check:checked').each(function() {
-                        selected.push($(this).val());
-                    });
-
-                    tables[gradeLevel].column(3).search(selected.join('|'), true, false).draw(); // regex search
+                // Status switch reload
+                tabPane.find(`#student_history_${gradeId}`).on('change', function() {
+                    tables[gradeLevel].ajax.reload();
                 });
-
-                // Trigger initial filter to show all
-                sectionDropdown.find('.filter-check').trigger('change');
-            }
-        });
-
-        // Status switch reload
-        tabPane.find(`#student_history_${gradeId}`).on('change', function() {
-            tables[gradeLevel].ajax.reload();
-        });
-    });
+            });
 
 
 

@@ -92,6 +92,7 @@ if (isset($user_id)) {
                                     </ul>
 
                                     <!-- ================= TAB CONTENT ================= -->
+                                     <div id="studentTabContent">
                                     <div class="tab-content">
                                         <?php
                                         $tab_first = true;
@@ -184,6 +185,7 @@ if (isset($user_id)) {
                                         </div>
                                         <?php endif; endforeach; ?>
                                     </div> <!-- end tab-content -->
+                                </div> <!-- end studentTabContent -->
                                 </div> <!-- end border -->
                             </div> <!-- end card -->
                         </div> <!-- end col -->

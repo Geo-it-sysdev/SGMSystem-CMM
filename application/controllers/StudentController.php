@@ -841,7 +841,7 @@ public function update_student()
         $this->db->where('c.status', 'active');
 
         // Apply user filter only if user is NOT Principal, Registrar, or Guidance Councilor
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
+        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
             $this->db->where('a.user_id', $user_id);
         }
 

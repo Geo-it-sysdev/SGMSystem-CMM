@@ -94,13 +94,13 @@ if (isset($user_id)) {
                                     <!-- ================= TAB CONTENT ================= -->
                                     <div class="tab-content">
                                         <?php
-    $tab_first = true;
-    foreach ($all_grades as $grade):
-        if ($is_all || in_array($grade, $grade_levels)):
-            $grade_id = strtolower(str_replace(' ', '', $grade));
-            $show_class = $tab_first ? 'show active' : '';
-            $tab_first = false;
-    ?>
+                                        $tab_first = true;
+                                        foreach ($all_grades as $grade):
+                                            if ($is_all || in_array($grade, $grade_levels)):
+                                                $grade_id = strtolower(str_replace(' ', '', $grade));
+                                                $show_class = $tab_first ? 'show active' : '';
+                                                $tab_first = false;
+                                        ?>
                                         <div class="tab-pane fade <?= $show_class ?>" id="<?= $grade_id ?>-student">
                                             <div class="card p-3">
                                                 <h5 class="mb-3"><?= $grade ?> Students</h5>
@@ -109,7 +109,6 @@ if (isset($user_id)) {
 
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
 
-                                                    <!-- Left side: Add Button + Filter Dropdown -->
                                                     <div class="d-flex align-items-center gap-2">
                                                         <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
@@ -410,7 +409,6 @@ if (isset($user_id)) {
 
             let tables = {};
 
-            // Initialize DataTables for each tab
             $('.tab-pane').each(function() {
                 let tabPane = $(this);
                 let tableEl = tabPane.find('table');
@@ -431,7 +429,7 @@ if (isset($user_id)) {
                             d.status = tabPane.find('#student_history').is(':checked') ?
                                 'inactive' : 'active';
                             d.section = selectedSections.length ? selectedSections :
-                                null; // send sections
+                                null; 
                         }
                     },
                     columns: [{

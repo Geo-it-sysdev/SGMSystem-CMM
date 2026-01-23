@@ -52,49 +52,70 @@ class StudentController extends CI_Controller {
     }
 
    public function add_student()
-    {
-        $user_id = $this->session->userdata('po_user');
-        $fullname = $this->input->post('fullname');
+{
+    $user_id = $this->session->userdata('po_user');
+    $fullname = $this->input->post('fullname');
+    $grade_level = $this->input->post('grade_level');  // ensure grade_level is retrieved
 
-        if ($this->StudentModel->check_duplicate($user_id, $fullname)) {
-            echo json_encode(['status' => 'duplicate']);
-            return;
-        }
+    if (!$fullname || !$grade_level) {
+        echo json_encode(['status' => 'error', 'message' => 'Fullname and Grade Level are required']);
+        return;
+    }
 
-        $data = [
-            'user_id'     => $user_id,
-            'fullname'    => $fullname,
-            'age'         => $this->input->post('age'),
-            'gender'      => $this->input->post('gender'),
-            'section'     => $this->input->post('section'),
-            'grade_level' => $this->input->post('grade_level'),
-        ];
+    // Check for duplicate
+    if ($this->StudentModel->check_duplicate($user_id, $fullname)) {
+        echo json_encode(['status' => 'duplicate']);
+        return;
+    }
 
-        $this->StudentModel->insert_student($data);
+    $data = [
+        'user_id'     => $user_id,
+        'fullname'    => $fullname,
+        'age'         => $this->input->post('age'),
+        'gender'      => $this->input->post('gender'),
+        'section'     => $this->input->post('section'),
+        'grade_level' => $grade_level,
+    ];
+
+    $inserted = $this->StudentModel->insert_student($data);
+
+    if ($inserted) {
         echo json_encode(['status' => 'success']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Failed to save student']);
+    }
+}
+
+public function update_student()
+{
+    $id = $this->input->post('id');
+    $fullname = $this->input->post('fullname');
+    $grade_level = $this->input->post('grade_level');
+
+    if (!$id || !$fullname || !$grade_level) {
+        echo json_encode(['status' => 'error', 'message' => 'ID, Fullname, and Grade Level are required']);
+        return;
     }
 
-    public function update_student()
-    {
-        $id = $this->input->post('id');
-        $fullname = $this->input->post('fullname');
-
-        if ($this->StudentModel->check_duplicate_on_update($id, $fullname)) {
-            echo json_encode(['status' => 'duplicate']);
-            return;
-        }
-
-        $data = [
-            'fullname'    => $fullname,
-            'age'         => $this->input->post('age'),
-            'gender'      => $this->input->post('gender'),
-            'section'     => $this->input->post('section'),
-            'grade_level' => $this->input->post('grade_level'),
-        ];
-
-        $updated = $this->StudentModel->update_student($id, $data);
-        echo json_encode(['status' => $updated ? 'updated' : 'unauthorized']);
+    // Check for duplicate on update
+    if ($this->StudentModel->check_duplicate_on_update($id, $fullname)) {
+        echo json_encode(['status' => 'duplicate']);
+        return;
     }
+
+    $data = [
+        'fullname'    => $fullname,
+        'age'         => $this->input->post('age'),
+        'gender'      => $this->input->post('gender'),
+        'section'     => $this->input->post('section'),
+        'grade_level' => $grade_level,
+    ];
+
+    $updated = $this->StudentModel->update_student($id, $data);
+
+    echo json_encode(['status' => $updated ? 'updated' : 'unauthorized']);
+}
+
 
     public function delete_student($id)
     {

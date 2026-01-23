@@ -748,8 +748,6 @@ if (isset($user_id)) {
                     $('#fullname').val(data.fullname);
                     $('#age').val(data.age);
                     $('#gender').val(data.gender);
-                    $('#contact_no').val(data.contact_no);
-                    // $('#gmail').val(data.gmail);
                     $('#grade_level').val(data.grade_level);
 
                     loadSections(data.section, function() {

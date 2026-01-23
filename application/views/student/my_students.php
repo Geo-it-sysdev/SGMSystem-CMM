@@ -140,7 +140,7 @@ if (isset($user_id)) {
                                                                         id="<?= $grade_id ?>_chk_<?= $sec ?>" checked>
                                                                     <label class="form-check-label"
                                                                         for="<?= $grade_id ?>_chk_<?= $sec ?>">
-                                                                         <?= $sec ?>
+                                                                        <?= $sec ?>
                                                                     </label>
                                                                 </li>
                                                                 <?php endforeach; ?>
@@ -565,12 +565,17 @@ if (isset($user_id)) {
                 });
 
                 if (tables[gradeLevel]) {
-                    // Filter the table based on checked sections
-                    tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
-                    // column(3) is "Section" column index (0-based)
-                    // true = treat as regex, false = do not match exact
+                    if (selectedSections.length > 0) {
+                        // Filter the table based on checked sections
+                        tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false)
+                            .draw();
+                    } else {
+                        // If no sections are selected, show all rows
+                        tables[gradeLevel].column(3).search('').draw();
+                    }
                 }
             });
+
 
 
 

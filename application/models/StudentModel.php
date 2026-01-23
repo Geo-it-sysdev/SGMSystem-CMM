@@ -256,7 +256,7 @@ class StudentModel extends CI_Model {
     {
         $user_type = $this->session->userdata('user_type');
     
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
+        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor','Admin'])) {
             if (!$user_id) return 0;
             $this->db->where('user_id', $user_id);
         }

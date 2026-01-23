@@ -4,11 +4,16 @@
  <!-- ============================================================== -->
          <!-- Start right Content here -->
          <!-- ============================================================== -->
+
+         
          <div class="main-content">
-         <?php
+     <?php
 $user_id = $this->session->userdata("po_user");
+$user_type = null;
+
 if (isset($user_id)) {
     $user = $this->AuthModel->get_user_by_user_id($user_id);
+    $user_type = $user->user_type ?? null; 
 }
 ?>
              <div class="page-content">
@@ -130,6 +135,8 @@ if (isset($user_id)) {
                                  <!--end row-->
 
                                  <div class="row">
+
+                                      <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                                      <div class="col-xl-3 col-md-6">
                                          <!-- card -->
                                          <div class="card ribbon-box border mb-4 card-animate">
@@ -168,8 +175,9 @@ if (isset($user_id)) {
                                             </div><!-- end card body -->
                                         </div><!-- end card -->
 
-                                     </div><!-- end col -->
+                                     </div><!-- end col -->  <?php endif; ?>
 
+                                       <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'|| $user_type === 'Teacher'): ?>
                                      <div class="col-xl-3 col-md-6">
                                          <!-- card -->
                                          <div class="card ribbon-box border mb-4 card-animate">
@@ -208,8 +216,10 @@ if (isset($user_id)) {
                                             </div><!-- end card body -->
                                         </div><!-- end card -->
 
-                                     </div><!-- end col -->
+                                     </div><!-- end col -->  <?php endif; ?>
 
+
+                                    <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                                      <div class="col-xl-3 col-md-6">
                                          <!-- card -->
                                          <div class="card ribbon-box border mb-4 card-animate">
@@ -248,7 +258,7 @@ if (isset($user_id)) {
                                         </div><!-- end card body -->
                                     </div><!-- end card -->
 
-                                     </div><!-- end col -->
+                                     </div><!-- end col -->  <?php endif; ?>
 
                                  
                                  </div>  <!-- end row-->

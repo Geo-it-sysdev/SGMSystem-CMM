@@ -110,18 +110,10 @@ if (isset($user_id)) {
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
 
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
-                                                        <button type="button"
-                                                            class="btn btn-outline-success add-btn rounded-pill"
-                                                            data-bs-toggle="modal" data-bs-target="#studentModal">
-                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
-                                                        </button>
-                                                        <?php endif; ?>
-
                                                         <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill"
-                                                            data-bs-toggle="modal" data-bs-target="#TagstudentModal">
+                                                            data-bs-toggle="modal" data-bs-target="#studentModal">
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
                                                         <?php endif; ?>
@@ -181,7 +173,9 @@ if (isset($user_id)) {
                                                             <th>Grade Level</th>
                                                             <th>School Year</th>
                                                             <th>Status</th>
+                                                            <?php if ($user_type === 'Teacher'): ?>
                                                             <th>Action</th>
+                                                            <?php endif; ?>
                                                         </tr>
                                                     </thead>
                                                     <tbody></tbody>
@@ -272,38 +266,6 @@ if (isset($user_id)) {
                 </form>
             </div>
         </div>
-
-
-
-<!-- MODAL -->
-<div class="modal fade" id="TagstudentModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Assign Students</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <select id="section_dropdown" class="form-select mb-3">
-                    <option value="">Select Section</option>
-                </select>
-
-                <table class="table table-bordered" id="students_table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="check_all"></th>
-                            <th>Student Name</th>
-                            <th>Section</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-
-                <button id="submit_selected" class="btn btn-primary">Submit Selected</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 
         <!-- Add/View Address Modal -->
@@ -506,7 +468,7 @@ if (isset($user_id)) {
                                 return data;
                             }
                         },
-                        {
+                        <?php if ($user_type === 'Teacher'): ?> {
                             data: null,
                             render: function(data) {
                                 let buttons = '';
@@ -548,6 +510,7 @@ if (isset($user_id)) {
                                 return buttons;
                             }
                         }
+                        <?php endif; ?>
 
                     ],
                     responsive: true,
@@ -794,38 +757,40 @@ if (isset($user_id)) {
             });
 
             // ================== SAVE (ADD OR UPDATE) ===================
-            $('#studentForm').on('submit', function(e) {
-                e.preventDefault();
-                let id = $('#id').val();
-                let url = id ? "<?= site_url('StudentController/update_student'); ?>" :
-                    "<?= site_url('StudentController/add_student'); ?>";
+$('#studentForm').on('submit', function(e) {
+    e.preventDefault();
+    let id = $('#id').val();
+    let url = id ? "<?= site_url('StudentController/update_student'); ?>" :
+        "<?= site_url('StudentController/add_student'); ?>";
 
-                $.ajax({
-                    url: url,
-                    type: "POST",
-                    data: $(this).serialize(),
-                    dataType: "json",
-                    success: function(res) {
-                        $('#studentModal').modal('hide');
-                        $('#studentForm')[0].reset();
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: $(this).serialize(),
+        dataType: "json",
+        success: function(res) {
+            $('#studentModal').modal('hide');
+            $('#studentForm')[0].reset();
 
-                        if (res.status === 'duplicate') {
-                            Swal.fire('Warning', 'Student already exists', 'warning');
-                        } else if (res.status === 'success' || res.status === 'updated') {
-                            Swal.fire('Success', 'Student saved', 'success');
-                            Object.values(tables).forEach(t => t.ajax.reload(null, false));
-                        } else if (res.status === 'unauthorized') {
-                            Swal.fire('Error', 'You cannot edit this student', 'error');
-                        } else if (res.status === 'error') {
-                            Swal.fire('Error', res.message || 'Something went wrong',
-                                'error');
-                        }
-                    },
-                    error: function() {
-                        Swal.fire('Error', 'Something went wrong', 'error');
-                    }
+            if (res.status === 'duplicate') {
+                Swal.fire('Warning', 'Student already exists', 'warning');
+            } else if (res.status === 'success' || res.status === 'updated') {
+                Swal.fire('Success', 'Student saved', 'success').then(() => {
+                    // Reload the whole page after success
+                    location.reload();
                 });
-            });
+            } else if (res.status === 'unauthorized') {
+                Swal.fire('Error', 'You cannot edit this student', 'error');
+            } else if (res.status === 'error') {
+                Swal.fire('Error', res.message || 'Something went wrong', 'error');
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'Something went wrong', 'error');
+        }
+    });
+});
+
 
             // ================== DELETE STUDENT ===================
             $('.tab-pane').on('click', '.deleteBtn', function() {
@@ -862,87 +827,6 @@ if (isset($user_id)) {
 
         });
         </script>
-
-
-<script>
-let activeGrade = $('.nav-link.active').text().replace(' Students','').trim();
-
-function loadSections(grade){
-    let dropdown = $(`#section_dropdown_${grade}`);
-    let tbody = $(`#students_table_${grade} tbody`);
-    dropdown.html('<option value="">Select Section</option>');
-    tbody.html(''); // clear students
-
-    $.post('<?= site_url("StudentController/get_sections_by_student") ?>',
-        { grade_level: grade },
-        function(sections){
-            sections.forEach(sec => dropdown.append(`<option value="${sec.section}">${sec.section}</option>`));
-        }, 'json'
-    );
-}
-
-// Load students for selected section
-$('select[id^="section_dropdown_"]').on('change', function(){
-    let grade = $(this).attr('id').replace('section_dropdown_', '');
-    let section = $(this).val();
-    if(!section) return;
-
-    $.post('<?= site_url("StudentController/get_students") ?>',
-        { grade_level: grade, section: section },
-        function(students){
-            let tbody = $(`#students_table_${grade} tbody`);
-            let html = '';
-            students.forEach(st => {
-                html += `<tr>
-                            <td><input type="checkbox" class="student_checkbox" value="${st.id}"></td>
-                            <td>${st.fullname}</td>
-                            <td>${st.section}</td>
-                        </tr>`;
-            });
-            tbody.html(html);
-        }, 'json'
-    );
-});
-
-// Check/uncheck all
-$('input[id^="check_all_"]').on('change', function(){
-    let grade = $(this).attr('id').replace('check_all_', '');
-    $(`#students_table_${grade} .student_checkbox`).prop('checked', $(this).prop('checked'));
-});
-
-// When tab changes, reload sections
-$('.nav-link').on('shown.bs.tab', function(e){
-    let grade = $(e.target).text().replace(' Students','').trim();
-    grade = grade.toLowerCase().replace(' ', '');
-    loadSections(grade);
-});
-
-// Submit selected students
-$('#submit_selected').on('click', function(){
-    let ids = [];
-    $('.student_checkbox:checked').each(function(){ ids.push($(this).val()); });
-    if(ids.length == 0){ alert('No students selected'); return; }
-
-    $.post('<?= site_url("StudentController/submit_selected") ?>',
-        { student_ids: ids },
-        function(res){
-            if(res.status == 'success'){
-                alert('Students assigned successfully!');
-                $('tbody').html('');
-                $('select[id^="section_dropdown_"]').val('');
-            } else {
-                alert(res.message);
-            }
-        }, 'json'
-    );
-});
-
-// Initial load for first active tab
-let firstGrade = $('.nav-link.active').text().replace(' Students','').trim();
-firstGrade = firstGrade.toLowerCase().replace(' ', '');
-loadSections(firstGrade);
-
-</script>
 
     </div>
     </div>

@@ -128,72 +128,7 @@ public function update_student()
     // end add / edit / delete student
 
 
-   // ==================== GET SECTIONS BY GRADE ====================
-    public function get_sections_by_student() {
-        $grade_level = $this->input->post('grade_level'); // optional
-
-        $this->db->distinct();
-        $this->db->select('section');
-        $this->db->from('tbl_students');
-
-        if ($grade_level) { // only filter if provided
-            $this->db->where('grade_level', $grade_level);
-        }
-
-        $query = $this->db->get();
-        echo json_encode($query->result_array());
-    }
-
-    // ==================== GET STUDENTS BY SECTION ====================
-    public function get_students() {
-        $grade_level = $this->input->post('grade_level'); // optional
-        $section = $this->input->post('section');
-
-        $this->db->select('id, fullname, section');
-        $this->db->from('tbl_students');
-
-        if ($grade_level) { // filter by grade if given
-            $this->db->where('grade_level', $grade_level);
-        }
-
-        if ($section) { // filter by section if given
-            $this->db->where('section', $section);
-        }
-
-        $this->db->where('status', 'active');
-
-        $query = $this->db->get();
-        echo json_encode($query->result_array());
-    }
-
-    // ==================== SUBMIT SELECTED STUDENTS TO TEACHER ASSIGN ====================
-    public function submit_selected() {
-        $student_ids = $this->input->post('student_ids');
-        $user_id = $this->session->userdata('po_user'); 
-
-        if (!$user_id) {
-            echo json_encode(['status'=>'error','message'=>'User not logged in']);
-            return;
-        }
-
-        if (!empty($student_ids)) {
-            $data = [];
-            foreach ($student_ids as $sid) {
-                $data[] = [
-                    'user_id' => $user_id,
-                    'student_id' => $sid,
-                    'status_student' => 'active'
-                ];
-            }
-
-            // Insert all selected students at once
-            $this->db->insert_batch('tbl_student_assign_by_teacher', $data);
-            echo json_encode(['status'=>'success']);
-        } else {
-            echo json_encode(['status'=>'error','message'=>'No students selected']);
-        }
-    }
-
+ 
 
 
     public function get_classrooms() {

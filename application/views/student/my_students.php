@@ -767,25 +767,8 @@ if (isset($user_id)) {
             });
 
             // ================== SAVE (ADD OR UPDATE) ===================
-           $('#studentForm').on('submit', function(e) {
+            $('#studentForm').on('submit', function(e) {
                 e.preventDefault();
-
-                // Check all required inputs
-                let isValid = true;
-                $(this).find('[required]').each(function() {
-                    if (!$(this).val()) {
-                        isValid = false;
-                        $(this).addClass('is-invalid');
-                    } else {
-                        $(this).removeClass('is-invalid');
-                    }
-                });
-
-                if (!isValid) {
-                    Swal.fire('Error', 'Please fill in all required fields.', 'error');
-                    return;
-                }
-
                 let id = $('#id').val();
                 let url = id ? "<?= site_url('StudentController/update_student'); ?>" :
                     "<?= site_url('StudentController/add_student'); ?>";

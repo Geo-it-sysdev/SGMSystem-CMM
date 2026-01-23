@@ -128,41 +128,41 @@ public function update_student()
     // end add / edit / delete student
 
 
-    // ==================== GET SECTIONS BY GRADE ====================
+   // ==================== GET SECTIONS BY GRADE ====================
     public function get_sections_by_student() {
-        $grade_level = $this->input->post('grade_level'); // get grade from POST
-
-        if(!$grade_level){
-            echo json_encode([]);
-            return;
-        }
+        $grade_level = $this->input->post('grade_level'); // optional
 
         $this->db->distinct();
         $this->db->select('section');
         $this->db->from('tbl_students');
-        $this->db->where('grade_level', $grade_level); // filter by grade
-        $query = $this->db->get();
 
+        if ($grade_level) { // only filter if provided
+            $this->db->where('grade_level', $grade_level);
+        }
+
+        $query = $this->db->get();
         echo json_encode($query->result_array());
     }
 
     // ==================== GET STUDENTS BY SECTION ====================
     public function get_students() {
+        $grade_level = $this->input->post('grade_level'); // optional
         $section = $this->input->post('section');
-        $grade_level = $this->input->post('grade_level'); // get grade from POST
-
-        if(!$section || !$grade_level){
-            echo json_encode([]);
-            return;
-        }
 
         $this->db->select('id, fullname, section');
         $this->db->from('tbl_students');
-        $this->db->where('grade_level', $grade_level); // filter by grade
-        $this->db->where('section', $section);         // filter by section
-        $this->db->where('status', 'active');
-        $query = $this->db->get();
 
+        if ($grade_level) { // filter by grade if given
+            $this->db->where('grade_level', $grade_level);
+        }
+
+        if ($section) { // filter by section if given
+            $this->db->where('section', $section);
+        }
+
+        $this->db->where('status', 'active');
+
+        $query = $this->db->get();
         echo json_encode($query->result_array());
     }
 

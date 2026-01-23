@@ -17,29 +17,26 @@ class StudentController extends CI_Controller {
 public function fetch_students()
 {
     $grade_level = $this->input->get('grade_level');
-    $status      = $this->input->get('status') ?: 'active';
-
-    // Get sections from checkbox (comma-separated)
-    $sections = $this->input->get('sections'); // e.g. "A,B"
-    $section_array = $sections ? explode(',', $sections) : null;
+    $status      = $this->input->get('status'); // active | inactive
 
     $students = $this->StudentModel->get_all_students(
         $grade_level,
-        $section_array,
+        null, // section optional
         $status
     );
 
     echo json_encode(['data' => $students]);
 }
 
-public function get_section_by_grade()
-{
-    $grade = $this->input->get('grade_level');
-    $sections = $this->StudentModel->get_sections_by_grade($grade);
-    echo json_encode($sections);
-}
 
 
+
+    public function get_section_by_grade()
+    {
+        $grade = $this->input->get('grade_level');
+        $data = $this->StudentModel->get_section_by_grade($grade);
+        echo json_encode($data);
+    }
 
     public function get_grade_level_by_section()
     {

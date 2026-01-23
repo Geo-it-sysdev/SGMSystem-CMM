@@ -16,10 +16,9 @@ public function get_all_students($grade_level = null, $section = null, $status =
     $user_id   = $this->session->userdata('po_user');
     $user_type = $this->session->userdata('user_type');
 
-    $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at AS school_year, status')
+    $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at, status')
              ->from('tbl_students');
 
-    // Only show own students if not admin roles
     if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor','Admin'])) {
         if (!$user_id) return [];
         $this->db->where('user_id', $user_id);
@@ -30,46 +29,33 @@ public function get_all_students($grade_level = null, $section = null, $status =
     }
 
     if ($section) {
-        if (is_array($section)) {
-            $this->db->where_in('section', $section);
-        } else {
-            $this->db->where('section', $section);
-        }
+        $this->db->where('section', $section);
     }
 
     $this->db->where('status', $status ?: 'active');
-
-    // Remove group_by for now to avoid missing data
-    // $this->db->group_by('fullname');
+    $this->db->group_by('fullname');
 
     return $this->db->get()->result();
 }
 
-public function get_sections_by_grade($grade_level = null)
-{
-    $user_id = $this->session->userdata('po_user');
 
-    $this->db->distinct();
-    $this->db->select('section');
-    $this->db->from('tbl_students');
 
-    if ($user_id) {
+    
+
+    public function get_sections_by_grade() {
+        $grade_level = $this->input->get('grade_level');
+        $user_id = $this->session->userdata('po_user');
+    
+        $this->db->select('DISTINCT section');
+        $this->db->from('tbl_students');
         $this->db->where('user_id', $user_id);
-    }
-
-    if ($grade_level) {
         $this->db->where('grade_level', $grade_level);
+        $query = $this->db->get()->result();
+    
+        $sections = array_map(function($row){ return $row->section; }, $query);
+    
+        echo json_encode($sections);
     }
-
-    $query = $this->db->get()->result();
-
-    return array_map(function($row) {
-        return $row->section;
-    }, $query);
-}
-
-
-
 
     public function get_all_sections()
     {

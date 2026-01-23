@@ -94,18 +94,21 @@ if (isset($user_id)) {
                                     <!-- ================= TAB CONTENT ================= -->
                                     <div class="tab-content">
                                         <?php
-$tab_first = true;
-foreach ($all_grades as $grade):
-    if ($is_all || in_array($grade, $grade_levels)):
-        $grade_id = strtolower(str_replace(' ', '', $grade));
-        $show_class = $tab_first ? 'show active' : '';
-        $tab_first = false;
-?>
+    $tab_first = true;
+    foreach ($all_grades as $grade):
+        if ($is_all || in_array($grade, $grade_levels)):
+            $grade_id = strtolower(str_replace(' ', '', $grade));
+            $show_class = $tab_first ? 'show active' : '';
+            $tab_first = false;
+    ?>
                                         <div class="tab-pane fade <?= $show_class ?>" id="<?= $grade_id ?>-student">
                                             <div class="card p-3">
                                                 <h5 class="mb-3"><?= $grade ?> Students</h5>
 
+
+
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <!-- Left side: Add Button -->
                                                     <div>
                                                         <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
@@ -116,38 +119,41 @@ foreach ($all_grades as $grade):
                                                         <?php endif; ?>
                                                     </div>
 
-                                                    <?php $sections = $this->StudentModel->get_sections_by_grade($grade); ?>
-
                                                     <div class="dropdown">
-                                                        <button
-                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button" id="filterDropdown_<?= $grade_id ?>"
-                                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                                            Filter Sections
-                                                        </button>
-                                                        <ul class="dropdown-menu p-3"
-                                                            aria-labelledby="filterDropdown_<?= $grade_id ?>">
-                                                            <?php foreach ($sections as $section): ?>
-                                                            <li class="form-check">
-                                                                <input class="form-check-input filter-check"
-                                                                    type="checkbox" value="<?= $section ?>"
-                                                                    id="chk_<?= $grade_id ?>_<?= $section ?>" checked>
-                                                                <label class="form-check-label"
-                                                                    for="chk_<?= $grade_id ?>_<?= $section ?>">
-                                                                    <?= $section ?>
-                                                                </label>
-                                                            </li>
-                                                            <?php endforeach; ?>
-                                                        </ul>
-                                                    </div>
+                                                    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                            type="button"
+                                                            id="filterDropdown"
+                                                            data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                        Filter Options
+                                                    </button>
 
+                                                    <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown">
+                                                        <li class="form-check">
+                                                            <input class="form-check-input filter-check" type="checkbox" value="active" id="chkActive">
+                                                            <label class="form-check-label" for="chkActive">
+                                                                Section A
+                                                            </label>
+                                                        </li>
+
+                                                        <li class="form-check">
+                                                            <input class="form-check-input filter-check" type="checkbox" value="inactive" id="chkInactive">
+                                                            <label class="form-check-label" for="chkInactive">
+                                                                Section B
+                                                            </label>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
+
+                                                    <!-- Right side: Switch -->
                                                     <div class="flex-shrink-0">
                                                         <div
                                                             class="form-check form-switch form-switch-right form-switch-md">
-                                                            <label for="student_history_<?= $grade_id ?>"
-                                                                class="form-label">Show Inactive Student</label>
-                                                            <input class="form-check-input student_history"
-                                                                type="checkbox" id="student_history_<?= $grade_id ?>" />
+                                                            <label for="student_history" class="form-label">Show
+                                                                Inactive Student</label>
+                                                            <input class="form-check-input code-switcher"
+                                                                type="checkbox" id="student_history" />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -174,8 +180,7 @@ foreach ($all_grades as $grade):
                                             </div>
                                         </div>
                                         <?php endif; endforeach; ?>
-                                    </div>
-                                    <!-- end tab-content -->
+                                    </div> <!-- end tab-content -->
                                 </div> <!-- end border -->
                             </div> <!-- end card -->
                         </div> <!-- end col -->
@@ -398,12 +403,14 @@ foreach ($all_grades as $grade):
 
         <script>
         $(document).ready(function() {
-            var tables = {};
 
+            let tables = {};
+
+            // Initialize DataTables for each tab
             $('.tab-pane').each(function() {
                 let tabPane = $(this);
                 let tableEl = tabPane.find('table');
-                let gradeLevel = tabPane.attr('id').replace('-student', '');
+                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
                 tables[gradeLevel] = tableEl.DataTable({
                     ajax: {
@@ -411,18 +418,8 @@ foreach ($all_grades as $grade):
                         type: "GET",
                         data: function(d) {
                             d.grade_level = gradeLevel;
-
-                            // Checked sections
-                            let selectedSections = [];
-                            tabPane.find('.filter-check:checked').each(function() {
-                                selectedSections.push($(this).val());
-                            });
-                            d.sections = selectedSections.join(',');
-
-                            // Status toggle
-                            let statusCheckbox = tabPane.find('.student_history');
-                            d.status = statusCheckbox.is(':checked') ? 'inactive' :
-                            'active';
+                            d.status = tabPane.find('#student_history').is(':checked') ?
+                                'inactive' : 'active';
                         }
                     },
                     columns: [{
@@ -447,20 +444,21 @@ foreach ($all_grades as $grade):
                         {
                             data: 'grade_level'
                         },
-                        {
+                       {
                             data: 'school_year',
-                            render: function(data) {
+                            render: function (data) {
                                 if (!data) return '';
                                 return new Date(data).getFullYear();
                             }
                         },
                         {
                             data: 'status',
-                            render: function(data) {
-                                if (data === 'active')
-                                return '<span class="badge bg-success">Active</span>';
-                                if (data === 'inactive')
-                                return '<span class="badge bg-secondary">Inactive</span>';
+                            render: function (data, type, row) {
+                                if (data === 'active') {
+                                    return '<span class="badge bg-success">Active</span>';
+                                } else if (data === 'inactive') {
+                                    return '<span class="badge bg-secondary">Inactive</span>';
+                                }
                                 return data;
                             }
                         },
@@ -473,20 +471,23 @@ foreach ($all_grades as $grade):
                                 let currentUser =
                                     <?= (int) $this->session->userdata('po_user'); ?>;
 
+                                // Edit / Delete buttons
                                 if (['Principal', 'Guidance Counselor', 'Registrar',
                                         'Admin'
-                                    ].includes(userType) || data.user_id ==
-                                    currentUser) {
+                                    ]
+                                    .includes(userType) || data.user_id == currentUser
+                                ) {
                                     buttons += `
-                              <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                  <i class="bx bx-edit me-1"></i>Edit
-                              </button>
-                              <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                  <i class="bx bx-trash me-1"></i>Delete
-                              </button>
-                          `;
+                                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                    <i class="bx bx-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                    <i class="bx bx-trash me-1"></i>Delete
+                                </button>
+                            `;
                                 }
 
+                                // Status button
                                 let isActive = data.status === 'active';
                                 let statusClass = isActive ? 'btn-outline-success' :
                                     'btn-outline-secondary';
@@ -495,14 +496,16 @@ foreach ($all_grades as $grade):
                                     'bx-x-circle';
 
                                 buttons += `
-                          <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
-                              <i class="bx ${statusIcon} me-1"></i>${statusText}
-                          </button>
-                      `;
+                            <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
+                                <i class="bx ${statusIcon} me-1"></i>${statusText}
+                            </button>
+                        `;
+
                                 return buttons;
                             }
                         }
                         <?php endif; ?>
+
                     ],
                     responsive: true,
                     paging: true,
@@ -516,50 +519,17 @@ foreach ($all_grades as $grade):
                         processing: '<div class="table-loader"></div>'
                     }
                 });
-
-                // Reload table on section checkbox change
-                tabPane.find('.filter-check').on('change', function() {
-                    tables[gradeLevel].ajax.reload();
-                });
-
-                // Reload table on status toggle change
-                tabPane.find('.student_history').on('change', function() {
-                    tables[gradeLevel].ajax.reload();
-                });
             });
 
-            // Toggle Status Button
-            $(document).on('click', '.toggleStatusBtn', function() {
-                let btn = $(this);
-                let studentId = btn.data('id');
-                let currentStatus = btn.data('status');
-                let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            // Reload DataTable when switch is toggled
+            $(document).on('change', '#student_history', function() {
+                let tabPane = $(this).closest('.tab-pane');
+                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-                $.ajax({
-                    url: "<?= site_url('StudentController/toggle_status'); ?>",
-                    type: "POST",
-                    data: {
-                        id: studentId,
-                        status: newStatus
-                    },
-                    success: function(response) {
-                        let res = JSON.parse(response);
-                        if (res.status === 'success') {
-                            btn.data('status', newStatus);
-
-                            let tabPane = btn.closest('.tab-pane');
-                            let gradeLevel = tabPane.attr('id').replace('-student', '');
-                            tables[gradeLevel].ajax.reload(null, false);
-                        } else {
-                            alert(res.message || 'Error updating status.');
-                        }
-                    },
-                    error: function() {
-                        alert('AJAX error. Could not update status.');
-                    }
-                });
+                if (tables[gradeLevel]) {
+                    tables[gradeLevel].ajax.reload();
+                }
             });
-
 
 
 
@@ -588,67 +558,67 @@ foreach ($all_grades as $grade):
             });
 
 
-            // // Toggle Status Button
-            // $(document).on('click', '.toggleStatusBtn', function() {
-            //     let btn = $(this);
-            //     let studentId = btn.data('id');
-            //     let currentStatus = btn.data('status');
-            //     let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            // Toggle Status Button
+            $(document).on('click', '.toggleStatusBtn', function() {
+                let btn = $(this);
+                let studentId = btn.data('id');
+                let currentStatus = btn.data('status');
+                let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 
-            //     $.ajax({
-            //         url: "<?= site_url('StudentController/toggle_status'); ?>",
-            //         type: "POST",
-            //         data: {
-            //             id: studentId,
-            //             status: newStatus
-            //         },
-            //         success: function(response) {
-            //             let res = JSON.parse(response);
+                $.ajax({
+                    url: "<?= site_url('StudentController/toggle_status'); ?>",
+                    type: "POST",
+                    data: {
+                        id: studentId,
+                        status: newStatus
+                    },
+                    success: function(response) {
+                        let res = JSON.parse(response);
 
-            //             if (res.status === 'success') {
-            //                 // Show alert based on new status
-            //                 let alertClass = newStatus === 'inactive' ? 'alert-success' :
-            //                     'alert-secondary';
-            //                 let alertText = newStatus === 'inactive' ?
-            //                     'Student set to Inactive!' : 'Student set to Active!';
+                        if (res.status === 'success') {
+                            // Show alert based on new status
+                            let alertClass = newStatus === 'inactive' ? 'alert-success' :
+                                'alert-secondary';
+                            let alertText = newStatus === 'inactive' ?
+                                'Student set to Inactive!' : 'Student set to Active!';
 
-            //                 // Create alert element
-            //                 let alertEl = $(`
-            //         <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-            //             ${alertText}
-            //             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            //         </div>
-            //     `);
+                            // Create alert element
+                            let alertEl = $(`
+                    <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                        ${alertText}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `);
 
-            //                 // Append to a container (make sure you have #alertContainer in your HTML)
-            //                 $('#alertContainer').append(alertEl);
+                            // Append to a container (make sure you have #alertContainer in your HTML)
+                            $('#alertContainer').append(alertEl);
 
-            //                 // Automatically remove after 3 seconds
-            //                 setTimeout(() => {
-            //                     alertEl.alert('close');
-            //                 }, 3000);
+                            // Automatically remove after 3 seconds
+                            setTimeout(() => {
+                                alertEl.alert('close');
+                            }, 3000);
 
-            //                 // Reload the DataTable of the current tab
-            //                 let tabPane = btn.closest('.tab-pane');
-            //                 let gradeLevel = tabPane.find('h5').text().replace(' Students',
-            //                     '').trim();
+                            // Reload the DataTable of the current tab
+                            let tabPane = btn.closest('.tab-pane');
+                            let gradeLevel = tabPane.find('h5').text().replace(' Students',
+                                '').trim();
 
-            //                 if (tables[gradeLevel]) {
-            //                     tables[gradeLevel].ajax.reload(null,
-            //                         false); // false = keep current pagination
-            //                 }
+                            if (tables[gradeLevel]) {
+                                tables[gradeLevel].ajax.reload(null,
+                                    false); // false = keep current pagination
+                            }
 
-            //                 // Update the button data-status to the new status
-            //                 btn.data('status', newStatus);
-            //             } else {
-            //                 alert(res.message || 'Error updating status.');
-            //             }
-            //         },
-            //         error: function() {
-            //             alert('AJAX error. Could not update status.');
-            //         }
-            //     });
-            // });
+                            // Update the button data-status to the new status
+                            btn.data('status', newStatus);
+                        } else {
+                            alert(res.message || 'Error updating status.');
+                        }
+                    },
+                    error: function() {
+                        alert('AJAX error. Could not update status.');
+                    }
+                });
+            });
 
 
 

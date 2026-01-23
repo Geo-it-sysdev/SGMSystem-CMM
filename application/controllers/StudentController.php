@@ -51,13 +51,12 @@ class StudentController extends CI_Controller {
         echo json_encode($student);
     }
 
-    public function add_student()
+   public function add_student()
     {
         $user_id = $this->session->userdata('po_user');
         $fullname = $this->input->post('fullname');
-        $gmail = $this->input->post('gmail');
 
-        if ($this->StudentModel->check_duplicate($user_id, $fullname, $gmail)) {
+        if ($this->StudentModel->check_duplicate($user_id, $fullname)) {
             echo json_encode(['status' => 'duplicate']);
             return;
         }
@@ -69,8 +68,6 @@ class StudentController extends CI_Controller {
             'gender'      => $this->input->post('gender'),
             'section'     => $this->input->post('section'),
             'grade_level' => $this->input->post('grade_level'),
-            'contact_no'  => $this->input->post('contact_no'),
-            'gmail'       => $gmail
         ];
 
         $this->StudentModel->insert_student($data);
@@ -81,9 +78,8 @@ class StudentController extends CI_Controller {
     {
         $id = $this->input->post('id');
         $fullname = $this->input->post('fullname');
-        $gmail = $this->input->post('gmail');
 
-        if ($this->StudentModel->check_duplicate_on_update($id, $fullname, $gmail)) {
+        if ($this->StudentModel->check_duplicate_on_update($id, $fullname)) {
             echo json_encode(['status' => 'duplicate']);
             return;
         }
@@ -94,8 +90,6 @@ class StudentController extends CI_Controller {
             'gender'      => $this->input->post('gender'),
             'section'     => $this->input->post('section'),
             'grade_level' => $this->input->post('grade_level'),
-            'contact_no'  => $this->input->post('contact_no'),
-            'gmail'       => $gmail
         ];
 
         $updated = $this->StudentModel->update_student($id, $data);

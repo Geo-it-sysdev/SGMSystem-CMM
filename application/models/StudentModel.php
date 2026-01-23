@@ -108,36 +108,28 @@ class StudentModel extends CI_Model {
         return $this->db->delete('tbl_students');
     }
 
-   public function check_duplicate($user_id, $fullname, $gmail)
-{
-    $this->db->where('user_id', $user_id); // only check for this user's students
-
-    $this->db->group_start();
-    if (!empty($fullname)) {
-        $this->db->where('LOWER(TRIM(fullname)) =', strtolower(trim($fullname)));
-    }
-    if (!empty($gmail)) {
-        $this->db->or_where('LOWER(TRIM(gmail)) =', strtolower(trim($gmail)));
-    }
-    $this->db->group_end();
-
-    return $this->db->get('tbl_students')->num_rows() > 0;
-}
-
-
-    public function check_duplicate_on_update($id, $fullname, $gmail)
+    public function check_duplicate($user_id, $fullname)
     {
-        $this->db->where('id !=', $id);
-        $this->db->group_start();
+        $this->db->where('user_id', $user_id); // only check for this user's students
+
         if (!empty($fullname)) {
             $this->db->where('LOWER(TRIM(fullname)) =', strtolower(trim($fullname)));
         }
-        if (!empty($gmail)) {
-            $this->db->or_where('LOWER(TRIM(gmail)) =', strtolower(trim($gmail)));
-        }
-        $this->db->group_end();
+
         return $this->db->get('tbl_students')->num_rows() > 0;
     }
+
+    public function check_duplicate_on_update($id, $fullname)
+    {
+        $this->db->where('id !=', $id);
+
+        if (!empty($fullname)) {
+            $this->db->where('LOWER(TRIM(fullname)) =', strtolower(trim($fullname)));
+        }
+
+        return $this->db->get('tbl_students')->num_rows() > 0;
+    }
+
 
     // end Add / edit / delete - student
 

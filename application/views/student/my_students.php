@@ -94,23 +94,21 @@ if (isset($user_id)) {
                                     <!-- ================= TAB CONTENT ================= -->
                                     <div class="tab-content">
                                         <?php
-$tab_first = true;
-foreach ($all_grades as $grade):
-    if ($is_all || in_array($grade, $grade_levels)):
-        $grade_id = strtolower(str_replace(' ', '', $grade));
-        $show_class = $tab_first ? 'show active' : '';
-        $tab_first = false;
-
-        // Get sections for this grade
-        $sections = $this->StudentModel->get_sections_by_grade($grade);
-?>
+    $tab_first = true;
+    foreach ($all_grades as $grade):
+        if ($is_all || in_array($grade, $grade_levels)):
+            $grade_id = strtolower(str_replace(' ', '', $grade));
+            $show_class = $tab_first ? 'show active' : '';
+            $tab_first = false;
+    ?>
                                         <div class="tab-pane fade <?= $show_class ?>" id="<?= $grade_id ?>-student">
                                             <div class="card p-3">
                                                 <h5 class="mb-3"><?= $grade ?> Students</h5>
 
-                                                <div class="d-flex align-items-center justify-content-between mb-3">
 
-                                                    <!-- Add Student Button -->
+
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <!-- Left side: Add Button -->
                                                     <div>
                                                         <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
@@ -121,44 +119,34 @@ foreach ($all_grades as $grade):
                                                         <?php endif; ?>
                                                     </div>
 
-                                                    <!-- Section Filter -->
-                                                    <div class="dropdown">
-                                                        <button
-                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button" id="filterDropdown_<?= $grade_id ?>"
-                                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                                            Filter Sections
-                                                        </button>
-                                                        <ul class="dropdown-menu p-3"
-                                                            aria-labelledby="filterDropdown_<?= $grade_id ?>">
-                                                            <?php foreach ($sections as $section): ?>
-                                                            <li class="form-check">
-                                                                <input class="form-check-input filter-check"
-                                                                    type="checkbox" value="<?= $section ?>"
-                                                                    id="chk_<?= $grade_id ?>_<?= str_replace(' ', '', $section) ?>">
-                                                                <label class="form-check-label"
-                                                                    for="chk_<?= $grade_id ?>_<?= str_replace(' ', '', $section) ?>">
-                                                                    <?= $section ?>
-                                                                </label>
-                                                            </li>
-                                                            <?php endforeach; ?>
-                                                        </ul>
-                                                    </div>
+                                             <div class="dropdown">
+    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
+            type="button"
+            id="filterDropdown_<?= $grade_id ?>"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+        Filter Sections
+    </button>
 
-                                                    <!-- Show Inactive Switch -->
+    <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown_<?= $grade_id ?>">
+        <!-- We'll generate checkboxes dynamically with JS -->
+    </ul>
+</div>
+
+
+
+                                                    <!-- Right side: Switch -->
                                                     <div class="flex-shrink-0">
                                                         <div
                                                             class="form-check form-switch form-switch-right form-switch-md">
-                                                            <label for="student_history_<?= $grade_id ?>"
-                                                                class="form-label">Show Inactive Student</label>
+                                                            <label for="student_history" class="form-label">Show
+                                                                Inactive Student</label>
                                                             <input class="form-check-input code-switcher"
-                                                                type="checkbox" id="student_history_<?= $grade_id ?>" />
+                                                                type="checkbox" id="student_history" />
                                                         </div>
                                                     </div>
-
                                                 </div>
 
-                                                <!-- DataTable -->
                                                 <table id="List_Student_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle"
                                                     style="width:100%">
@@ -178,12 +166,10 @@ foreach ($all_grades as $grade):
                                                     </thead>
                                                     <tbody></tbody>
                                                 </table>
-
                                             </div>
                                         </div>
                                         <?php endif; endforeach; ?>
-                                    </div>
-                                    <!-- end tab-content -->
+                                    </div> <!-- end tab-content -->
                                 </div> <!-- end border -->
                             </div> <!-- end card -->
                         </div> <!-- end col -->
@@ -405,127 +391,118 @@ foreach ($all_grades as $grade):
 
 
         <script>
-        $(document).ready(function() {
-            let tables = {};
+       $(document).ready(function() {
 
-            $('.tab-pane').each(function() {
-                let tabPane = $(this);
-                let tableEl = tabPane.find('table');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-                let gradeId = tabPane.attr('id');
+    let tables = {};
 
-                tables[gradeLevel] = tableEl.DataTable({
-                    ajax: {
-                        url: "<?= site_url('StudentController/fetch_students'); ?>",
-                        type: "GET",
-                        data: function(d) {
-                            d.grade_level = gradeLevel;
-                            d.status = tabPane.find(`#student_history_${gradeId}`).is(
-                                ':checked') ? 'inactive' : 'active';
+    $('.tab-pane').each(function() {
+        let tabPane = $(this);
+        let tableEl = tabPane.find('table');
+        let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+        let gradeId = tabPane.attr('id');
 
-                            let selectedSections = [];
-                            tabPane.find('.filter-check:checked').each(function() {
-                                selectedSections.push($(this).val());
-                            });
-                            d.sections = selectedSections;
-                        }
-                    },
-                    columns: [{
-                            data: 'fullname'
-                        },
-                        {
-                            data: 'age'
-                        },
-                        {
-                            data: 'gender',
-                            render: function(data) {
-                                if (data === 'Male')
-                                return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
-                                if (data === 'Female')
-                                return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
-                                return data;
-                            }
-                        },
-                        {
-                            data: 'section'
-                        },
-                        {
-                            data: 'grade_level'
-                        },
-                        {
-                            data: 'school_year',
-                            render: function(data) {
-                                return data ? new Date(data).getFullYear() : '';
-                            }
-                        },
-                        {
-                            data: 'status',
-                            render: function(data) {
-                                if (data === 'active')
-                                return '<span class="badge bg-success">Active</span>';
-                                if (data === 'inactive')
-                                return '<span class="badge bg-secondary">Inactive</span>';
-                                return data;
-                            }
-                        },
-                        <?php if ($user_type === 'Teacher'): ?> {
-                            data: null,
-                            render: function(data) {
-                                let buttons = '';
-                                let userType =
-                                    "<?= $this->session->userdata('user_type'); ?>";
-                                let currentUser =
-                                    <?= (int)$this->session->userdata('po_user'); ?>;
-
-                                if (['Principal', 'Guidance Counselor', 'Registrar',
-                                        'Admin'
-                                    ].includes(userType) || data.user_id ==
-                                    currentUser) {
-                                    buttons +=
-                                        `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-1"></i>Edit</button>`;
-                                    buttons +=
-                                        `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-1"></i>Delete</button>`;
-                                }
-
-                                let isActive = data.status === 'active';
-                                let statusClass = isActive ? 'btn-outline-success' :
-                                    'btn-outline-secondary';
-                                let statusText = isActive ? 'Active' : 'Inactive';
-                                let statusIcon = isActive ? 'bx-check-circle' :
-                                    'bx-x-circle';
-
-                                buttons +=
-                                    `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-1"></i>${statusText}</button>`;
-
-                                return buttons;
-                            }
-                        }
-                        <?php endif; ?>
-                    ],
-                    responsive: true,
-                    paging: true,
-                    searching: true,
-                    ordering: true,
-                    info: true,
-                    processing: true,
-                    language: {
-                        search: '',
-                        searchPlaceholder: ' Search...',
-                        processing: '<div class="table-loader"></div>'
+        tables[gradeLevel] = tableEl.DataTable({
+            ajax: {
+                url: "<?= site_url('StudentController/fetch_students'); ?>",
+                type: "GET",
+                data: function(d) {
+                    d.grade_level = gradeLevel;
+                    d.status = tabPane.find(`#student_history_${gradeId}`).is(':checked') ? 'inactive' : 'active';
+                }
+            },
+            columns: [
+                { data: 'fullname' },
+                { data: 'age' },
+                { 
+                    data: 'gender',
+                    render: function(data) {
+                        if (data === 'Male') return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
+                        if (data === 'Female') return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
+                        return data;
                     }
+                },
+                { data: 'section' },
+                { data: 'grade_level' },
+                { 
+                    data: 'school_year',
+                    render: function(data) { return data ? new Date(data).getFullYear() : ''; }
+                },
+                { 
+                    data: 'status',
+                    render: function(data) {
+                        if (data === 'active') return '<span class="badge bg-success">Active</span>';
+                        if (data === 'inactive') return '<span class="badge bg-secondary">Inactive</span>';
+                        return data;
+                    }
+                },
+                <?php if ($user_type === 'Teacher'): ?>
+                { 
+                    data: null,
+                    render: function(data) {
+                        let buttons = '';
+                        let userType = "<?= $this->session->userdata('user_type'); ?>";
+                        let currentUser = <?= (int)$this->session->userdata('po_user'); ?>;
+
+                        if (['Principal','Guidance Counselor','Registrar','Admin'].includes(userType) || data.user_id == currentUser) {
+                            buttons += `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-1"></i>Edit</button>`;
+                            buttons += `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-1"></i>Delete</button>`;
+                        }
+
+                        let isActive = data.status === 'active';
+                        let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
+                        let statusText = isActive ? 'Active' : 'Inactive';
+                        let statusIcon = isActive ? 'bx-check-circle' : 'bx-x-circle';
+
+                        buttons += `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-1"></i>${statusText}</button>`;
+
+                        return buttons;
+                    }
+                }
+                <?php endif; ?>
+            ],
+            responsive: true,
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            processing: true,
+            language: { search: '', searchPlaceholder: ' Search...', processing: '<div class="table-loader"></div>' },
+            initComplete: function() {
+                // Get unique sections from DataTable
+                let sectionDropdown = tabPane.find('.dropdown-menu');
+                let sections = this.api().column(3, {search:'applied'}).data().unique().sort();
+                sectionDropdown.empty();
+
+                sections.each(function(section) {
+                    let checkboxId = 'chk_' + gradeId + '_' + section.replace(/\s+/g,'');
+                    sectionDropdown.append(`
+                        <li class="form-check">
+                            <input class="form-check-input filter-check" type="checkbox" value="${section}" id="${checkboxId}" checked>
+                            <label class="form-check-label" for="${checkboxId}">${section}</label>
+                        </li>
+                    `);
                 });
 
-                // Section checkbox filter
-                tabPane.find('.filter-check').on('change', function() {
-                    tables[gradeLevel].ajax.reload();
+                // Apply filtering when checkbox changes
+                sectionDropdown.find('.filter-check').on('change', function() {
+                    let selected = [];
+                    sectionDropdown.find('.filter-check:checked').each(function() {
+                        selected.push($(this).val());
+                    });
+
+                    tables[gradeLevel].column(3).search(selected.join('|'), true, false).draw(); // regex search
                 });
 
-                // Status switch
-                tabPane.find(`#student_history_${gradeId}`).on('change', function() {
-                    tables[gradeLevel].ajax.reload();
-                });
-            });
+                // Trigger initial filter to show all
+                sectionDropdown.find('.filter-check').trigger('change');
+            }
+        });
 
+        // Status switch reload
+        tabPane.find(`#student_history_${gradeId}`).on('change', function() {
+            tables[gradeLevel].ajax.reload();
+        });
+    });
 
 
 

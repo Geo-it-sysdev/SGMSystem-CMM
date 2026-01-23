@@ -236,7 +236,7 @@ if (isset($user_id)) {
                                 <!-- Section Dropdown -->
                                 <div class="col-md-6 mb-2">
                                     <label>Section</label>
-                                    <select name="section" id="section" class="form-control">
+                                    <select name="section" id="section" class="form-control" required>
                                         <option value="">Select Section</option>
                                     </select>
                                 </div>

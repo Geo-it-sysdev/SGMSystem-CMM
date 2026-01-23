@@ -110,13 +110,11 @@ if (isset($user_id)) {
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
 
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <!-- <?php if ($user_type === 'Teacher'): ?> -->
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill"
                                                             data-bs-toggle="modal" data-bs-target="#studentModal">
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
-                                                        <!-- <?php endif; ?> -->
 
                                                         <div class="dropdown">
                                                             <button
@@ -173,9 +171,7 @@ if (isset($user_id)) {
                                                             <th>Grade Level</th>
                                                             <th>School Year</th>
                                                             <th>Status</th>
-                                                            <!-- <?php if ($user_type === 'Teacher'): ?> -->
                                                             <th>Action</th>
-                                                            <!-- <?php endif; ?> -->
                                                         </tr>
                                                     </thead>
                                                     <tbody></tbody>
@@ -468,7 +464,6 @@ if (isset($user_id)) {
                                 return data;
                             }
                         },
-                        // <?php if ($user_type === 'Teacher'): ?> 
                             {
                             data: null,
                             render: function(data) {
@@ -511,7 +506,6 @@ if (isset($user_id)) {
                                 return buttons;
                             }
                         }
-                        // <?php endif; ?>
 
                     ],
                     responsive: true,

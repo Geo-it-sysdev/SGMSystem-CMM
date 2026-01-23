@@ -120,30 +120,31 @@ if (isset($user_id)) {
                                                     </div>
 
                                                     <div class="dropdown">
-                                                    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button"
-                                                            id="filterDropdown"
-                                                            data-bs-toggle="dropdown"
+                                                        <button
+                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                            type="button" id="filterDropdown" data-bs-toggle="dropdown"
                                                             aria-expanded="false">
-                                                        Filter Options
-                                                    </button>
+                                                            Filter Options
+                                                        </button>
 
-                                                    <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown">
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="active" id="chkActive">
-                                                            <label class="form-check-label" for="chkActive">
-                                                                Section A
-                                                            </label>
-                                                        </li>
+                                                        <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown">
+                                                            <li class="form-check">
+                                                                <input class="form-check-input filter-check"
+                                                                    type="checkbox" value="active" id="chkActive">
+                                                                <label class="form-check-label" for="chkActive">
+                                                                    Section A
+                                                                </label>
+                                                            </li>
 
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="inactive" id="chkInactive">
-                                                            <label class="form-check-label" for="chkInactive">
-                                                                Section B
-                                                            </label>
-                                                        </li>
-                                                    </ul>
-                                                </div>
+                                                            <li class="form-check">
+                                                                <input class="form-check-input filter-check"
+                                                                    type="checkbox" value="inactive" id="chkInactive">
+                                                                <label class="form-check-label" for="chkInactive">
+                                                                    Section B
+                                                                </label>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
 
 
                                                     <!-- Right side: Switch -->
@@ -420,6 +421,7 @@ if (isset($user_id)) {
                             d.grade_level = gradeLevel;
                             d.status = tabPane.find('#student_history').is(':checked') ?
                                 'inactive' : 'active';
+                            d.sections = selectedSections.join(',');
                         }
                     },
                     columns: [{
@@ -444,16 +446,16 @@ if (isset($user_id)) {
                         {
                             data: 'grade_level'
                         },
-                       {
+                        {
                             data: 'school_year',
-                            render: function (data) {
+                            render: function(data) {
                                 if (!data) return '';
                                 return new Date(data).getFullYear();
                             }
                         },
                         {
                             data: 'status',
-                            render: function (data, type, row) {
+                            render: function(data, type, row) {
                                 if (data === 'active') {
                                     return '<span class="badge bg-success">Active</span>';
                                 } else if (data === 'inactive') {
@@ -519,6 +521,11 @@ if (isset($user_id)) {
                         processing: '<div class="table-loader"></div>'
                     }
                 });
+            });
+
+            // ✅ Reload DataTable when checkboxes change
+            tabPane.find('.filter-check').on('change', function() {
+                tables[gradeLevel].ajax.reload();
             });
 
             // Reload DataTable when switch is toggled

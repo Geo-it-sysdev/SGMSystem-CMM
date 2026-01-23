@@ -28,8 +28,13 @@ public function get_all_students($grade_level = null, $section = null, $status =
         $this->db->where('grade_level', $grade_level);
     }
 
+    // ✅ Filter by single or multiple sections
     if ($section) {
-        $this->db->where('section', $section);
+        if (is_array($section)) {
+            $this->db->where_in('section', $section);
+        } else {
+            $this->db->where('section', $section);
+        }
     }
 
     $this->db->where('status', $status ?: 'active');

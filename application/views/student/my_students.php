@@ -119,17 +119,16 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
-                                                    <div class="dropdown">
-                                                        <button
-                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button" data-bs-toggle="dropdown">
-                                                            Filter Sections
-                                                        </button>
+                                                  <div class="dropdown mb-3">
+    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
+        type="button" data-bs-toggle="dropdown">
+        Filter by Section
+    </button>
 
-                                                        <ul class="dropdown-menu p-3" id="sectionFilter">
-                                                            <!-- dynamically filled -->
-                                                        </ul>
-                                                    </div>
+    <ul class="dropdown-menu p-3" id="sectionFilter">
+        <!-- dynamically generated -->
+    </ul>
+</div>
 
 
 
@@ -392,8 +391,13 @@ if (isset($user_id)) {
         $(document).ready(function() {
 
             let tables = {};
+            let activeGrade = null;
 
+            // ===============================
+            // INIT DATATABLES (YOUR CODE)
+            // ===============================
             $('.tab-pane').each(function() {
+
                 let tabPane = $(this);
                 let tableEl = tabPane.find('table');
                 let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
@@ -402,9 +406,11 @@ if (isset($user_id)) {
                     ajax: {
                         url: "<?= site_url('StudentController/fetch_students'); ?>",
                         type: "GET",
-                        dataSrc: function(json) {
-                            console.log('AJAX DATA:', json.data); // 🔍 DEBUG
-                            return json.data;
+                        data: function(d) {
+                            d.grade_level = gradeLevel;
+                            d.status = tabPane.find('#student_history').is(':checked') ?
+                                'inactive' :
+                                'active';
                         }
                     },
 
@@ -419,52 +425,34 @@ if (isset($user_id)) {
                         },
                         {
                             data: 'section'
-                        }, // ⭐ THIS IS THE SOURCE
+                        }, // ⭐ SOURCE OF FILTER DATA
                         {
                             data: 'grade_level'
                         },
                         {
-                            data: 'school_year'
+                            data: 'school_year',
+                            render: function(data) {
+                                return data ? new Date(data).getFullYear() : '';
+                            }
                         },
                         {
-                            data: 'status'
+                            data: 'status',
+                            render: function(data) {
+                                return data === 'active' ?
+                                    '<span class="badge bg-success">Active</span>' :
+                                    '<span class="badge bg-secondary">Inactive</span>';
+                            }
                         }
                     ],
 
                     initComplete: function() {
-                        let table = this.api();
-                        let sectionColumnIndex = 3;
-
-                        // GET UNIQUE SECTIONS
-                        let sections = table
-                            .column(sectionColumnIndex)
-                            .data()
-                            .unique()
-                            .sort();
-
-                        let sectionFilter = $('#sectionFilter');
-                        sectionFilter.empty();
-
-                        sections.each(function(section) {
-                            if (!section) return;
-
-                            sectionFilter.append(`
-                    <li class="form-check">
-                        <input class="form-check-input section-check"
-                            type="checkbox"
-                            value="${section}">
-                        <label class="form-check-label">
-                            ${section}
-                        </label>
-                    </li>
-                `);
-                        });
+                        if (!activeGrade) {
+                            activeGrade = gradeLevel;
+                            buildSectionFilter(gradeLevel);
+                        }
                     }
                 });
             });
-
-
-
 
             // Reload DataTable when switch is toggled
             $(document).on('change', '#student_history', function() {
@@ -476,6 +464,50 @@ if (isset($user_id)) {
                 }
             });
 
+            function buildSectionFilter(gradeLevel) {
+
+                let table = tables[gradeLevel];
+                let filterBox = $('#sectionFilter');
+
+                filterBox.empty();
+
+                let sections = table
+                    .column(3) // section column index
+                    .data()
+                    .unique()
+                    .sort();
+
+                sections.each(function(section) {
+                    if (!section) return;
+
+                    filterBox.append(`
+            <li class="form-check">
+                <input class="form-check-input section-check"
+                    type="checkbox"
+                    value="${section}">
+                <label class="form-check-label">${section}</label>
+            </li>
+        `);
+                });
+            }
+
+
+            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+
+                let target = $(e.target).attr('data-bs-target');
+                let gradeText = $(target).find('h5').text();
+
+                activeGrade = gradeText.replace(' Students', '').trim();
+
+                $('#sectionFilter').empty();
+
+                tables[activeGrade]
+                    .column(3)
+                    .search('')
+                    .draw();
+
+                buildSectionFilter(activeGrade);
+            });
 
 
 

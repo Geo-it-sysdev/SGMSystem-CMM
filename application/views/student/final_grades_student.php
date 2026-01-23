@@ -231,8 +231,8 @@
                                     Assessment</label> <input type="text" id="total_quarterly_assessment"
                                     name="total_quarterly_assessment" class="form-control underline-input"
                                     autocomplete="off" readonly style="text-align:center;"> </div>
-                                    <input type="hidden" id="section">
-<input type="hidden" id="teacher">
+                            <input type="hidden" id="section">
+                            <input type="hidden" id="teacher">
 
                         </div> <!-- Grades Table -->
                     </div>
@@ -437,7 +437,7 @@
                     'th, td{border: 1px solid #000; padding: 8px; text-align: left;}');
                 printWindow.document.write('th{background-color: #f2f2f2;}');
                 printWindow.document.write(
-                '.header-table td{border: none; padding: 4px;}'); // No border for header
+                    '.header-table td{border: none; padding: 4px;}'); // No border for header
                 printWindow.document.write('</style>');
                 printWindow.document.write('</head><body>');
 
@@ -447,7 +447,7 @@
                 printWindow.document.write('<table class="header-table">');
                 printWindow.document.write('<tr>');
                 printWindow.document.write('<td style="text-align:left;">Subject: ' + subject +
-                '</td>');
+                    '</td>');
                 printWindow.document.write('<td style="text-align:right;">Quarter: ' + quarter +
                     '</td>');
                 printWindow.document.write('</tr>');
@@ -463,7 +463,7 @@
                 printWindow.document.write('<table>');
                 printWindow.document.write(
                     '<thead><tr><th>Student Name</th><th>Section</th><th>Final Grades</th><th>Remarks</th></tr></thead>'
-                    );
+                );
                 printWindow.document.write('<tbody>');
 
                 for (let i = 0; i < data.length; i++) {
@@ -500,7 +500,7 @@
                 $('#subject').val(subject);
                 $('#section').val(section);
                 $('#full_name').val(full_name);
-                
+
 
                 // Destroy existing table if it exists
                 if ($.fn.DataTable.isDataTable('#studentFinalGradesTable')) {
@@ -637,8 +637,16 @@
                 });
 
                 // Show modal
+                $('#finalGradesModal').modal('hide');
+                // Then show child modal
                 $('#studentDetailsModal').modal('show');
+
             });
+
+
+
+
+
 
             $(document).on('click', '#btnPrintFinalGrades', function() {
                 // Student info
@@ -724,7 +732,9 @@
             });
 
 
-
+            $('#studentDetailsModal').on('hidden.bs.modal', function() {
+                $('#finalGradesModal').modal('show');
+            });
 
 
 

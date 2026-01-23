@@ -594,14 +594,25 @@
                 );
 
                 // Fetch grades
-                $.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>", function(grades) {
-                    let gradeSelect = $('#grade_level');
-                    gradeSelect.empty().append(
-                        '<option value="" selected disabled>-- Select Grade Level --</option>'
-                    );
-                    grades.forEach(g => gradeSelect.append('<option value="' + g + '">' + g +
-                        '</option>'));
-                });
+               // Fetch grades
+$.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>", function(grades) {
+    let gradeSelect = $('#grade_level');
+    gradeSelect.empty().append(
+        '<option value="" disabled>-- Select Grade Level --</option>'
+    );
+
+    // Determine default grade (active tab)
+    let defaultGrade = $('.tab-pane.show.active').attr('id'); // e.g., "grade7-student"
+    defaultGrade = defaultGrade ? defaultGrade.replace('-student', '') : '';
+
+    grades.forEach(g => {
+        // Convert grade to lowercase & remove spaces for comparison
+        let gradeId = g.toLowerCase().replace(/\s+/g,'');
+        let selected = (gradeId === defaultGrade) ? 'selected' : '';
+        gradeSelect.append('<option value="' + g + '" ' + selected + '>' + g + '</option>');
+    });
+});
+
 
                 // Fetch subjects
                 $.getJSON("<?= site_url('StudentController/get_allowed_subjects'); ?>", function(

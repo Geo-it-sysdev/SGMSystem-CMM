@@ -793,7 +793,7 @@ public function update_student()
         $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
         $this->db->join('tbl_students AS d', 'd.id = b.student_id', 'left');
         $this->db->where('d.status', 'active'); 
-        $this->db->where('b.section IS NOT NULL', null, false);
+        // $this->db->where('b.section IS NOT NULL', null, false);
 
         if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
             $this->db->where('a.user_id', $user_id);

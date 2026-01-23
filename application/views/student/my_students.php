@@ -125,7 +125,7 @@ if (isset($user_id)) {
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
                                                         <?php endif; ?>
-                                                        
+
                                                         <div class="dropdown">
                                                             <button
                                                                 class="btn btn-outline-primary dropdown-toggle rounded-pill"
@@ -272,6 +272,39 @@ if (isset($user_id)) {
                 </form>
             </div>
         </div>
+
+
+
+        <!-- MODAL -->
+<!-- MODAL -->
+<div class="modal fade" id="TagstudentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign Students</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <select id="section_dropdown" class="form-select mb-3">
+                    <option value="">Select Section</option>
+                </select>
+
+                <table class="table table-bordered" id="students_table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="check_all"></th>
+                            <th>Student Name</th>
+                            <th>Section</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <button id="submit_selected" class="btn btn-primary">Submit Selected</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
         <!-- Add/View Address Modal -->
@@ -830,6 +863,68 @@ if (isset($user_id)) {
 
         });
         </script>
+
+
+<script>
+let activeGrade = $('.nav-link.active').text().replace(' Students','').trim();
+
+// Load sections for active grade
+function loadSections() {
+    $.post('<?= site_url("StudentController/get_sections_by_student") ?>', { grade_level: activeGrade }, function(sections){
+        let html = '<option value="">Select Section</option>';
+        sections.forEach(sec => html += `<option value="${sec.section}">${sec.section}</option>`);
+        $('#section_dropdown').html(html);
+    }, 'json');
+}
+
+// Load students for selected section
+$('#section_dropdown').on('change', function(){
+    let section = $(this).val();
+    if (!section) return;
+    $.post('<?= site_url("StudentController/get_students") ?>',
+        { grade_level: activeGrade, section: section }, function(students){
+        let html = '';
+        students.forEach(st => {
+            html += `<tr>
+                        <td><input type="checkbox" class="student_checkbox" value="${st.id}"></td>
+                        <td>${st.fullname}</td>
+                        <td>${st.section}</td>
+                    </tr>`;
+        });
+        $('#students_table tbody').html(html);
+    }, 'json');
+});
+
+// Update active grade when tab changes
+$('.nav-link').on('shown.bs.tab', function(e){
+    activeGrade = $(e.target).text().replace(' Students','').trim();
+    loadSections();
+});
+
+// Check/uncheck all
+$(document).on('change','#check_all',function(){ $('.student_checkbox').prop('checked', $(this).prop('checked')); });
+
+// Submit selected students to tbl_student_assign_by_teacher
+$('#submit_selected').on('click', function(){
+    let ids = [];
+    $('.student_checkbox:checked').each(function(){ ids.push($(this).val()); });
+    if(ids.length == 0){ alert('No students selected'); return; }
+
+    $.post('<?= site_url("StudentController/submit_selected") ?>', { student_ids: ids }, function(res){
+        if(res.status == 'success'){
+            alert('Students assigned successfully!');
+            $('#students_table tbody').html('');
+            $('#section_dropdown').val('');
+            $('#TagstudentModal').modal('hide');
+        } else {
+            alert(res.message);
+        }
+    }, 'json');
+});
+
+// Initial load
+loadSections();
+</script>
 
     </div>
     </div>

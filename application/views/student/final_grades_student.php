@@ -636,10 +636,15 @@
 
                 });
 
-                // Show modal
+               // Mark that we came from finalGradesModal
+                reopenFinalGradesModal = true;
+
+                // Hide parent modal
                 $('#finalGradesModal').modal('hide');
-                // Then show child modal
+
+                // Show child modal
                 $('#studentDetailsModal').modal('show');
+
 
             });
 
@@ -732,19 +737,27 @@
             });
 
 
-            // $('#studentDetailsModal').on('hidden.bs.modal', function() {
-            //     $('#finalGradesModal').modal('show');
-            // });
+            $('#studentDetailsModal').on('hidden.bs.modal', function () {
+                if (reopenFinalGradesModal) {
+                    reopenFinalGradesModal = false;
+
+                    // Clean backdrop issues
+                    $('body').addClass('modal-open');
+
+                    // Reopen last modal
+                    $('#finalGradesModal').modal('show');
+                }
+            });
 
 
 
-            // Optional: clear tbody only when modal closes
-            $('#finalGradesModal').on('hidden.bs.modal', function() {
+                        $('#finalGradesModal').on('hidden.bs.modal', function() {
                 if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
                     $('#finalGradesTable').DataTable().clear().destroy();
                 }
                 $('#finalGradesTable tbody').empty();
             });
+
 
         });
         </script>

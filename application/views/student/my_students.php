@@ -436,28 +436,35 @@ if (isset($user_id)) {
                     }
                 },
                 <?php if ($user_type === 'Teacher'): ?>
-                { 
-                    data: null,
-                    render: function(data) {
-                        let buttons = '';
-                        let userType = "<?= $this->session->userdata('user_type'); ?>";
-                        let currentUser = <?= (int)$this->session->userdata('po_user'); ?>;
+               {
+    data: null,
+    render: function(data) {
+        let buttons = '';
+        let userType = "<?= $this->session->userdata('user_type'); ?>";
+        let currentUser = <?= (int)$this->session->userdata('po_user'); ?>;
 
-                        if (['Principal','Guidance Counselor','Registrar','Admin'].includes(userType) || data.user_id == currentUser) {
-                            buttons += `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-2"></i>Edit</button>`;
-                            buttons += `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-2"></i>Delete</button>`;
-                        }
+        // Buttons string
+        let btns = '';
 
-                        let isActive = data.status === 'active';
-                        let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
-                        let statusText = isActive ? 'Active' : 'Inactive';
-                        let statusIcon = isActive ? 'bx-check-circle' : 'bx-x-circle';
+        if (['Principal','Guidance Counselor','Registrar','Admin'].includes(userType) || data.user_id == currentUser) {
+            btns += `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-2"></i>Edit</button>`;
+            btns += `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-2"></i>Delete</button>`;
+        }
 
-                        buttons += `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-2"></i>${statusText}</button>`;
+        let isActive = data.status === 'active';
+        let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
+        let statusText = isActive ? 'Active' : 'Inactive';
+        let statusIcon = isActive ? 'bx-check-circle' : 'bx-x-circle';
 
-                        return buttons;
-                    }
-                }
+        btns += `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-2"></i>${statusText}</button>`;
+
+        // Wrap buttons in flex container with spacing
+        buttons = `<div class="d-flex gap-2 flex-wrap">${btns}</div>`;
+
+        return buttons;
+    }
+}
+
                 <?php endif; ?>
             ],
             responsive: true,

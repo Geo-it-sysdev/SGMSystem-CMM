@@ -120,7 +120,7 @@ if (isset($user_id)) {
                                                     </div>
 
                                                     <div class="dropdown">
-                                                    <button class="btn btn-outline-secondary dropdown-toggle rounded-pill"
+                                                    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
                                                             type="button"
                                                             id="filterDropdown"
                                                             data-bs-toggle="dropdown"

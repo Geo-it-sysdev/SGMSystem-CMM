@@ -140,7 +140,7 @@ if (isset($user_id)) {
                                                                         id="<?= $grade_id ?>_chk_<?= $sec ?>" checked>
                                                                     <label class="form-check-label"
                                                                         for="<?= $grade_id ?>_chk_<?= $sec ?>">
-                                                                        <?= $sec ?>
+                                                                       section <?= $sec ?>
                                                                     </label>
                                                                 </li>
                                                                 <?php endforeach; ?>
@@ -554,27 +554,26 @@ if (isset($user_id)) {
             });
 
 
-            $(document).on('change', '.filter-check', function() {
-                let tabPane = $(this).closest('.tab-pane');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+          $(document).on('change', '.filter-check', function() {
+    let tabPane = $(this).closest('.tab-pane');
+    let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-                // Get all checked sections
-                let selectedSections = [];
-                tabPane.find('.filter-check:checked').each(function() {
-                    selectedSections.push($(this).val());
-                });
+    // Get all checked sections
+    let selectedSections = [];
+    tabPane.find('.filter-check:checked').each(function() {
+        selectedSections.push($(this).val());
+    });
 
-                if (tables[gradeLevel]) {
-                    if (selectedSections.length > 0) {
-                        // Filter the table based on checked sections
-                        tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false)
-                            .draw();
-                    } else {
-                        // If no sections are selected, show all rows
-                        tables[gradeLevel].column(3).search('').draw();
-                    }
-                }
-            });
+    if (tables[gradeLevel]) {
+        if (selectedSections.length > 0) {
+            // Filter the table based on checked sections (regex search)
+            tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
+        } else {
+            // No sections selected => clear table to show "No available data"
+            tables[gradeLevel].clear().draw();
+        }
+    }
+});
 
 
 

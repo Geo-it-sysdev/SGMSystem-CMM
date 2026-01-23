@@ -63,7 +63,7 @@ if (isset($user_id)) {
                 </li>
 
 
- <!--============================ User List ====================================-->
+                 <!--============================ User List ====================================-->
 
                 <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                 <li class="nav-item">
@@ -88,7 +88,7 @@ if (isset($user_id)) {
                     </a>
                 </li>
                 <?php endif; ?>
-                
+
                 <!--============================ User List ====================================-->
                 <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                 <li class="nav-item">

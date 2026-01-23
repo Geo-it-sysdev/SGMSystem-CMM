@@ -120,15 +120,12 @@ class StudentController extends CI_Controller {
             return;
         }
 
-        $this->load->database();
 
-        // Perform the update
         $update = $this->db->set('status', $status)
                         ->where('id', $id)
                         ->update('tbl_students');
 
         if ($update) {
-            // Successfully ran the query (status updated or already the same)
             echo json_encode(['status' => 'success']);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Update failed.']);

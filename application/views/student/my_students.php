@@ -108,29 +108,40 @@ if (isset($user_id)) {
 
 
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
-                                                    <!-- Left side: Add Button -->
-                                                    <div>
-                                                        <?php if ($user_type === 'Teacher'): ?>
-                                                        <button type="button"
-                                                            class="btn btn-outline-success add-btn rounded-pill"
-                                                            data-bs-toggle="modal" data-bs-target="#studentModal">
-                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
-                                                        </button>
-                                                        <?php endif; ?>
-                                                    </div>
+                                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <?php if ($user_type === 'Teacher'): ?>
+                                                            <button type="button"
+                                                                class="btn btn-outline-success add-btn rounded-pill"
+                                                                data-bs-toggle="modal" data-bs-target="#studentModal">
+                                                                <i class="ri-add-line align-bottom me-1"></i>Add Student
+                                                            </button>
+                                                            <?php endif; ?>
 
-                                                    <div class="dropdown">
-                                                        <button
-                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button" id="filterDropdown_<?= $grade_id ?>"
-                                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                                            Filter Sections
-                                                        </button>
+                                                            <div class="dropdown">
+                                                                <button
+                                                                    class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                                    type="button" id="filterDropdown_<?= $grade_id ?>"
+                                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                                    Filter Sections
+                                                                </button>
 
-                                                        <ul class="dropdown-menu p-3"
-                                                            aria-labelledby="filterDropdown_<?= $grade_id ?>">
-                                                            <!-- We'll generate checkboxes dynamically with JS -->
-                                                        </ul>
+                                                                <ul class="dropdown-menu p-3"
+                                                                    aria-labelledby="filterDropdown_<?= $grade_id ?>">
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Right side: Switch -->
+                                                        <div class="flex-shrink-0">
+                                                            <div
+                                                                class="form-check form-switch form-switch-right form-switch-md">
+                                                                <label for="student_history" class="form-label">Show
+                                                                    Inactive Student</label>
+                                                                <input class="form-check-input code-switcher"
+                                                                    type="checkbox" id="student_history" />
+                                                            </div>
+                                                        </div>
                                                     </div>
 
 
@@ -421,9 +432,9 @@ if (isset($user_id)) {
                             data: 'gender',
                             render: function(data) {
                                 if (data === 'Male')
-                                return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
+                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
                                 if (data === 'Female')
-                                return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
+                                    return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
                                 return data;
                             }
                         },
@@ -443,9 +454,9 @@ if (isset($user_id)) {
                             data: 'status',
                             render: function(data) {
                                 if (data === 'active')
-                                return '<span class="badge bg-success">Active</span>';
+                                    return '<span class="badge bg-success">Active</span>';
                                 if (data === 'inactive')
-                                return '<span class="badge bg-secondary">Inactive</span>';
+                                    return '<span class="badge bg-secondary">Inactive</span>';
                                 return data;
                             }
                         },

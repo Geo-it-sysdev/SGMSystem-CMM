@@ -790,6 +790,8 @@ public function update_student()
         $this->db->from('tbl_activities_header AS a');
         $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
         $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
+        $this->db->join('tbl_students AS d', 'd.id = b.student_id', 'left');
+        $this->db->where('d.status', 'active'); 
 
         if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
             $this->db->where('a.user_id', $user_id);

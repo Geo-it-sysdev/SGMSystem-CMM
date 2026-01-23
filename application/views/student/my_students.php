@@ -140,7 +140,7 @@ if (isset($user_id)) {
                                                                         id="<?= $grade_id ?>_chk_<?= $sec ?>" checked>
                                                                     <label class="form-check-label"
                                                                         for="<?= $grade_id ?>_chk_<?= $sec ?>">
-                                                                       section <?= $sec ?>
+                                                                         <?= $sec ?>
                                                                     </label>
                                                                 </li>
                                                                 <?php endforeach; ?>
@@ -554,28 +554,23 @@ if (isset($user_id)) {
             });
 
 
-          $(document).on('change', '.filter-check', function() {
-    let tabPane = $(this).closest('.tab-pane');
-    let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+            $(document).on('change', '.filter-check', function() {
+                let tabPane = $(this).closest('.tab-pane');
+                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-    // Get all checked sections
-    let selectedSections = [];
-    tabPane.find('.filter-check:checked').each(function() {
-        selectedSections.push($(this).val());
-    });
+                // Get all checked sections
+                let selectedSections = [];
+                tabPane.find('.filter-check:checked').each(function() {
+                    selectedSections.push($(this).val());
+                });
 
-    if (tables[gradeLevel]) {
-        if (selectedSections.length > 0) {
-            // Show table and filter by selected sections
-            tabPane.find('table').show();
-            tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
-        } else {
-            // Hide table if no sections are checked
-            tabPane.find('table').hide();
-        }
-    }
-});
-
+                if (tables[gradeLevel]) {
+                    // Filter the table based on checked sections
+                    tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
+                    // column(3) is "Section" column index (0-based)
+                    // true = treat as regex, false = do not match exact
+                }
+            });
 
 
 

@@ -16,7 +16,7 @@ public function get_all_students($grade_level = null, $section = null, $status =
     $user_id   = $this->session->userdata('po_user');
     $user_type = $this->session->userdata('user_type');
 
-    $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at, status')
+    $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at AS school_year, status')
              ->from('tbl_students');
 
     if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor','Admin'])) {

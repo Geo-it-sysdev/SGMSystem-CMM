@@ -239,14 +239,14 @@ if (isset($user_id)) {
 
                                 <div class="col-md-6 mb-2">
                                     <label>Section</label>
-                                    <select name="section" id="section" class="form-control" required>
+                                    <select name="section" id="section" class="form-control" >
                                         <option value="">Select Section</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6 mb-2">
                                     <label>Grade Level</label>
-                                    <select name="grade_level" id="grade_level" class="form-control" required>
+                                    <select name="grade_level" id="grade_level" class="form-control" >
                                         <option value="" selected disabled>Select Grade Level</option>
                                         <?php if(!empty($allowed_grades)): ?>
                                         <?php foreach($allowed_grades as $grade): ?>

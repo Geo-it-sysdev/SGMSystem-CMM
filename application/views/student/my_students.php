@@ -553,52 +553,20 @@ if (isset($user_id)) {
                 }
             });
 
-
+            // Apply section filter
             $(document).on('change', '.filter-check', function() {
                 let tabPane = $(this).closest('.tab-pane');
                 let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-                // Get all checked sections
                 let selectedSections = [];
                 tabPane.find('.filter-check:checked').each(function() {
                     selectedSections.push($(this).val());
                 });
 
                 if (tables[gradeLevel]) {
-                    // Filter the table based on checked sections
                     tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
-                    // column(3) is "Section" column index (0-based)
-                    // true = treat as regex, false = do not match exact
                 }
             });
-
-
-
-
-
-            // <button class="btn btn-sm btn-outline-success AddAddressBtn">
-            //                             <i class="bx bx-plus-circle"></i> View / Add Info
-            //                         </button>
-
-            // Open modal on AddAddressBtn click
-            $(document).on('click', '.AddAddressBtn', function() {
-                // Reset form and fill sample data
-                $('#addressForm')[0].reset();
-                $('#studentName').val('Juan Dela Cruz');
-                $('#contactNo').val('+63 9123456789');
-                $('#email').val('juandelacruz@gmail.com');
-                $('#bloodType').val('O+');
-                $('#motherName').val('Jane Dela Cruz');
-                $('#fatherName').val('John Sr. Dela Cruz');
-                $('#siblings').val(2);
-                $('#citizen').val('Filipino');
-                $('#address').val('123 Sample Street, Quezon City');
-                $('#previewImage').attr('src', 'https://via.placeholder.com/100');
-
-                // Show modal
-                $('#addressModal').modal('show');
-            });
-
 
             // Toggle Status Button
             $(document).on('click', '.toggleStatusBtn', function() {
@@ -618,13 +586,11 @@ if (isset($user_id)) {
                         let res = JSON.parse(response);
 
                         if (res.status === 'success') {
-                            // Show alert based on new status
                             let alertClass = newStatus === 'inactive' ? 'alert-success' :
                                 'alert-secondary';
                             let alertText = newStatus === 'inactive' ?
                                 'Student set to Inactive!' : 'Student set to Active!';
 
-                            // Create alert element
                             let alertEl = $(`
                     <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
                         ${alertText}
@@ -632,25 +598,21 @@ if (isset($user_id)) {
                     </div>
                 `);
 
-                            // Append to a container (make sure you have #alertContainer in your HTML)
                             $('#alertContainer').append(alertEl);
 
-                            // Automatically remove after 3 seconds
                             setTimeout(() => {
                                 alertEl.alert('close');
                             }, 3000);
 
-                            // Reload the DataTable of the current tab
                             let tabPane = btn.closest('.tab-pane');
                             let gradeLevel = tabPane.find('h5').text().replace(' Students',
                                 '').trim();
 
                             if (tables[gradeLevel]) {
                                 tables[gradeLevel].ajax.reload(null,
-                                    false); // false = keep current pagination
+                                    false); 
                             }
 
-                            // Update the button data-status to the new status
                             btn.data('status', newStatus);
                         } else {
                             alert(res.message || 'Error updating status.');
@@ -661,6 +623,36 @@ if (isset($user_id)) {
                     }
                 });
             });
+
+
+
+
+
+            // <button class="btn btn-sm btn-outline-success AddAddressBtn">
+            //                             <i class="bx bx-plus-circle"></i> View / Add Info
+            //                         </button>
+
+            // Open modal on AddAddressBtn click
+            // $(document).on('click', '.AddAddressBtn', function() {
+            //     // Reset form and fill sample data
+            //     $('#addressForm')[0].reset();
+            //     $('#studentName').val('Juan Dela Cruz');
+            //     $('#contactNo').val('+63 9123456789');
+            //     $('#email').val('juandelacruz@gmail.com');
+            //     $('#bloodType').val('O+');
+            //     $('#motherName').val('Jane Dela Cruz');
+            //     $('#fatherName').val('John Sr. Dela Cruz');
+            //     $('#siblings').val(2);
+            //     $('#citizen').val('Filipino');
+            //     $('#address').val('123 Sample Street, Quezon City');
+            //     $('#previewImage').attr('src', 'https://via.placeholder.com/100');
+
+            //     // Show modal
+            //     $('#addressModal').modal('show');
+            // });
+
+
+            
 
 
 

@@ -295,7 +295,9 @@ public function update_student()
         ");
         $this->db->from('tbl_activities_header AS a');
         $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
+        $this->db->join('tbl_students AS c', 'c.id = b.student_id', 'left');
         $this->db->where('a.id', $activity_id);
+        $this->db->where('c.status', 'active'); 
         $query = $this->db->get();
     
         echo json_encode($query->result());

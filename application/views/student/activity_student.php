@@ -580,7 +580,6 @@
 
     // Store instance for later use
     $(this).data('tableInstance', table);
-});
 
             <?php if ($is_admin || $grade_levels): ?>
 

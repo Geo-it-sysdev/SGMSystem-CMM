@@ -51,18 +51,11 @@ class StudentController extends CI_Controller {
         echo json_encode($student);
     }
 
-   public function add_student()
+    public function add_student()
 {
     $user_id = $this->session->userdata('po_user');
     $fullname = $this->input->post('fullname');
-    $grade_level = $this->input->post('grade_level');  // ensure grade_level is retrieved
 
-    if (!$fullname || !$grade_level) {
-        echo json_encode(['status' => 'error', 'message' => 'Fullname and Grade Level are required']);
-        return;
-    }
-
-    // Check for duplicate
     if ($this->StudentModel->check_duplicate($user_id, $fullname)) {
         echo json_encode(['status' => 'duplicate']);
         return;
@@ -74,30 +67,19 @@ class StudentController extends CI_Controller {
         'age'         => $this->input->post('age'),
         'gender'      => $this->input->post('gender'),
         'section'     => $this->input->post('section'),
-        'grade_level' => $grade_level,
+        'grade_level' => $this->input->post('grade_level'),
+         'created_at' => date('Y-m-d')
     ];
 
-    $inserted = $this->StudentModel->insert_student($data);
-
-    if ($inserted) {
-        echo json_encode(['status' => 'success']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Failed to save student']);
-    }
+    $this->StudentModel->insert_student($data);
+    echo json_encode(['status' => 'success']);
 }
 
 public function update_student()
 {
     $id = $this->input->post('id');
     $fullname = $this->input->post('fullname');
-    $grade_level = $this->input->post('grade_level');
 
-    if (!$id || !$fullname || !$grade_level) {
-        echo json_encode(['status' => 'error', 'message' => 'ID, Fullname, and Grade Level are required']);
-        return;
-    }
-
-    // Check for duplicate on update
     if ($this->StudentModel->check_duplicate_on_update($id, $fullname)) {
         echo json_encode(['status' => 'duplicate']);
         return;
@@ -108,11 +90,11 @@ public function update_student()
         'age'         => $this->input->post('age'),
         'gender'      => $this->input->post('gender'),
         'section'     => $this->input->post('section'),
-        'grade_level' => $grade_level,
+        'grade_level' => $this->input->post('grade_level'),
+        'created_at' => date('Y-m-d')
     ];
 
     $updated = $this->StudentModel->update_student($id, $data);
-
     echo json_encode(['status' => $updated ? 'updated' : 'unauthorized']);
 }
 
@@ -282,7 +264,7 @@ public function update_student()
                 'section' => $student->section,
                 'score' => $score,
                 'remarks' => null,
-                'date_created' => date('Y-m-d') 
+                'date_created' => date('Y-m-d') // match DATE type
             ];
 
             $this->db->insert('tbl_activities_lines', $data);

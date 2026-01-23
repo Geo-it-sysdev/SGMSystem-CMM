@@ -423,7 +423,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="editSection" class="form-label">Section</label>
-                                <input type="text" id="editSection" name="section" class="form-control" required>
+                                <input type="text" id="editSection" name="section" class="form-control" readonly>
                             </div>
                             <div class="mb-3">
                                 <label for="editScore" class="form-label">Score</label>

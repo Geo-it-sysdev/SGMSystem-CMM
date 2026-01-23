@@ -225,12 +225,12 @@ if (isset($user_id)) {
                                 <div class="col-md-6 mb-2">
                                     <label>Age</label>
                                     <input type="number" name="age" id="age" class="form-control"
-                                        placeholder="Enter Age">
+                                        placeholder="Enter Age" required>
                                 </div>
 
                                 <div class="col-md-6 mb-2">
                                     <label>Gender</label>
-                                    <select name="gender" id="gender" class="form-control">
+                                    <select name="gender" id="gender" class="form-control" required>
                                         <option value="">Select Gender</option>
                                         <option>Male</option>
                                         <option>Female</option>
@@ -239,14 +239,14 @@ if (isset($user_id)) {
 
                                 <div class="col-md-6 mb-2">
                                     <label>Section</label>
-                                    <select name="section" id="section" class="form-control">
+                                    <select name="section" id="section" class="form-control" required>
                                         <option value="">Select Section</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6 mb-2">
                                     <label>Grade Level</label>
-                                    <select name="grade_level" id="grade_level" class="form-control">
+                                    <select name="grade_level" id="grade_level" class="form-control" required>
                                         <option value="" selected disabled>Select Grade Level</option>
                                         <?php if(!empty($allowed_grades)): ?>
                                         <?php foreach($allowed_grades as $grade): ?>
@@ -767,8 +767,25 @@ if (isset($user_id)) {
             });
 
             // ================== SAVE (ADD OR UPDATE) ===================
-            $('#studentForm').on('submit', function(e) {
+           $('#studentForm').on('submit', function(e) {
                 e.preventDefault();
+
+                // Check all required inputs
+                let isValid = true;
+                $(this).find('[required]').each(function() {
+                    if (!$(this).val()) {
+                        isValid = false;
+                        $(this).addClass('is-invalid');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire('Error', 'Please fill in all required fields.', 'error');
+                    return;
+                }
+
                 let id = $('#id').val();
                 let url = id ? "<?= site_url('StudentController/update_student'); ?>" :
                     "<?= site_url('StudentController/add_student'); ?>";

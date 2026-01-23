@@ -142,6 +142,8 @@ if (isset($user_id)) {
                                                             <th>Gender</th>
                                                             <th>Section</th>
                                                             <th>Grade Level</th>
+                                                            <th>School Year</th>
+                                                            <th>Status</th>
                                                             <?php if ($user_type === 'Teacher'): ?>
                                                             <th>Action</th>
                                                             <?php endif; ?>
@@ -416,6 +418,20 @@ if (isset($user_id)) {
                         {
                             data: 'grade_level'
                         },
+                        {
+                            data: 'school_year'
+                        },
+                        {
+                            data: 'status',
+                            render: function (data, type, row) {
+                                if (data === 'active') {
+                                    return '<span class="badge bg-success">Active</span>';
+                                } else if (data === 'inactive') {
+                                    return '<span class="badge bg-secondary">Inactive</span>';
+                                }
+                                return data; // fallback just in case
+                            }
+                        },
                         <?php if ($user_type === 'Teacher'): ?> {
                             data: null,
                             render: function(data) {
@@ -426,7 +442,9 @@ if (isset($user_id)) {
                                     <?= (int) $this->session->userdata('po_user'); ?>;
 
                                 // Edit / Delete buttons
-                                if (['Principal', 'Guidance Counselor', 'Registrar', 'Admin']
+                                if (['Principal', 'Guidance Counselor', 'Registrar',
+                                        'Admin'
+                                    ]
                                     .includes(userType) || data.user_id == currentUser
                                 ) {
                                     buttons += `

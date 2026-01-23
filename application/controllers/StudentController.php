@@ -17,50 +17,16 @@ class StudentController extends CI_Controller {
     public function fetch_students()
     {
         $grade_level = $this->input->get('grade_level');
-        $section     = $this->input->get('section'); // optional if you want to filter by section
         $status      = $this->input->get('status');
 
-        $user_id   = $this->session->userdata('po_user');
-        $user_type = $this->session->userdata('user_type');
-
-        $this->load->database();
-
-        $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at AS school_year, status')
-                ->from('tbl_students');
-
-        // Restrict access for non-admin users
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor','Admin'])) {
-            if (!$user_id) {
-                echo json_encode(['data' => []]);
-                return;
-            }
-            $this->db->where('user_id', $user_id);
-        }
-
-        // Filter by grade level
-        if ($grade_level) {
-            $this->db->where('grade_level', $grade_level);
-        }
-
-        // Filter by section
-        if ($section) {
-            if (is_array($section)) {
-                $this->db->where_in('section', $section);
-            } else {
-                $this->db->where('section', $section);
-            }
-        }
-
-        // Filter by status
-        if ($status) {
-            $this->db->where('status', $status);
-        }
-
-        $students = $this->db->get()->result_array();
+        $students = $this->StudentModel->get_all_students(
+            $grade_level,
+            null, 
+            $status
+        );
 
         echo json_encode(['data' => $students]);
     }
-
 
     public function get_section_by_grade()
     {

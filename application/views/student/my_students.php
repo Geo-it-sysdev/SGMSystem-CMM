@@ -120,44 +120,17 @@ if (isset($user_id)) {
                                                     </div>
 
                                                     <div class="dropdown">
-                                                    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button"
-                                                            id="filterDropdown"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false">
-                                                        Filter Options
-                                                    </button>
+                                                        <button
+                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                            type="button" data-bs-toggle="dropdown">
+                                                            Filter Sections
+                                                        </button>
 
-                                                    <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown">
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="active" id="chkActive">
-                                                            <label class="form-check-label" for="chkActive">
-                                                                Active
-                                                            </label>
-                                                        </li>
+                                                        <ul class="dropdown-menu p-3" id="sectionFilter">
+                                                            <!-- dynamically filled -->
+                                                        </ul>
+                                                    </div>
 
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="inactive" id="chkInactive">
-                                                            <label class="form-check-label" for="chkInactive">
-                                                                Inactive
-                                                            </label>
-                                                        </li>
-
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="male" id="chkMale">
-                                                            <label class="form-check-label" for="chkMale">
-                                                                Male
-                                                            </label>
-                                                        </li>
-
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="female" id="chkFemale">
-                                                            <label class="form-check-label" for="chkFemale">
-                                                                Female
-                                                            </label>
-                                                        </li>
-                                                    </ul>
-                                                </div>
 
 
                                                     <!-- Right side: Switch -->
@@ -458,16 +431,16 @@ if (isset($user_id)) {
                         {
                             data: 'grade_level'
                         },
-                       {
+                        {
                             data: 'school_year',
-                            render: function (data) {
+                            render: function(data) {
                                 if (!data) return '';
                                 return new Date(data).getFullYear();
                             }
                         },
                         {
                             data: 'status',
-                            render: function (data, type, row) {
+                            render: function(data, type, row) {
                                 if (data === 'active') {
                                     return '<span class="badge bg-success">Active</span>';
                                 } else if (data === 'inactive') {
@@ -534,6 +507,41 @@ if (isset($user_id)) {
                     }
                 });
             });
+
+
+            let sectionColumnIndex = 3; // adjust if section column index changes
+
+            tables[gradeLevel].on('xhr.dt', function() {
+                let table = tables[gradeLevel];
+                let sectionFilter = $('#sectionFilter');
+
+                sectionFilter.empty();
+
+                // Get UNIQUE section values
+                let sections = table
+                    .column(sectionColumnIndex)
+                    .data()
+                    .unique()
+                    .sort();
+
+                sections.each(function(section) {
+                    if (!section) return;
+
+                    sectionFilter.append(`
+            <li class="form-check">
+                <input class="form-check-input section-check"
+                    type="checkbox"
+                    value="${section}"
+                    id="sec_${section}">
+                <label class="form-check-label" for="sec_${section}">
+                    ${section}
+                </label>
+            </li>
+        `);
+                });
+            });
+
+
 
             // Reload DataTable when switch is toggled
             $(document).on('change', '#student_history', function() {

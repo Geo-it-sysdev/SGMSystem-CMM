@@ -11,32 +11,47 @@ class StudentModel extends CI_Model {
 
     //    Add / edit / delete - student
 
-public function get_all_students($grade_level = null, $section = null, $status = 'active')
-{
-    $user_id   = $this->session->userdata('po_user');
-    $user_type = $this->session->userdata('user_type');
+  public function get_all_students($grade_level = null, $sections = null, $status = 'active')
+    {
+        $user_id   = $this->session->userdata('po_user');
+        $user_type = $this->session->userdata('user_type');
 
-    $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at AS school_year, status')
-             ->from('tbl_students');
+        $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at AS school_year, status')
+                 ->from('tbl_students');
 
-    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor','Admin'])) {
-        if (!$user_id) return [];
-        $this->db->where('user_id', $user_id);
+        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor','Admin'])) {
+            if (!$user_id) return [];
+            $this->db->where('user_id', $user_id);
+        }
+
+        if ($grade_level) {
+            $this->db->where('grade_level', $grade_level);
+        }
+
+        if (!empty($sections)) {
+            if (is_array($sections)) {
+                $this->db->where_in('section', $sections);
+            } else {
+                $this->db->where('section', $sections);
+            }
+        }
+
+        $this->db->where('status', $status ?: 'active');
+        $this->db->group_by('fullname');
+
+        return $this->db->get()->result();
     }
 
-    if ($grade_level) {
-        $this->db->where('grade_level', $grade_level);
+    public function get_sections_by_grades($grade_level)
+    {
+        $this->db->select('DISTINCT section')
+                 ->from('tbl_students')
+                 ->where('grade_level', $grade_level)
+                 ->order_by('section', 'ASC');
+
+        $result = $this->db->get()->result_array();
+        return array_column($result, 'section');
     }
-
-    if ($section) {
-        $this->db->where('section', $section);
-    }
-
-    $this->db->where('status', $status ?: 'active');
-    $this->db->group_by('fullname');
-
-    return $this->db->get()->result();
-}
 
 
 

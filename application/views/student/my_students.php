@@ -94,21 +94,23 @@ if (isset($user_id)) {
                                     <!-- ================= TAB CONTENT ================= -->
                                     <div class="tab-content">
                                         <?php
-    $tab_first = true;
-    foreach ($all_grades as $grade):
-        if ($is_all || in_array($grade, $grade_levels)):
-            $grade_id = strtolower(str_replace(' ', '', $grade));
-            $show_class = $tab_first ? 'show active' : '';
-            $tab_first = false;
-    ?>
+$tab_first = true;
+foreach ($all_grades as $grade):
+    if ($is_all || in_array($grade, $grade_levels)):
+        $grade_id = strtolower(str_replace(' ', '', $grade));
+        $show_class = $tab_first ? 'show active' : '';
+        $tab_first = false;
+
+        // Get sections for this grade
+        $sections = $this->StudentModel->get_sections_by_grade($grade);
+?>
                                         <div class="tab-pane fade <?= $show_class ?>" id="<?= $grade_id ?>-student">
                                             <div class="card p-3">
                                                 <h5 class="mb-3"><?= $grade ?> Students</h5>
 
-
-
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
-                                                    <!-- Left side: Add Button -->
+
+                                                    <!-- Add Student Button -->
                                                     <div>
                                                         <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
@@ -119,45 +121,44 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
+                                                    <!-- Section Filter -->
                                                     <div class="dropdown">
-                                                    <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                                                            type="button"
-                                                            id="filterDropdown"
-                                                            data-bs-toggle="dropdown"
-                                                            aria-expanded="false">
-                                                        Filter Options
-                                                    </button>
+                                                        <button
+                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                            type="button" id="filterDropdown_<?= $grade_id ?>"
+                                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Filter Sections
+                                                        </button>
+                                                        <ul class="dropdown-menu p-3"
+                                                            aria-labelledby="filterDropdown_<?= $grade_id ?>">
+                                                            <?php foreach ($sections as $section): ?>
+                                                            <li class="form-check">
+                                                                <input class="form-check-input filter-check"
+                                                                    type="checkbox" value="<?= $section ?>"
+                                                                    id="chk_<?= $grade_id ?>_<?= str_replace(' ', '', $section) ?>">
+                                                                <label class="form-check-label"
+                                                                    for="chk_<?= $grade_id ?>_<?= str_replace(' ', '', $section) ?>">
+                                                                    <?= $section ?>
+                                                                </label>
+                                                            </li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    </div>
 
-                                                    <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown">
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="active" id="chkActive">
-                                                            <label class="form-check-label" for="chkActive">
-                                                                Section A
-                                                            </label>
-                                                        </li>
-
-                                                        <li class="form-check">
-                                                            <input class="form-check-input filter-check" type="checkbox" value="inactive" id="chkInactive">
-                                                            <label class="form-check-label" for="chkInactive">
-                                                                Section B
-                                                            </label>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-
-
-                                                    <!-- Right side: Switch -->
+                                                    <!-- Show Inactive Switch -->
                                                     <div class="flex-shrink-0">
                                                         <div
                                                             class="form-check form-switch form-switch-right form-switch-md">
-                                                            <label for="student_history" class="form-label">Show
-                                                                Inactive Student</label>
+                                                            <label for="student_history_<?= $grade_id ?>"
+                                                                class="form-label">Show Inactive Student</label>
                                                             <input class="form-check-input code-switcher"
-                                                                type="checkbox" id="student_history" />
+                                                                type="checkbox" id="student_history_<?= $grade_id ?>" />
                                                         </div>
                                                     </div>
+
                                                 </div>
 
+                                                <!-- DataTable -->
                                                 <table id="List_Student_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle"
                                                     style="width:100%">
@@ -177,10 +178,12 @@ if (isset($user_id)) {
                                                     </thead>
                                                     <tbody></tbody>
                                                 </table>
+
                                             </div>
                                         </div>
                                         <?php endif; endforeach; ?>
-                                    </div> <!-- end tab-content -->
+                                    </div>
+                                    <!-- end tab-content -->
                                 </div> <!-- end border -->
                             </div> <!-- end card -->
                         </div> <!-- end col -->
@@ -403,14 +406,13 @@ if (isset($user_id)) {
 
         <script>
         $(document).ready(function() {
-
             let tables = {};
 
-            // Initialize DataTables for each tab
             $('.tab-pane').each(function() {
                 let tabPane = $(this);
                 let tableEl = tabPane.find('table');
                 let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+                let gradeId = tabPane.attr('id');
 
                 tables[gradeLevel] = tableEl.DataTable({
                     ajax: {
@@ -418,8 +420,14 @@ if (isset($user_id)) {
                         type: "GET",
                         data: function(d) {
                             d.grade_level = gradeLevel;
-                            d.status = tabPane.find('#student_history').is(':checked') ?
-                                'inactive' : 'active';
+                            d.status = tabPane.find(`#student_history_${gradeId}`).is(
+                                ':checked') ? 'inactive' : 'active';
+
+                            let selectedSections = [];
+                            tabPane.find('.filter-check:checked').each(function() {
+                                selectedSections.push($(this).val());
+                            });
+                            d.sections = selectedSections;
                         }
                     },
                     columns: [{
@@ -432,9 +440,9 @@ if (isset($user_id)) {
                             data: 'gender',
                             render: function(data) {
                                 if (data === 'Male')
-                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
+                                return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
                                 if (data === 'Female')
-                                    return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
+                                return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
                                 return data;
                             }
                         },
@@ -444,21 +452,19 @@ if (isset($user_id)) {
                         {
                             data: 'grade_level'
                         },
-                       {
+                        {
                             data: 'school_year',
-                            render: function (data) {
-                                if (!data) return '';
-                                return new Date(data).getFullYear();
+                            render: function(data) {
+                                return data ? new Date(data).getFullYear() : '';
                             }
                         },
                         {
                             data: 'status',
-                            render: function (data, type, row) {
-                                if (data === 'active') {
-                                    return '<span class="badge bg-success">Active</span>';
-                                } else if (data === 'inactive') {
-                                    return '<span class="badge bg-secondary">Inactive</span>';
-                                }
+                            render: function(data) {
+                                if (data === 'active')
+                                return '<span class="badge bg-success">Active</span>';
+                                if (data === 'inactive')
+                                return '<span class="badge bg-secondary">Inactive</span>';
                                 return data;
                             }
                         },
@@ -469,25 +475,18 @@ if (isset($user_id)) {
                                 let userType =
                                     "<?= $this->session->userdata('user_type'); ?>";
                                 let currentUser =
-                                    <?= (int) $this->session->userdata('po_user'); ?>;
+                                    <?= (int)$this->session->userdata('po_user'); ?>;
 
-                                // Edit / Delete buttons
                                 if (['Principal', 'Guidance Counselor', 'Registrar',
                                         'Admin'
-                                    ]
-                                    .includes(userType) || data.user_id == currentUser
-                                ) {
-                                    buttons += `
-                                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                    <i class="bx bx-edit me-1"></i>Edit
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                    <i class="bx bx-trash me-1"></i>Delete
-                                </button>
-                            `;
+                                    ].includes(userType) || data.user_id ==
+                                    currentUser) {
+                                    buttons +=
+                                        `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-1"></i>Edit</button>`;
+                                    buttons +=
+                                        `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-1"></i>Delete</button>`;
                                 }
 
-                                // Status button
                                 let isActive = data.status === 'active';
                                 let statusClass = isActive ? 'btn-outline-success' :
                                     'btn-outline-secondary';
@@ -495,17 +494,13 @@ if (isset($user_id)) {
                                 let statusIcon = isActive ? 'bx-check-circle' :
                                     'bx-x-circle';
 
-                                buttons += `
-                            <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
-                                <i class="bx ${statusIcon} me-1"></i>${statusText}
-                            </button>
-                        `;
+                                buttons +=
+                                    `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-1"></i>${statusText}</button>`;
 
                                 return buttons;
                             }
                         }
                         <?php endif; ?>
-
                     ],
                     responsive: true,
                     paging: true,
@@ -519,17 +514,18 @@ if (isset($user_id)) {
                         processing: '<div class="table-loader"></div>'
                     }
                 });
-            });
 
-            // Reload DataTable when switch is toggled
-            $(document).on('change', '#student_history', function() {
-                let tabPane = $(this).closest('.tab-pane');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-
-                if (tables[gradeLevel]) {
+                // Section checkbox filter
+                tabPane.find('.filter-check').on('change', function() {
                     tables[gradeLevel].ajax.reload();
-                }
+                });
+
+                // Status switch
+                tabPane.find(`#student_history_${gradeId}`).on('change', function() {
+                    tables[gradeLevel].ajax.reload();
+                });
             });
+
 
 
 

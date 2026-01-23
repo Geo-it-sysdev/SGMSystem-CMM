@@ -376,7 +376,7 @@
                             <div class="mb-3">
                                 <label>Students & Scores</label>
 
-                                <div class="table-responsive table-scroll" style="max-height: 300px; overflow-y: auto;">
+                                <div class="table-responsive table-scroll" style="max-height: 500px; overflow-y: auto;">
                                     <table class="table table-bordered table-striped" id="EnterScoreTable">
                                         <thead class="table-light">
                                             <tr>

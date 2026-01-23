@@ -194,10 +194,12 @@ public function update_student()
 
         $graded_ids = array_column($graded, 'student_id');
 
-        $this->db->select('id, fullname, section, gender')
-                 ->from('tbl_students')
-                 ->where('section', $section)
-                 ->where('user_id', $user_id);
+       $this->db->select('id, fullname, section, gender')
+            ->from('tbl_students')
+            ->where('section', $section)
+            ->where('user_id', $user_id)
+            ->where('status', 'active'); // only active
+
 
         if (!empty($graded_ids)) {
             $this->db->where_not_in('id', $graded_ids);

@@ -593,25 +593,22 @@
                     `<label>Activity Type</label><select name="activity_type" id="activity_type" class="form-select" required>${options}</select>`
                 );
 
-// Fetch grades
-$.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>", function(grades) {
-    let gradeSelect = $('#grade_level');
-    gradeSelect.empty(); // remove old options
+                // Fetch grades
+                $.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>", function(grades) {
+                    let gradeSelect = $('#grade_level');
+                    gradeSelect.empty(); 
 
-    // Determine default grade (active tab)
-    let defaultGrade = $('.tab-pane.show.active').attr('id'); // e.g., "grade7-student"
-    defaultGrade = defaultGrade ? defaultGrade.replace('-student', '') : '';
+                    let defaultGrade = $('.tab-pane.show.active').attr('id');
+                    defaultGrade = defaultGrade ? defaultGrade.replace('-student', '') : '';
 
-    grades.forEach(g => {
-        // Convert grade to lowercase & remove spaces for comparison
-        let gradeId = g.toLowerCase().replace(/\s+/g,'');
-        let selected = (gradeId === defaultGrade) ? 'selected' : '';
-        gradeSelect.append('<option value="' + g + '" ' + selected + '>' + g + '</option>');
-    });
+                    grades.forEach(g => {
+                        let gradeId = g.toLowerCase().replace(/\s+/g,'');
+                        let selected = (gradeId === defaultGrade) ? 'selected' : '';
+                        gradeSelect.append('<option value="' + g + '" ' + selected + '>' + g + '</option>');
+                    });
 
-    // Disable the select so user cannot change it
-    gradeSelect.prop('disabled', true);
-});
+                    gradeSelect.prop('disabled', true);
+                });
 
 
 
@@ -643,10 +640,10 @@ $.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>", function(g
 
                     // Activity Type as INPUT
                     $('#activityTypeContainer').html(`
-            <label>Activity Type</label>
-            <input type="text" name="activity_type" id="activity_type" class="form-control" required
-                placeholder="Enter Activity Type" value="${data.activity_type}">
-        `);
+                        <label>Activity Type</label>
+                        <input type="text" name="activity_type" id="activity_type" class="form-control" required
+                            placeholder="Enter Activity Type" value="${data.activity_type}">
+                    `);
 
                     // Populate grades
                     $.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>",

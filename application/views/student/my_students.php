@@ -275,7 +275,6 @@ if (isset($user_id)) {
 
 
 
-        <!-- MODAL -->
 <!-- MODAL -->
 <div class="modal fade" id="TagstudentModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -870,10 +869,12 @@ let activeGrade = $('.nav-link.active').text().replace(' Students','').trim();
 
 // Load sections for active grade
 function loadSections() {
-    $.post('<?= site_url("StudentController/get_sections_by_student") ?>', { grade_level: activeGrade }, function(sections){
+    $.post('<?= site_url("StudentController/get_sections_by_student") ?>', 
+        { grade_level: activeGrade }, function(sections){
         let html = '<option value="">Select Section</option>';
         sections.forEach(sec => html += `<option value="${sec.section}">${sec.section}</option>`);
         $('#section_dropdown').html(html);
+        $('#students_table tbody').html(''); // clear students when sections reload
     }, 'json');
 }
 
@@ -881,6 +882,7 @@ function loadSections() {
 $('#section_dropdown').on('change', function(){
     let section = $(this).val();
     if (!section) return;
+
     $.post('<?= site_url("StudentController/get_students") ?>',
         { grade_level: activeGrade, section: section }, function(students){
         let html = '';
@@ -902,15 +904,18 @@ $('.nav-link').on('shown.bs.tab', function(e){
 });
 
 // Check/uncheck all
-$(document).on('change','#check_all',function(){ $('.student_checkbox').prop('checked', $(this).prop('checked')); });
+$(document).on('change','#check_all',function(){ 
+    $('.student_checkbox').prop('checked', $(this).prop('checked')); 
+});
 
-// Submit selected students to tbl_student_assign_by_teacher
+// Submit selected students
 $('#submit_selected').on('click', function(){
     let ids = [];
     $('.student_checkbox:checked').each(function(){ ids.push($(this).val()); });
     if(ids.length == 0){ alert('No students selected'); return; }
 
-    $.post('<?= site_url("StudentController/submit_selected") ?>', { student_ids: ids }, function(res){
+    $.post('<?= site_url("StudentController/submit_selected") ?>', 
+        { student_ids: ids }, function(res){
         if(res.status == 'success'){
             alert('Students assigned successfully!');
             $('#students_table tbody').html('');
@@ -924,6 +929,7 @@ $('#submit_selected').on('click', function(){
 
 // Initial load
 loadSections();
+
 </script>
 
     </div>

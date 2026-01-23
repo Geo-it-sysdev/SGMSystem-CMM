@@ -661,24 +661,18 @@ if (isset($user_id)) {
                 setGradeLevel(initialGrade);
                 loadSections(null);
             }
-
             // ================== RESET MODAL ===================
             function resetStudentModal(activeGrade) {
-                setGradeLevel(activeGrade);
                 $('#id').val('');
                 $('#fullname').val('');
                 $('#age').val('');
-                $('#gender').val('');
-                $('#section').val('');
-
+                $('#gender').val('Male'); // default gender
+                setGradeLevel(activeGrade);
+                $('#section').empty().append('<option value="">Select Section</option>');
                 loadSections(null);
+                $('#studentModalTitle').text('Add Student');
+                $('#saveBtn').text('Save');
             }
-
-            // ================== RELOAD PAGE ON MODAL CLOSE ===================
-$('#studentModal').on('hidden.bs.modal', function () {
-    // Reload the whole page
-    location.reload();
-});
 
             // ================== LOAD SECTIONS ===================
             function loadSections(selectedSection, callback) {
@@ -738,6 +732,7 @@ $('#studentModal').on('hidden.bs.modal', function () {
             });
 
             // ================== EDIT STUDENT ===================
+            // Edit button click
             $('.tab-pane').on('click', '.editBtn', function() {
                 let id = $(this).data('id');
                 $.getJSON("<?= site_url('StudentController/edit_student/'); ?>" + id, function(data) {
@@ -762,41 +757,69 @@ $('#studentModal').on('hidden.bs.modal', function () {
                 });
             });
 
+            // Reset modal when it is closed
+            $('#studentModal').on('hidden.bs.modal', function() {
+                $('#id').val('');
+                $('#fullname').val('');
+                $('#age').val('');
+                $('#gender').val('');
+                $('#grade_level').val(''); // or set a default grade
+                $('#section').empty(); // clear sections dropdown
+                $('#studentModalTitle').text('Add Student');
+                $('#saveBtn').text('Save');
+            });
+
+
+            // Reset modal when it is closed
+            $('#studentModal').on('hidden.bs.modal', function() {
+                let activeGrade = $('.nav-pills .nav-link.active span').text().replace(' Students', '')
+                    .trim();
+                resetStudentModal(activeGrade);
+            });
+
             // ================== SAVE (ADD OR UPDATE) ===================
-$('#studentForm').on('submit', function(e) {
-    e.preventDefault();
-    let id = $('#id').val();
-    let url = id ? "<?= site_url('StudentController/update_student'); ?>" :
-        "<?= site_url('StudentController/add_student'); ?>";
+            $('#studentForm').on('submit', function(e) {
+                e.preventDefault();
+                let id = $('#id').val();
+                let url = id ? "<?= site_url('StudentController/update_student'); ?>" :
+                    "<?= site_url('StudentController/add_student'); ?>";
 
-    $.ajax({
-        url: url,
-        type: "POST",
-        data: $(this).serialize(),
-        dataType: "json",
-        success: function(res) {
-            $('#studentModal').modal('hide');
-            $('#studentForm')[0].reset();
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: $(this).serialize(),
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.status === 'duplicate') {
+                            Swal.fire('Warning', 'Student already exists', 'warning');
+                        } else if (res.status === 'success' || res.status === 'updated') {
+                            Swal.fire('Success', 'Student saved', 'success');
 
-            if (res.status === 'duplicate') {
-                Swal.fire('Warning', 'Student already exists', 'warning');
-            } else if (res.status === 'success' || res.status === 'updated') {
-                Swal.fire('Success', 'Student saved', 'success').then(() => {
-                    // Reload the whole page after success
-                    location.reload();
+                            // Close modal AFTER success alert
+                            $('#studentModal').modal('hide');
+
+                            // Reload only the DataTables for the active grade
+                            let activeGrade = $('.nav-pills .nav-link.active span').text()
+                                .replace(' Students', '').trim();
+                            if (tables[activeGrade]) {
+                                tables[activeGrade].ajax.reload(null,
+                                false); // false = keep pagination
+                            }
+
+                            // Reset modal fields for next add
+                            resetStudentModal(activeGrade);
+                        } else if (res.status === 'unauthorized') {
+                            Swal.fire('Error', 'You cannot edit this student', 'error');
+                        } else if (res.status === 'error') {
+                            Swal.fire('Error', res.message || 'Something went wrong',
+                                'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'Something went wrong', 'error');
+                    }
                 });
-            } else if (res.status === 'unauthorized') {
-                Swal.fire('Error', 'You cannot edit this student', 'error');
-            } else if (res.status === 'error') {
-                Swal.fire('Error', res.message || 'Something went wrong', 'error');
-            }
-        },
-        error: function() {
-            Swal.fire('Error', 'Something went wrong', 'error');
-        }
-    });
-});
-
+            });
 
             // ================== DELETE STUDENT ===================
             $('.tab-pane').on('click', '.deleteBtn', function() {

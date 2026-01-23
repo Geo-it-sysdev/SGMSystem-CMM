@@ -429,7 +429,7 @@ if (isset($user_id)) {
                                 } else if (data === 'inactive') {
                                     return '<span class="badge bg-secondary">Inactive</span>';
                                 }
-                                return data; // fallback just in case
+                                return data;
                             }
                         },
                         <?php if ($user_type === 'Teacher'): ?> {

@@ -666,7 +666,7 @@ if (isset($user_id)) {
                 $('#id').val('');
                 $('#fullname').val('');
                 $('#age').val('');
-                $('#gender').val('Male'); // default gender
+                $('#gender').val('Male'); 
                 setGradeLevel(activeGrade);
                 $('#section').empty().append('<option value="">Select Section</option>');
                 loadSections(null);
@@ -763,14 +763,13 @@ if (isset($user_id)) {
                 $('#fullname').val('');
                 $('#age').val('');
                 $('#gender').val('');
-                $('#grade_level').val(''); // or set a default grade
-                $('#section').empty(); // clear sections dropdown
+                $('#grade_level').val(''); 
+                $('#section').empty(); 
                 $('#studentModalTitle').text('Add Student');
                 $('#saveBtn').text('Save');
             });
 
 
-            // Reset modal when it is closed
             $('#studentModal').on('hidden.bs.modal', function() {
                 let activeGrade = $('.nav-pills .nav-link.active span').text().replace(' Students', '')
                     .trim();
@@ -795,18 +794,15 @@ if (isset($user_id)) {
                         } else if (res.status === 'success' || res.status === 'updated') {
                             Swal.fire('Success', 'Student saved', 'success');
 
-                            // Close modal AFTER success alert
                             $('#studentModal').modal('hide');
 
-                            // Reload only the DataTables for the active grade
                             let activeGrade = $('.nav-pills .nav-link.active span').text()
                                 .replace(' Students', '').trim();
                             if (tables[activeGrade]) {
                                 tables[activeGrade].ajax.reload(null,
-                                false); // false = keep pagination
+                                false); 
                             }
 
-                            // Reset modal fields for next add
                             resetStudentModal(activeGrade);
                         } else if (res.status === 'unauthorized') {
                             Swal.fire('Error', 'You cannot edit this student', 'error');

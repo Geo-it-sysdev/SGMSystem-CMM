@@ -250,6 +250,9 @@
 
         <script>
         $(document).ready(function() {
+            let isSwitchingModal = false;
+let finalGradesTableInstance = null;
+
             // Initialize all activity tables
             $('.activityTable').each(function() {
                 let table = $(this);
@@ -324,93 +327,82 @@
                 }
             });
 
-            $(document).on('click', '.viewBtn', function() {
-                let section = $(this).data('section');
-                let subject = $(this).data('subject');
-                let quarter = $(this).data('quarter');
-                let grade_level = $(this).data('grade_level');
-                let full_name = $(this).data('full_name');
+           $(document).on('click', '.viewBtn', function () {
+    let section = $(this).data('section');
+    let subject = $(this).data('subject');
+    let quarter = $(this).data('quarter');
+    let grade_level = $(this).data('grade_level');
+    let full_name = $(this).data('full_name');
 
-                // Fill modal inputs
-                $('#grade_level').val(grade_level);
-                $('#quarter').val(quarter);
-                $('#subjects').val(subject);
-                $('#full_name').val(full_name);
+    // Fill modal inputs
+    $('#grade_level').val(grade_level);
+    $('#quarter').val(quarter);
+    $('#subjects').val(subject);
+    $('#full_name').val(full_name);
 
-                if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
-                    $('#finalGradesTable').DataTable().clear().destroy();
+    // Destroy only if really exists
+    if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
+        $('#finalGradesTable').DataTable().destroy();
+    }
+    $('#finalGradesTable tbody').empty();
+
+    // Store instance
+    finalGradesTableInstance = $('#finalGradesTable').DataTable({
+        ajax: {
+            url: "<?= site_url('StudentController/fetch_final_grades'); ?>",
+            type: 'POST',
+            data: {
+                section,
+                subject,
+                quarter,
+                grade_level
+            },
+            dataSrc: 'data'
+        },
+        columns: [
+            { data: 'student_name' },
+            { data: 'section' },
+            { data: 'final_grade' },
+            {
+                data: 'remarks',
+                render: function (data) {
+                    let badgeClass = 'bg-secondary';
+                    if (data === "Outstanding") badgeClass = "bg-success";
+                    else if (data === "Very Satisfactory") badgeClass = "bg-primary";
+                    else if (data === "Satisfactory") badgeClass = "bg-info";
+                    else if (data === "Fair") badgeClass = "bg-warning text-dark";
+                    else if (data === "Did Not Meet Expectations") badgeClass = "bg-danger";
+                    else if (data === "Failure") badgeClass = "bg-dark";
+
+                    return `<span class="badge ${badgeClass}">${data}</span>`;
                 }
-                $('#finalGradesTable tbody').empty();
+            },
+            {
+                data: null,
+                render: function (d) {
+                    return `<button class="btn btn-sm btn-outline-primary viewDetailsBtn"
+                        data-student_name="${d.student_name}"
+                        data-section="${d.section}"
+                        data-subject="${d.subject || $('#subjects').val()}"
+                        data-quarter="${$('#quarter').val()}"
+                        data-full_name="${$('#full_name').val()}"
+                        data-grade_level="${$('#grade_level').val()}"
+                        data-final_grade="${d.final_grade}">
+                        <i class="bi bi-journal-text"></i> View Details
+                    </button>`;
+                },
+                orderable: false,
+                searchable: false
+            }
+        ],
+        responsive: true,
+        paging: true,
+        searching: true
+    });
 
-                $('#finalGradesTable').DataTable({
-                    ajax: {
-                        url: "<?= site_url('StudentController/fetch_final_grades'); ?>",
-                        type: 'POST',
-                        data: {
-                            section,
-                            subject,
-                            quarter,
-                            grade_level
-                        },
-                        dataSrc: 'data',
-                        cache: false
-                    },
-                    columns: [{
-                            data: 'student_name'
-                        },
-                        {
-                            data: 'section'
-                        },
-                        {
-                            data: 'final_grade'
-                        },
-                        {
-                            data: 'remarks',
-                            render: function(data) {
-                                let badgeClass = 'bg-secondary'; // default
+    $('#finalGradesModal').modal('show');
+});
 
-                                // Map remarks → badge color
-                                if (data === "Outstanding") badgeClass = "bg-success";
-                                else if (data === "Very Satisfactory") badgeClass =
-                                    "bg-primary";
-                                else if (data === "Satisfactory") badgeClass =
-                                    "bg-info";
-                                else if (data === "Fair") badgeClass =
-                                    "bg-warning text-dark";
-                                else if (data === "Did Not Meet Expectations")
-                                    badgeClass = "bg-danger";
-                                else if (data === "Failure") badgeClass = "bg-dark";
-
-                                return `<span class="badge ${badgeClass}">${data}</span>`;
-                            }
-                        },
-                        {
-                            data: null,
-                            render: function(d) {
-                                return `<button class="btn btn-sm btn-outline-primary viewDetailsBtn"
-                                            data-student_name="${d.student_name}"
-                                            data-section="${d.section}"
-                                            data-subject="${d.subject || $('#subjects').val()}"
-                                            data-quarter="${$('#quarter').val()}"
-                                            data-full_name="${$('#full_name').val()}"
-                                            data-grade_level="${$('#grade_level').val()}"
-                                            data-final_grade="${d.final_grade}">
-                                            <i class="bi bi-journal-text"></i> View Details
-                                        </button>`;
-                            },
-
-                            orderable: false,
-                            searchable: false
-                        }
-                    ],
-                    responsive: true,
-                    paging: true,
-                    searching: true,
-                    destroy: true
-                });
-
-                $('#finalGradesModal').modal('show');
-            });
 
 
             // Print button click
@@ -636,13 +628,8 @@
 
                 });
 
-               // Mark that we came from finalGradesModal
-                reopenFinalGradesModal = true;
-
-                // Hide parent modal
+               isSwitchingModal = true;
                 $('#finalGradesModal').modal('hide');
-
-                // Show child modal
                 $('#studentDetailsModal').modal('show');
 
 
@@ -737,26 +724,30 @@
             });
 
 
-            $('#studentDetailsModal').on('hidden.bs.modal', function () {
-                if (reopenFinalGradesModal) {
-                    reopenFinalGradesModal = false;
+            $('#finalGradesModal').on('hidden.bs.modal', function () {
+                if (isSwitchingModal) return; // ← DO NOT destroy when switching
 
-                    // Clean backdrop issues
-                    $('body').addClass('modal-open');
-
-                    // Reopen last modal
-                    $('#finalGradesModal').modal('show');
-                }
-            });
-
-
-
-                        $('#finalGradesModal').on('hidden.bs.modal', function() {
+                // Real close → clean up
                 if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
                     $('#finalGradesTable').DataTable().clear().destroy();
                 }
                 $('#finalGradesTable tbody').empty();
             });
+
+
+            $('#studentDetailsModal').on('hidden.bs.modal', function () {
+                isSwitchingModal = false;
+
+                $('#finalGradesModal').modal('show');
+
+                // Fix DataTable layout after modal reopens
+                setTimeout(() => {
+                    if (finalGradesTableInstance) {
+                        finalGradesTableInstance.columns.adjust().responsive.recalc();
+                    }
+                }, 200);
+            });
+
 
 
         });

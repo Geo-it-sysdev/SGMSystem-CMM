@@ -4,34 +4,35 @@
 <div class="app-menu navbar-menu">
     <!-- LOGO -->
     <div class="navbar-brand-box">
-    <!-- Dark Logo -->
-    <br>
-    <a href="<?php echo site_url('GradingSystem/dashboard'); ?>" class="logo logo-dark">
-        <span class="logo-sm">
-            <img src="<?php echo base_url('assets/images/CMMGMS.png'); ?>" alt="" height="30" />
-        </span>
-        <span class="logo-lg">
-            <img src="<?php echo base_url('assets/images/CMMGMS.png'); ?>" alt="" height="90" />
-        </span>
-    </a>
+        <!-- Dark Logo -->
+        <br>
+        <a href="<?php echo site_url('GradingSystem/dashboard'); ?>" class="logo logo-dark">
+            <span class="logo-sm">
+                <img src="<?php echo base_url('assets/images/CMMGMS.png'); ?>" alt="" height="30" />
+            </span>
+            <span class="logo-lg">
+                <img src="<?php echo base_url('assets/images/CMMGMS.png'); ?>" alt="" height="90" />
+            </span>
+        </a>
 
-    <!-- Light Logo -->
-    <a href="<?php echo site_url('GradingSystem/dashboard'); ?>" class="logo logo-light">
-        <span class="logo-sm">
-            <img src="<?php echo base_url('assets/images/CMMGMS.png'); ?>" alt="" height="30" />
-        </span>
-        <span class="logo-lg">
-            <img src="<?php echo base_url('assets/images/CMMGMS.png'); ?>" alt="" height="90" />
-        </span>
-    </a>
+        <!-- Light Logo -->
+        <a href="<?php echo site_url('GradingSystem/dashboard'); ?>" class="logo logo-light">
+            <span class="logo-sm">
+                <img src="<?php echo base_url('assets/images/CMMGMS.png'); ?>" alt="" height="30" />
+            </span>
+            <span class="logo-lg">
+                <img src="<?php echo base_url('assets/images/CMMGMS.png'); ?>" alt="" height="90" />
+            </span>
+        </a>
 
-    <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
-        <i class="ri-record-circle-line"></i>
-    </button>
-</div>
+        <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover"
+            id="vertical-hover">
+            <i class="ri-record-circle-line"></i>
+        </button>
+    </div>
 
 
-  <?php
+    <?php
 $user_id = $this->session->userdata("po_user");
 $user_type = null;
 
@@ -61,25 +62,25 @@ if (isset($user_id)) {
                     </a>
                 </li>
 
-           
 
-                   <!--============================ User List ====================================-->
-                    <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
-                   <li class="nav-item">
-                        <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/classrooms') ? 'active' : ''; ?>"
-                            href="<?php echo site_url('GradingSystem/classrooms'); ?>">
-                            <i
-                                class="bx bxs-chalkboard bx-sm 
+
+                <!--============================ User List ====================================-->
+                <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
+                <li class="nav-item">
+                    <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/classrooms') ? 'active' : ''; ?>"
+                        href="<?php echo site_url('GradingSystem/classrooms'); ?>">
+                        <i
+                            class="bx bxs-chalkboard bx-sm 
                             <?php echo (uri_string() === 'GradingSystem/classrooms') ? 'animate__animated animate__heartBeat animate__infinite' : ''; ?>">
-                            </i>
-                            <span>Classrooms</span>
-                        </a>
-                    </li>
-                     <?php endif; ?>
+                        </i>
+                        <span>Classrooms</span>
+                    </a>
+                </li>
+                <?php endif; ?>
 
-                  <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'|| $user_type === 'Teacher'): ?>
+                <?php if ($user_type === 'Teacher'): ?>
 
-                    <li class="nav-item">
+                <li class="nav-item">
                     <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/my_students') ? 'active' : ''; ?>"
                         href="<?php echo site_url('GradingSystem/my_students'); ?>">
                         <i
@@ -89,8 +90,20 @@ if (isset($user_id)) {
                         <span> Students’ Setup</span>
                     </a>
                 </li>
+                <?php endif; ?>
 
-                   
+                <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'|| $user_type === 'Teacher'): ?>
+                <li class="nav-item">
+                    <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/students_setups') ? 'active' : ''; ?>"
+                        href="<?php echo site_url('GradingSystem/students_setups'); ?>">
+                        <i
+                            class="bx bxs-group bx-sm 
+                        <?php echo (uri_string() === 'GradingSystem/students_setups') ? 'animate__animated animate__heartBeat animate__infinite' : ''; ?>">
+                        </i>
+                        <span> Students’ Setup</span>
+                    </a>
+                </li>
+
 
 
                 <li class="nav-item">
@@ -126,10 +139,10 @@ if (isset($user_id)) {
                     </a>
                 </li>
                 <?php endif; ?>
-                
+
                 <!--============================ User List ====================================-->
 
-                  <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
+                <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                 <li class="nav-item">
                     <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/user_list') ? 'active' : ''; ?>"
                         href="<?php echo site_url('GradingSystem/user_list'); ?>">
@@ -140,7 +153,7 @@ if (isset($user_id)) {
                         <span>User Setup</span>
                     </a>
                 </li>
-                    <?php endif; ?>
+                <?php endif; ?>
                 <!--============================ Layouts ====================================-->
                 <!-- <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarLayouts" data-bs-toggle="collapse" role="button"

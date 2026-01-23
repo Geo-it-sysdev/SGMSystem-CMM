@@ -237,29 +237,27 @@ if (isset($user_id)) {
                                     </select>
                                 </div>
 
-                                <div class="row">
-                                    <!-- Section Dropdown -->
-                                    <div class="col-md-6 mb-2">
-                                        <label>Section</label>
-                                        <select name="section" id="section" class="form-control">
-                                            <option value="">Select Section</option>
-                                        </select>
-                                    </div>
+                                <!-- Section Dropdown -->
+                                <div class="col-md-6 mb-2">
+                                    <label>Section</label>
+                                    <select name="section" id="section" class="form-control">
+                                        <option value="">Select Section</option>
+                                    </select>
+                                </div>
 
-                                    <!-- Grade Level Dropdown (disabled for display) -->
-                                    <div class="col-md-6 mb-2">
-                                        <label>Grade Level</label>
-                                        <select id="grade_level_display" class="form-control" disabled>
-                                            <option value="">Select Grade Level</option>
-                                            <?php if(!empty($allowed_grades)): ?>
-                                            <?php foreach($allowed_grades as $grade): ?>
-                                            <option value="<?= $grade ?>"><?= $grade ?></option>
-                                            <?php endforeach; ?>
-                                            <?php endif; ?>
-                                        </select>
-                                        <!-- Hidden input to actually submit grade_level -->
-                                        <input type="hidden" name="grade_level" id="grade_level">
-                                    </div>
+                                <!-- Grade Level Dropdown (disabled for display) -->
+                                <div class="col-md-6 mb-2">
+                                    <label>Grade Level</label>
+                                    <select id="grade_level_display" class="form-control" disabled>
+                                        <option value="">Select Grade Level</option>
+                                        <?php if(!empty($allowed_grades)): ?>
+                                        <?php foreach($allowed_grades as $grade): ?>
+                                        <option value="<?= $grade ?>"><?= $grade ?></option>
+                                        <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
+                                    <!-- Hidden input to actually submit grade_level -->
+                                    <input type="hidden" name="grade_level" id="grade_level">
                                 </div>
 
 

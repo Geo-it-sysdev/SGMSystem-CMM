@@ -374,7 +374,6 @@ public function update_student()
   
 
     public $table = 'tbl_activities_header';
-    // Allowed grades for current user
     public function get_allowed_grades() {
         $user_id = $this->session->userdata("po_user");
         $user_type = $this->session->userdata("user_type");
@@ -403,7 +402,7 @@ public function update_student()
         $id = $this->input->post('id');
         $user_id = $this->session->userdata("po_user");
         $user_type = $this->session->userdata("user_type");
-        $grade_level = $this->input->post('grade_level'); // e.g., "Grade 7", "Grade 11"
+        $grade_level = $this->input->post('grade_level'); 
         $subject = $this->input->post('subject');
         $quarter = $this->input->post('quarter');
         $activity_type = $this->input->post('activity_type');
@@ -468,7 +467,7 @@ public function update_student()
         }
 
         // Handle duplicate activity type
-        if (!$id) { // Only for new insert
+        if (!$id) { 
             $count = $this->StudentModel->count_activity_type($grade_level, $subject, $quarter, $activity_type);
             $activity_type .= ' ' . ($count + 1);
         }
@@ -518,11 +517,7 @@ public function update_student()
     }
     
 
-  
-  
-
     // final grades
-
     public function fetch_activities() {
         $grade_level = $this->input->post('grade_level'); 
         $user_id    = $this->session->userdata('po_user'); 
@@ -563,8 +558,6 @@ public function update_student()
 
         echo json_encode(['data' => $data]);
     }
-
-
 
 
     public function fetch_final_grades() {

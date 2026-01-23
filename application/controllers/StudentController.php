@@ -130,17 +130,17 @@ public function update_student()
 
      // ==================== GET SECTIONS BY GRADE ====================
     public function get_sections_by_student() {
-        $grade_level = $this->input->post('grade_level');
+        // $grade_level = $this->input->post('grade_level');
 
-        if (!$grade_level) {
-            echo json_encode([]);
-            return;
-        }
+        // if (!$grade_level) {
+        //     echo json_encode([]);
+        //     return;
+        // }
 
         $this->db->distinct();
         $this->db->select('section');
         $this->db->from('tbl_students');
-        $this->db->where('grade_level', $grade_level);
+        // $this->db->where('grade_level', $grade_level);
         $query = $this->db->get();
         echo json_encode($query->result_array());
     }

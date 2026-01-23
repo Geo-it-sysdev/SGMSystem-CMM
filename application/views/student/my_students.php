@@ -110,18 +110,22 @@ if (isset($user_id)) {
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
 
                                                     <div class="d-flex align-items-center gap-2">
+                                                        <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill"
                                                             data-bs-toggle="modal" data-bs-target="#studentModal">
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
+                                                        <?php endif; ?>
 
+                                                        <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill"
                                                             data-bs-toggle="modal" data-bs-target="#TagstudentModal">
                                                             <i class="ri-add-line align-bottom me-1"></i>Add Student
                                                         </button>
-
+                                                        <?php endif; ?>
+                                                        
                                                         <div class="dropdown">
                                                             <button
                                                                 class="btn btn-outline-primary dropdown-toggle rounded-pill"
@@ -470,7 +474,7 @@ if (isset($user_id)) {
                                 return data;
                             }
                         },
-                            {
+                        {
                             data: null,
                             render: function(data) {
                                 let buttons = '';

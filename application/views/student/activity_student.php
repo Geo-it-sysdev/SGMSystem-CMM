@@ -451,99 +451,103 @@
             };
 
             // ✅ Initialize DataTables for each grade-level table
-           $('.activityTable').each(function() {
-    let grade_id = $(this).attr('id').replace('activityTable_', '');
-    let grade_level = grade_map[grade_id];
+            $('.activityTable').each(function() {
+                let grade_id = $(this).attr('id').replace('activityTable_', '');
+                let grade_level = grade_map[grade_id];
 
-    let table = $(this).DataTable({
-        responsive: true,
-        paging: true,
-        searching: true,
-        ordering: true,
-        info: true,
-        processing: true,
-        language: {
-            search: '',
-            searchPlaceholder: 'Search...',
-            processing: '<div class="table-loader"></div>'
-        },
-        ajax: {
-            url: "<?= site_url('StudentController/fetch_activitie'); ?>",
-            type: 'POST',
-            data: {
-                grade_level: grade_level
-            },
-            dataSrc: 'data'
-        },
-        columns: [
-            { data: 'grade_level' },
-            { data: 'subject' },
-            { data: 'activity_type' },
-            { data: 'quarter' },
-            { data: 'overall' },
-            { data: 'activity_date' },
-            {
-                data: 'description',
-                render: function(data, type, row) {
-                    let percentage = '';
-                    let bgClass = '';
-                    let gradeNum = parseInt(row.grade_level.replace("Grade ", ""));
-                    
-                    // Grade percentages
-                    let written = '30%', performance = '50%', quarterly = '20%';
-                    if (gradeNum >= 11) {
-                        written = '25%';
-                        performance = '50%';
-                        quarterly = '25%';
-                    }
+                let table = $(this).DataTable({
+                    responsive: true,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    processing: true,
+                    language: {
+                        search: '',
+                        searchPlaceholder: 'Search...',
+                        processing: '<div class="table-loader"></div>'
+                    },
+                    ajax: {
+                        url: "<?= site_url('StudentController/fetch_activitie'); ?>",
+                        type: 'POST',
+                        data: {
+                            grade_level: grade_level
+                        },
+                        dataSrc: 'data'
+                    },
+                    columns: [{
+                            data: 'grade_level'
+                        },
+                        {
+                            data: 'subject'
+                        },
+                        {
+                            data: 'activity_type'
+                        },
+                        {
+                            data: 'quarter'
+                        },
+                        {
+                            data: 'overall'
+                        },
+                        {
+                            data: 'activity_date'
+                        },
+                        {
+                            data: 'description',
+                            render: function(data, type, row) {
 
-                    // Badge colors
-                    if (data === 'Written Works') {
-                        bgClass = 'bg-primary text-white';
-                        percentage = `(${written})`;
-                    } else if (data === 'Performance Task') {
-                        bgClass = 'bg-success text-white';
-                        percentage = `(${performance})`;
-                    } else if (data === 'Quarterly Assessment') {
-                        bgClass = 'bg-warning text-dark';
-                        percentage = `(${quarterly})`;
-                    }
+                                let percentage = '';
+                                let bgClass = '';
 
-                    return `<span class="badge ${bgClass}">${data} ${percentage}</span>`;
-                }
-            },
-            <?php if ($is_admin || $grade_levels): ?>
-            {
-                data: null,
-                orderable: false,
-                searchable: false,
-                render: function(data, type, row) {
-                    // Check if grade is missing
-                    let incompleteBadge = '';
-                    let btnClass = 'btn-outline-success'; // default
+                                // GET grade level number (7,8,9,10,11,12)
+                                let gradeNum = parseInt(row.grade_level.replace(
+                                    "Grade ", ""));
 
-                    if (!row.overall || row.overall === '') {
-                        btnClass = 'btn-outline-danger'; // highlight incomplete
-                        incompleteBadge = `<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger p-1">
-                                                <span class="visually-hidden">Incomplete grade</span>
-                                           </span>`;
-                    }
+                                // DEFAULT values (Grade 7–10)
+                                let written = '30%';
+                                let performance = '50%';
+                                let quarterly = '20%';
 
-                    return `
-                        <div class="position-relative d-inline-block me-1">
-                            <button class="btn btn-sm ${btnClass} tagBtn"
-                                data-id="${row.id}"
-                                data-subject="${row.subject}"
-                                data-activity_type="${row.activity_type}"
-                                data-description="${row.description}"
-                                data-activity_date="${row.activity_date}"
-                                data-overall="${row.overall}"
-                                data-bs-toggle="modal"
-                                data-bs-target="#tagModal">
-                                <i class="bi bi-tag-fill"></i> Add Grade
-                            </button>
-                            ${incompleteBadge}
-                        </div>
+                                // IF Grade 11–12 override %
+                                if (gradeNum >= 11) {
+                                    written = '25%';
+                                    performance = '50%';
+                                    quarterly = '25%';
+                                }
+
+                                // SET COLORS
+                                if (data === 'Written Works') {
+                                    bgClass = 'bg-primary text-white';
+                                    percentage = `(${written})`;
+                                } else if (data === 'Performance Task') {
+                                    bgClass = 'bg-success text-white';
+                                    percentage = `(${performance})`;
+                                } else if (data === 'Quarterly Assessment') {
+                                    bgClass = 'bg-warning text-dark';
+                                    percentage = `(${quarterly})`;
+                                }
+
+                                return `<span class="badge ${bgClass}">${data} ${percentage}</span>`;
+                            }
+                        },
+                        <?php if ($is_admin || $grade_levels): ?> {
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row) {
+                                return `
+                        <button class="btn btn-sm btn-outline-success tagBtn"
+                            data-id="${row.id}"
+                            data-subject="${row.subject}"
+                            data-activity_type="${row.activity_type}"
+                            data-description="${row.description}"
+                            data-activity_date="${row.activity_date}"
+                            data-overall="${row.overall}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#tagModal">
+                            <i class="bi bi-tag-fill"></i> Add Grade
+                        </button>
                         <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
                         <button class="btn btn-sm btn-outline-primary editBtn" data-id="${row.id}">
                             <i class="ri-edit-line"></i> Edit
@@ -552,34 +556,17 @@
                             <i class="ri-delete-bin-line"></i> Delete
                         </button>
                         <?php endif; ?>
+
                     `;
-                }
-            }
-            <?php endif; ?>
-        ],
-        drawCallback: function() {
-            // Update global Alerts badge
-            let incompleteCount = table
-                .rows()
-                .data()
-                .filter(row => !row.overall || row.overall === '').length;
+                            }
+                        }
+                        <?php endif; ?>
+                    ]
+                });
 
-            let alertsBtn = $('#alertsButton'); // Make sure your Alerts button has this ID
-            if (incompleteCount > 0) {
-                alertsBtn.html(`Alerts 
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        ${incompleteCount}
-                        <span class="visually-hidden">Incomplete grades</span>
-                    </span>
-                `);
-            } else {
-                alertsBtn.html('Alerts'); // no badge if all complete
-            }
-        }
-    });
-
-    // Store instance for later use
-    $(this).data('tableInstance', table);
+                // ✅ Store instance for later use
+                $(this).data('tableInstance', table);
+            });
 
             <?php if ($is_admin || $grade_levels): ?>
 

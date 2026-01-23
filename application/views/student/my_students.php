@@ -119,6 +119,46 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
+                                                    <div class="dropdown">
+    <button class="btn btn-outline-primary dropdown-toggle"
+            type="button"
+            id="filterDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+        Filter Options
+    </button>
+
+    <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown">
+        <li class="form-check">
+            <input class="form-check-input filter-check" type="checkbox" value="active" id="chkActive">
+            <label class="form-check-label" for="chkActive">
+                Active
+            </label>
+        </li>
+
+        <li class="form-check">
+            <input class="form-check-input filter-check" type="checkbox" value="inactive" id="chkInactive">
+            <label class="form-check-label" for="chkInactive">
+                Inactive
+            </label>
+        </li>
+
+        <li class="form-check">
+            <input class="form-check-input filter-check" type="checkbox" value="male" id="chkMale">
+            <label class="form-check-label" for="chkMale">
+                Male
+            </label>
+        </li>
+
+        <li class="form-check">
+            <input class="form-check-input filter-check" type="checkbox" value="female" id="chkFemale">
+            <label class="form-check-label" for="chkFemale">
+                Female
+            </label>
+        </li>
+    </ul>
+</div>
+
 
                                                     <!-- Right side: Switch -->
                                                     <div class="flex-shrink-0">

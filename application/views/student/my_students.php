@@ -566,11 +566,12 @@ if (isset($user_id)) {
 
     if (tables[gradeLevel]) {
         if (selectedSections.length > 0) {
-            // Filter the table based on checked sections (regex search)
+            // Show table and filter by selected sections
+            tabPane.find('table').show();
             tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
         } else {
-            // No sections selected => clear table to show "No available data"
-            tables[gradeLevel].clear().draw();
+            // Hide table if no sections are checked
+            tabPane.find('table').hide();
         }
     }
 });

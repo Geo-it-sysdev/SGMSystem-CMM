@@ -63,12 +63,34 @@ class GradingSystem extends CI_Controller {
 
     public function students_setups() {
         $user_id = $this->session->userdata("po_user");
-        if (!isset($user_id)) {
+        if (!$user_id) {
             redirect('AuthController/login_view');
             return;
         }
     
-       $data['profile'] = $this->AdminModel->get_user($user_id);
+        $user = $this->AdminModel->get_user($user_id);
+    
+        if (!$user) {
+            show_error("User not found.");
+            return;
+        }
+        if (!empty($user->grades)) {
+            $grades = array_map('trim', explode(',', $user->grades));
+        } else {
+            $grades = ['All'];
+        }
+        $data['grade_levels'] = $grades;
+    
+        $data['is_admin'] = ($user->user_type === 'admin');
+    
+        if ($user->user_type == 'Teacher') {
+            $allowed_grades = $this->StudentModel->get_user_grades($user_id);
+        } else {
+            $allowed_grades = ['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'];
+        }
+        $data['allowed_grades'] = $allowed_grades;
+    
+        $data['profile'] = $this->AdminModel->get_user($user_id);
        $this->load->view('template/header', $data);
         $this->load->view('template/sidebar');
         $this->load->view('student/students_setups');

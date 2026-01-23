@@ -140,7 +140,6 @@ public function update_student()
 
     // ==================== GET STUDENTS BY SECTION ====================
     public function get_students() {
-        $grade_level = $this->input->post('grade_level');
         $section = $this->input->post('section');
 
       
@@ -156,7 +155,7 @@ public function update_student()
     // ==================== SUBMIT SELECTED STUDENTS TO TEACHER ASSIGN ====================
     public function submit_selected() {
         $student_ids = $this->input->post('student_ids');
-        $user_id = $this->session->userdata('po_user'); // teacher's user_id
+        $user_id = $this->session->userdata('po_user'); 
 
         if (!$user_id) {
             echo json_encode(['status'=>'error','message'=>'User not logged in']);

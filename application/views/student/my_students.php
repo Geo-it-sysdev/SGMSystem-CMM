@@ -125,7 +125,8 @@ if (isset($user_id)) {
                                                                 class="btn btn-outline-primary dropdown-toggle rounded-pill"
                                                                 type="button" id="filterDropdown_<?= $grade_id ?>"
                                                                 data-bs-toggle="dropdown" aria-expanded="false">
-                                                                 <i class="ri-filter-line align-bottom me-1"></i>Filter Sections
+                                                                <i class="ri-filter-line align-bottom me-1"></i>Filter
+                                                                Sections
                                                             </button>
                                                             <ul class="dropdown-menu p-3"
                                                                 aria-labelledby="filterDropdown_<?= $grade_id ?>">
@@ -134,11 +135,13 @@ if (isset($user_id)) {
                                                     </div>
 
                                                     <div class="flex-shrink-0">
-                                                        <!-- Status switch -->
-    <div class="form-check form-switch form-switch-right form-switch-md mb-3">
-        <label for="student_history_<?= $grade_id ?>" class="form-label mb-0">Show Inactive Student</label>
-        <input class="form-check-input code-switcher" type="checkbox" id="student_history_<?= $grade_id ?>" />
-    </div>
+                                                        <div
+                                                            class="form-check form-switch form-switch-right form-switch-md">
+                                                            <label for="student_history_<?= $grade_id ?>"
+                                                                class="form-label mb-0">Show Inactive Student</label>
+                                                            <input class="form-check-input code-switcher"
+                                                                type="checkbox" id="student_history_<?= $grade_id ?>" />
+                                                        </div>
                                                     </div>
 
                                                 </div>
@@ -387,376 +390,404 @@ if (isset($user_id)) {
 
 
         <script>
-     $(document).ready(function() {
+        $(document).ready(function() {
+            let tables = {};
 
-    let tables = {};
+            $('.tab-pane').each(function() {
+                let tabPane = $(this);
+                let tableEl = tabPane.find('table');
+                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+                let gradeId = tabPane.attr('id');
 
-    $('.tab-pane').each(function() {
-        let tabPane = $(this);
-        let tableEl = tabPane.find('table');
-        let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-        let gradeId = tabPane.attr('id'); // e.g., "grade_1"
-
-        // Initialize DataTable
-        tables[gradeLevel] = tableEl.DataTable({
-            ajax: {
-                url: "<?= site_url('StudentController/fetch_students'); ?>",
-                type: "GET",
-                data: function(d) {
-                    d.grade_level = gradeLevel;
-
-                    // Use checkbox value to determine status
-                    d.status = tabPane.find(`#student_history_${gradeId}`).is(':checked') ? 'inactive' : 'active';
-                }
-            },
-            columns: [
-                { data: 'fullname' },
-                { data: 'age' },
-                { 
-                    data: 'gender',
-                    render: function(data) {
-                        if (data === 'Male') return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
-                        if (data === 'Female') return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
-                        return data;
-                    }
-                },
-                { data: 'section' },
-                { data: 'grade_level' },
-                { 
-                    data: 'school_year',
-                    render: function(data) {
-                        return data ? new Date(data).getFullYear() : '';
-                    }
-                },
-                { 
-                    data: 'status',
-                    render: function(data) {
-                        if (data === 'active') return '<span class="badge bg-success">Active</span>';
-                        if (data === 'inactive') return '<span class="badge bg-secondary">Inactive</span>';
-                        return data;
-                    }
-                },
-                <?php if ($user_type === 'Teacher'): ?>
-                { 
-                    data: null,
-                    render: function(data) {
-                        let btns = '';
-
-                        let userType = "<?= $this->session->userdata('user_type'); ?>";
-                        let currentUser = <?= (int)$this->session->userdata('po_user'); ?>;
-
-                        if (['Principal','Guidance Counselor','Registrar','Admin'].includes(userType) || data.user_id == currentUser) {
-                            btns += `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-2"></i>Edit</button>`;
-                            btns += `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-2"></i>Delete</button>`;
+                tables[gradeLevel] = tableEl.DataTable({
+                    ajax: {
+                        url: "<?= site_url('StudentController/fetch_students'); ?>",
+                        type: "GET",
+                        data: function(d) {
+                            d.grade_level = gradeLevel;
+                            d.status = tabPane.find(`#student_history_${gradeId}`).is(
+                                ':checked') ? 'inactive' : 'active';
                         }
+                    },
+                    columns: [{
+                            data: 'fullname'
+                        },
+                        {
+                            data: 'age'
+                        },
+                        {
+                            data: 'gender',
+                            render: function(data) {
+                                if (data === 'Male')
+                                return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
+                                if (data === 'Female')
+                                return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
+                                return data;
+                            }
+                        },
+                        {
+                            data: 'section'
+                        },
+                        {
+                            data: 'grade_level'
+                        },
+                        {
+                            data: 'school_year',
+                            render: function(data) {
+                                return data ? new Date(data).getFullYear() : '';
+                            }
+                        },
+                        {
+                            data: 'status',
+                            render: function(data) {
+                                if (data === 'active')
+                                return '<span class="badge bg-success">Active</span>';
+                                if (data === 'inactive')
+                                return '<span class="badge bg-secondary">Inactive</span>';
+                                return data;
+                            }
+                        },
+                        <?php if ($user_type === 'Teacher'): ?> {
+                            data: null,
+                            render: function(data) {
+                                let buttons = '';
+                                let userType =
+                                    "<?= $this->session->userdata('user_type'); ?>";
+                                let currentUser =
+                                    <?= (int)$this->session->userdata('po_user'); ?>;
 
-                        let isActive = data.status === 'active';
-                        let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
-                        let statusText = isActive ? 'Active' : 'Inactive';
-                        let statusIcon = isActive ? 'bx-check-circle' : 'bx-x-circle';
+                                if (['Principal', 'Guidance Counselor', 'Registrar',
+                                        'Admin'
+                                    ].includes(userType) || data.user_id ==
+                                    currentUser) {
+                                    buttons +=
+                                        `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-1"></i>Edit</button>`;
+                                    buttons +=
+                                        `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-1"></i>Delete</button>`;
+                                }
 
-                        btns += `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-2"></i>${statusText}</button>`;
+                                let isActive = data.status === 'active';
+                                let statusClass = isActive ? 'btn-outline-success' :
+                                    'btn-outline-secondary';
+                                let statusText = isActive ? 'Active' : 'Inactive';
+                                let statusIcon = isActive ? 'bx-check-circle' :
+                                    'bx-x-circle';
 
-                        return `<div class="d-flex gap-2 flex-wrap">${btns}</div>`;
-                    }
-                }
-                <?php endif; ?>
-            ],
-            responsive: true,
-            paging: true,
-            searching: true,
-            ordering: true,
-            info: true,
-            processing: true,
-            language: {
-                search: '',
-                searchPlaceholder: ' Search...',
-                processing: '<div class="table-loader"></div>'
-            },
-            initComplete: function() {
-                // Section filter dropdown
-                let sectionDropdown = tabPane.find('.dropdown-menu');
-                let sections = this.api().column(3, { search: 'applied' }).data().unique().sort();
-                sectionDropdown.empty();
+                                buttons +=
+                                    `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-1"></i>${statusText}</button>`;
 
-                sections.each(function(section) {
-                    let checkboxId = 'chk_' + gradeId + '_' + section.replace(/\s+/g, '');
-                    sectionDropdown.append(`
+                                return buttons;
+                            }
+                        }
+                        <?php endif; ?>
+                    ],
+                    responsive: true,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    processing: true,
+                    language: {
+                        search: '',
+                        searchPlaceholder: ' Search...',
+                        processing: '<div class="table-loader"></div>'
+                    },
+                    initComplete: function() {
+                        // Create section filter checkboxes based on DataTable data
+                        let sectionDropdown = tabPane.find('.dropdown-menu');
+                        let sections = this.api().column(3, {
+                            search: 'applied'
+                        }).data().unique().sort();
+                        sectionDropdown.empty();
+
+                        sections.each(function(section) {
+                            let checkboxId = 'chk_' + gradeId + '_' + section
+                                .replace(/\s+/g, '');
+                            sectionDropdown.append(`
                         <li class="form-check">
                             <input class="form-check-input filter-check" type="checkbox" value="${section}" id="${checkboxId}" checked>
                             <label class="form-check-label" for="${checkboxId}">${section}</label>
                         </li>
                     `);
+                        });
+
+                        // Filter table by selected sections
+                        sectionDropdown.find('.filter-check').on('change', function() {
+                            let selected = [];
+                            sectionDropdown.find('.filter-check:checked').each(
+                                function() {
+                                    selected.push($(this).val());
+                                });
+
+                            tables[gradeLevel].column(3).search(selected.join('|'),
+                                true, false).draw();
+                        });
+
+                        // Trigger initial filter
+                        sectionDropdown.find('.filter-check').trigger('change');
+                    }
                 });
 
-                sectionDropdown.find('.filter-check').on('change', function() {
-                    let selected = [];
-                    sectionDropdown.find('.filter-check:checked').each(function() {
-                        selected.push($(this).val());
-                    });
-                    tables[gradeLevel].column(3).search(selected.join('|'), true, false).draw();
+                // Show Inactive switch reloads table
+                tabPane.find(`#student_history_${gradeId}`).on('change', function() {
+                    tables[gradeLevel].ajax.reload();
                 });
+            });
 
-                // Trigger initial filter
-                sectionDropdown.find('.filter-check').trigger('change');
-            }
-        });
+            // Toggle Status Button
+            $(document).on('click', '.toggleStatusBtn', function() {
+                let btn = $(this);
+                let studentId = btn.data('id');
+                let currentStatus = btn.data('status');
+                let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 
-        // Status switch reload
-        tabPane.find(`#student_history_${gradeId}`).on('change', function() {
-            tables[gradeLevel].ajax.reload();
-        });
-
-    }); // End of .tab-pane each
-
-    // Toggle Status Button
-    $(document).on('click', '.toggleStatusBtn', function() {
-        let btn = $(this);
-        let studentId = btn.data('id');
-        let currentStatus = btn.data('status');
-        let newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-
-        $.ajax({
-            url: "<?= site_url('StudentController/toggle_status'); ?>",
-            type: "POST",
-            data: { id: studentId, status: newStatus },
-            success: function(response) {
-                let res = JSON.parse(response);
-
-                if (res.status === 'success') {
-                    // Show alert
-                    let alertClass = newStatus === 'inactive' ? 'alert-success' : 'alert-secondary';
-                    let alertText = newStatus === 'inactive' ? 'Student set to Inactive!' : 'Student set to Active!';
-                    let alertEl = $(`
+                $.ajax({
+                    url: "<?= site_url('StudentController/toggle_status'); ?>",
+                    type: "POST",
+                    data: {
+                        id: studentId,
+                        status: newStatus
+                    },
+                    success: function(response) {
+                        let res = JSON.parse(response);
+                        if (res.status === 'success') {
+                            let alertClass = newStatus === 'inactive' ? 'alert-success' :
+                                'alert-secondary';
+                            let alertText = newStatus === 'inactive' ?
+                                'Student set to Inactive!' : 'Student set to Active!';
+                            let alertEl = $(`
                         <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
                             ${alertText}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     `);
-                    $('#alertContainer').append(alertEl);
-                    setTimeout(() => alertEl.alert('close'), 3000);
+                            $('#alertContainer').append(alertEl);
+                            setTimeout(() => {
+                                alertEl.alert('close');
+                            }, 3000);
 
-                    // Reload current table
-                    let tabPane = btn.closest('.tab-pane');
-                    let gradeLevel = tabPane.find('h5').text().replace(' Students','').trim();
-                    if (tables[gradeLevel]) tables[gradeLevel].ajax.reload(null, false);
+                            // Reload current tab DataTable
+                            let tabPane = btn.closest('.tab-pane');
+                            let gradeLevel = tabPane.find('h5').text().replace(' Students',
+                                '').trim();
+                            if (tables[gradeLevel]) tables[gradeLevel].ajax.reload(null,
+                                false);
 
-                    btn.data('status', newStatus);
-                } else {
-                    alert(res.message || 'Error updating status.');
-                }
-            },
-            error: function() {
-                alert('AJAX error. Could not update status.');
-            }
-        });
-    });
-
-
-
-
-
-            // <button class="btn btn-sm btn-outline-success AddAddressBtn">
-            //                             <i class="bx bx-plus-circle"></i> View / Add Info
-            //                         </button>
-
-            // Open modal on AddAddressBtn click
-            $(document).on('click', '.AddAddressBtn', function() {
-                // Reset form and fill sample data
-                $('#addressForm')[0].reset();
-                $('#studentName').val('Juan Dela Cruz');
-                $('#contactNo').val('+63 9123456789');
-                $('#email').val('juandelacruz@gmail.com');
-                $('#bloodType').val('O+');
-                $('#motherName').val('Jane Dela Cruz');
-                $('#fatherName').val('John Sr. Dela Cruz');
-                $('#siblings').val(2);
-                $('#citizen').val('Filipino');
-                $('#address').val('123 Sample Street, Quezon City');
-                $('#previewImage').attr('src', 'https://via.placeholder.com/100');
-
-                // Show modal
-                $('#addressModal').modal('show');
-            });
-
-
-      
-
-
-
-            // ================== RESET MODAL ===================
-            function resetStudentModal(activeGrade) {
-                $('#grade_level').val(activeGrade);
-                $('#id').val('');
-                $('#fullname').val('');
-                $('#age').val('');
-                $('#gender').val('');
-                $('#contact_no').val('');
-                $('#gmail').val('');
-
-                // Load sections for this grade only
-                $.ajax({
-                    url: "<?= site_url('StudentController/get_section_by_grade'); ?>",
-                    type: "GET",
-                    data: {
-                        grade_level: activeGrade
-                    },
-                    dataType: "json",
-                    success: function(data) {
-                        let $section = $('#section');
-                        $section.empty().append('<option value="">Select Section</option>');
-                        $.each(data, function(i, item) {
-                            $section.append('<option value="' + item.classrooms_name +
-                                '">' + item.classrooms_name + '</option>');
-                        });
-                    }
-                });
-            }
-
-            // ================== TAB SWITCH EVENT ===================
-            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
-                let activeGrade = $(e.target).text().replace(' Students', '').trim();
-                if (tables[activeGrade]) {
-                    tables[activeGrade].ajax.reload();
-                }
-                resetStudentModal(activeGrade);
-            });
-
-            // ================== ADD STUDENT BUTTON ===================
-            $('#addBtn').on('click', function() {
-                let activeGrade = $('.nav-pills .nav-link.active span').text().replace(' Students', '')
-                    .trim();
-                resetStudentModal(activeGrade);
-                $('#studentModalTitle').text('Add Student');
-                $('#saveBtn').text('Save');
-            });
-
-            // ================== AUTO-FILL GRADE AFTER SECTION CHANGE ===================
-            $('#section').on('change', function() {
-                let section = $(this).val();
-                if (section) {
-                    $.getJSON("<?= site_url('StudentController/get_grade_level_by_section'); ?>", {
-                        section
-                    }, function(data) {
-                        $('#grade_level').val(data.grade_level || '');
-                    });
-                }
-            });
-
-            // ================== LOAD SECTIONS ===================
-            function loadSections(selectedSection, callback) {
-                let gradeLevel = $('#grade_level').val();
-                $.ajax({
-                    url: "<?= site_url('StudentController/get_section_by_grade'); ?>",
-                    type: "GET",
-                    data: {
-                        grade_level: gradeLevel
-                    },
-                    dataType: "json",
-                    success: function(res) {
-                        let $section = $('#section');
-                        $section.empty().append('<option value="">Select Section</option>');
-                        $.each(res, function(i, item) {
-                            $section.append('<option value="' + item.classrooms_name +
-                                '">' + item.classrooms_name + '</option>');
-                        });
-                        if (selectedSection) {
-                            $section.val(selectedSection);
-                        }
-                        if (callback) callback();
-                    }
-                });
-            }
-
-            // ================== EDIT STUDENT ===================
-            $('.tab-pane').on('click', '.editBtn', function() {
-                let id = $(this).data('id');
-                $.getJSON("<?= site_url('StudentController/edit_student/'); ?>" + id, function(data) {
-                    if (data.error) {
-                        Swal.fire('Error', data.error, 'error');
-                        return;
-                    }
-
-                    $('#id').val(data.id);
-                    $('#fullname').val(data.fullname);
-                    $('#age').val(data.age);
-                    $('#gender').val(data.gender);
-                    $('#contact_no').val(data.contact_no);
-                    $('#gmail').val(data.gmail);
-                    $('#grade_level').val(data.grade_level);
-
-                    loadSections(data.section, function() {
-                        $('#section').val(data.section);
-                    });
-
-                    $('#studentModalTitle').text('Edit Student');
-                    $('#saveBtn').text('Update');
-                    $('#studentModal').modal('show');
-                });
-            });
-
-            // ================== SAVE (ADD OR UPDATE) ===================
-            $('#studentForm').on('submit', function(e) {
-                e.preventDefault();
-                let id = $('#id').val();
-                let url = id ? "<?= site_url('StudentController/update_student'); ?>" :
-                    "<?= site_url('StudentController/add_student'); ?>";
-
-                $.ajax({
-                    url: url,
-                    type: "POST",
-                    data: $(this).serialize(),
-                    dataType: "json",
-                    success: function(res) {
-                        $('#studentModal').modal('hide');
-                        $('#studentForm')[0].reset();
-
-                        if (res.status === 'duplicate') {
-                            Swal.fire('Warning', 'Student already exists', 'warning');
-                        } else if (res.status === 'success' || res.status === 'updated') {
-                            Swal.fire('Success', 'Student saved', 'success');
-                            Object.values(tables).forEach(t => t.ajax.reload(null, false));
-                        } else if (res.status === 'unauthorized') {
-                            Swal.fire('Error', 'You cannot edit this student', 'error');
+                            btn.data('status', newStatus);
+                        } else {
+                            alert(res.message || 'Error updating status.');
                         }
                     },
                     error: function() {
-                        Swal.fire('Error', 'Something went wrong', 'error');
+                        alert('AJAX error. Could not update status.');
                     }
                 });
             });
 
-            // ================== DELETE STUDENT ===================
-            $('.tab-pane').on('click', '.deleteBtn', function() {
-                let id = $(this).data('id');
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "This student record will be permanently deleted.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, delete it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.getJSON("<?= site_url('StudentController/delete_student/'); ?>" + id,
-                            function(res) {
-                                if (res.status === 'unauthorized') {
-                                    Swal.fire('Error', 'You cannot delete this student',
-                                        'error');
-                                } else {
-                                    Swal.fire('Deleted!', 'Student has been deleted.',
-                                        'success');
-                                    Object.values(tables).forEach(t => t.ajax.reload(null,
-                                        false));
-                                }
-                            });
-                    }
-                });
-            });
 
-            // ================== RELOAD TABLES WHEN MODAL CLOSES ===================
-            $('#studentModal').on('hidden.bs.modal', function() {
-                Object.values(tables).forEach(t => t.ajax.reload(null, false));
+
+
+        // <button class="btn btn-sm btn-outline-success AddAddressBtn">
+        //                             <i class="bx bx-plus-circle"></i> View / Add Info
+        //                         </button>
+
+        // Open modal on AddAddressBtn click
+        $(document).on('click', '.AddAddressBtn', function() {
+            // Reset form and fill sample data
+            $('#addressForm')[0].reset();
+            $('#studentName').val('Juan Dela Cruz');
+            $('#contactNo').val('+63 9123456789');
+            $('#email').val('juandelacruz@gmail.com');
+            $('#bloodType').val('O+');
+            $('#motherName').val('Jane Dela Cruz');
+            $('#fatherName').val('John Sr. Dela Cruz');
+            $('#siblings').val(2);
+            $('#citizen').val('Filipino');
+            $('#address').val('123 Sample Street, Quezon City');
+            $('#previewImage').attr('src', 'https://via.placeholder.com/100');
+
+            // Show modal
+            $('#addressModal').modal('show');
+        });
+
+
+
+
+
+
+        // ================== RESET MODAL ===================
+        function resetStudentModal(activeGrade) {
+            $('#grade_level').val(activeGrade);
+            $('#id').val('');
+            $('#fullname').val('');
+            $('#age').val('');
+            $('#gender').val('');
+            $('#contact_no').val('');
+            $('#gmail').val('');
+
+            // Load sections for this grade only
+            $.ajax({
+                url: "<?= site_url('StudentController/get_section_by_grade'); ?>",
+                type: "GET",
+                data: {
+                    grade_level: activeGrade
+                },
+                dataType: "json",
+                success: function(data) {
+                    let $section = $('#section');
+                    $section.empty().append('<option value="">Select Section</option>');
+                    $.each(data, function(i, item) {
+                        $section.append('<option value="' + item.classrooms_name +
+                            '">' + item.classrooms_name + '</option>');
+                    });
+                }
             });
+        }
+
+        // ================== TAB SWITCH EVENT ===================
+        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+            let activeGrade = $(e.target).text().replace(' Students', '').trim();
+            if (tables[activeGrade]) {
+                tables[activeGrade].ajax.reload();
+            }
+            resetStudentModal(activeGrade);
+        });
+
+        // ================== ADD STUDENT BUTTON ===================
+        $('#addBtn').on('click', function() {
+            let activeGrade = $('.nav-pills .nav-link.active span').text().replace(' Students', '')
+                .trim();
+            resetStudentModal(activeGrade);
+            $('#studentModalTitle').text('Add Student');
+            $('#saveBtn').text('Save');
+        });
+
+        // ================== AUTO-FILL GRADE AFTER SECTION CHANGE ===================
+        $('#section').on('change', function() {
+            let section = $(this).val();
+            if (section) {
+                $.getJSON("<?= site_url('StudentController/get_grade_level_by_section'); ?>", {
+                    section
+                }, function(data) {
+                    $('#grade_level').val(data.grade_level || '');
+                });
+            }
+        });
+
+        // ================== LOAD SECTIONS ===================
+        function loadSections(selectedSection, callback) {
+            let gradeLevel = $('#grade_level').val();
+            $.ajax({
+                url: "<?= site_url('StudentController/get_section_by_grade'); ?>",
+                type: "GET",
+                data: {
+                    grade_level: gradeLevel
+                },
+                dataType: "json",
+                success: function(res) {
+                    let $section = $('#section');
+                    $section.empty().append('<option value="">Select Section</option>');
+                    $.each(res, function(i, item) {
+                        $section.append('<option value="' + item.classrooms_name +
+                            '">' + item.classrooms_name + '</option>');
+                    });
+                    if (selectedSection) {
+                        $section.val(selectedSection);
+                    }
+                    if (callback) callback();
+                }
+            });
+        }
+
+        // ================== EDIT STUDENT ===================
+        $('.tab-pane').on('click', '.editBtn', function() {
+            let id = $(this).data('id');
+            $.getJSON("<?= site_url('StudentController/edit_student/'); ?>" + id, function(data) {
+                if (data.error) {
+                    Swal.fire('Error', data.error, 'error');
+                    return;
+                }
+
+                $('#id').val(data.id);
+                $('#fullname').val(data.fullname);
+                $('#age').val(data.age);
+                $('#gender').val(data.gender);
+                $('#contact_no').val(data.contact_no);
+                $('#gmail').val(data.gmail);
+                $('#grade_level').val(data.grade_level);
+
+                loadSections(data.section, function() {
+                    $('#section').val(data.section);
+                });
+
+                $('#studentModalTitle').text('Edit Student');
+                $('#saveBtn').text('Update');
+                $('#studentModal').modal('show');
+            });
+        });
+
+        // ================== SAVE (ADD OR UPDATE) ===================
+        $('#studentForm').on('submit', function(e) {
+            e.preventDefault();
+            let id = $('#id').val();
+            let url = id ? "<?= site_url('StudentController/update_student'); ?>" :
+                "<?= site_url('StudentController/add_student'); ?>";
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: $(this).serialize(),
+                dataType: "json",
+                success: function(res) {
+                    $('#studentModal').modal('hide');
+                    $('#studentForm')[0].reset();
+
+                    if (res.status === 'duplicate') {
+                        Swal.fire('Warning', 'Student already exists', 'warning');
+                    } else if (res.status === 'success' || res.status === 'updated') {
+                        Swal.fire('Success', 'Student saved', 'success');
+                        Object.values(tables).forEach(t => t.ajax.reload(null, false));
+                    } else if (res.status === 'unauthorized') {
+                        Swal.fire('Error', 'You cannot edit this student', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Something went wrong', 'error');
+                }
+            });
+        });
+
+        // ================== DELETE STUDENT ===================
+        $('.tab-pane').on('click', '.deleteBtn', function() {
+            let id = $(this).data('id');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This student record will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.getJSON("<?= site_url('StudentController/delete_student/'); ?>" + id,
+                        function(res) {
+                            if (res.status === 'unauthorized') {
+                                Swal.fire('Error', 'You cannot delete this student',
+                                    'error');
+                            } else {
+                                Swal.fire('Deleted!', 'Student has been deleted.',
+                                    'success');
+                                Object.values(tables).forEach(t => t.ajax.reload(null,
+                                    false));
+                            }
+                        });
+                }
+            });
+        });
+
+        // ================== RELOAD TABLES WHEN MODAL CLOSES ===================
+        $('#studentModal').on('hidden.bs.modal', function() {
+        Object.values(tables).forEach(t => t.ajax.reload(null, false));
+        });
 
 
         });

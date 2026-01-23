@@ -835,7 +835,7 @@ public function fetch_students_by_section() {
         }
 
         // Fetch all activities for this student
-        $this->db->select('a.subject, a.quarter, a.description AS activity_type, a.overall AS overall_score, b.score, .full_name AS teacher');
+        $this->db->select('a.subject, a.quarter, a.description AS activity_type, a.overall AS overall_score, b.score, d.full_name AS teacher');
         $this->db->from('tbl_activities_header AS a');
         $this->db->join('tbl_activities_lines AS b','b.activities_id_header = a.id','left');
         $this->db->join('tbl_students AS c','c.id = b.student_id','left');

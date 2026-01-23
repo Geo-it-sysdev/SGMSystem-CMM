@@ -130,13 +130,22 @@ public function update_student()
 
      // ==================== GET SECTIONS BY GRADE ====================
     public function get_sections_by_student() {
+    $user_id = $this->session->userdata('po_user');
+    $grades = $this->session->userdata('grades'); // e.g., "Grade 8, Grade 9, Grade 11"
 
-        $this->db->distinct();
-        $this->db->select('section');
-        $this->db->from('tbl_students');
-        $query = $this->db->get();
-        echo json_encode($query->result_array());
-    }
+    // Convert grades string to array
+    $grade_array = array_map('trim', explode(',', $grades));
+
+    $this->db->distinct();
+    $this->db->select('section');
+    $this->db->from('tbl_students');
+    $this->db->where_in('grade_level', $grade_array); // filter by grades
+    // Optionally, filter by user_id if needed
+    // $this->db->where('user_id', $user_id);
+
+    $query = $this->db->get();
+    echo json_encode($query->result_array());
+}
 
     // ==================== GET STUDENTS BY SECTION ====================
     public function get_students() {

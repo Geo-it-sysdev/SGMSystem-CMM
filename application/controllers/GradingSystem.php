@@ -61,7 +61,7 @@ class GradingSystem extends CI_Controller {
 
 
 
-    public function student_setups() {
+    public function students_setups() {
         $user_id = $this->session->userdata("po_user");
         if (!isset($user_id)) {
             redirect('AuthController/login_view');
@@ -71,7 +71,7 @@ class GradingSystem extends CI_Controller {
        $data['profile'] = $this->AdminModel->get_user($user_id);
        $this->load->view('template/header', $data);
         $this->load->view('template/sidebar');
-        $this->load->view('student/student_setups');
+        $this->load->view('student/students_setups');
         $this->load->view('template/footer');
     }
 

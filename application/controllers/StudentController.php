@@ -782,31 +782,35 @@ public function update_student()
 
 
     // Fetch students by section
-    public function fetch_students_by_section() {
-        $section   = $this->input->post('section');
-        $user_id   = $this->session->userdata('po_user');     
-        $user_type = $this->session->userdata('user_type');   
+  public function fetch_students_by_section() {
+    $section   = $this->input->post('section');
+    $user_id   = $this->session->userdata('po_user');     
+    $user_type = $this->session->userdata('user_type');   
 
-        $this->db->select('b.student_name, b.section, a.grade_level, c.full_name AS teacher');
-        $this->db->from('tbl_activities_header AS a');
-        $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
-        $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
-        $this->db->join('tbl_students AS d', 'd.id = b.student_id', 'left');
-        $this->db->where('d.status', 'active'); 
-        // $this->db->where('b.section IS NOT NULL', null, false);
+    $this->db->select('b.student_name, b.section, a.grade_level, c.full_name AS teacher');
+    $this->db->from('tbl_activities_header AS a');
+    $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
+    $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
+    $this->db->join('tbl_students AS d', 'd.id = b.student_id', 'left');
+    $this->db->where('d.status', 'active'); 
 
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
-            $this->db->where('a.user_id', $user_id);
-        }
-
-        if (!empty($section)) {
-            $this->db->where('b.section', $section);
-        }
-
-        $this->db->group_by('b.student_name');
-
-        echo json_encode(['data' => $this->db->get()->result()]);
+    // Only filter by user_id if the user is NOT in the privileged list
+    $privileged_roles = ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'];
+    if (!in_array($user_type, $privileged_roles)) {
+        $this->db->where('a.user_id', $user_id);
     }
+
+    // Filter by section if provided
+    if (!empty($section)) {
+        $this->db->where('b.section', $section);
+    }
+
+    $this->db->group_by('b.student_name');
+
+    $query = $this->db->get();
+    echo json_encode(['data' => $query->result()]);
+}
+
 
 
 

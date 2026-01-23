@@ -663,7 +663,6 @@ if (isset($user_id)) {
 
 
 
-            let tables = {}; // your DataTables object, if you have multiple tabs
 
             // ================== HELPER: SET GRADE LEVEL ===================
             function setGradeLevel(value) {

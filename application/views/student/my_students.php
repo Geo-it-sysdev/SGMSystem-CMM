@@ -548,7 +548,7 @@ if (isset($user_id)) {
             });
 
 
-            $(document).on('change', '.filter-check', function() {
+     $(document).on('change', '.filter-check', function() {
     let tabPane = $(this).closest('.tab-pane');
     let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
@@ -558,18 +558,14 @@ if (isset($user_id)) {
         selectedSections.push($(this).val());
     });
 
-    // If nothing is checked, send null to hide all rows
     if (tables[gradeLevel]) {
-        tables[gradeLevel].ajax.reload();
+        // Filter the table based on checked sections
+        tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
+        // column(3) is "Section" column index (0-based)
+        // true = treat as regex, false = do not match exact
     }
-
-    // Modify DataTable ajax to include selected sections dynamically
-    tables[gradeLevel].settings()[0].ajax.data = function(d) {
-        d.grade_level = gradeLevel;
-        d.status = tabPane.find('#student_history').is(':checked') ? 'inactive' : 'active';
-        d.section = selectedSections.length ? selectedSections : null; // null will hide rows
-    };
 });
+
 
 
 

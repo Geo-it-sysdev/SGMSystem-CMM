@@ -444,8 +444,8 @@ if (isset($user_id)) {
                         let currentUser = <?= (int)$this->session->userdata('po_user'); ?>;
 
                         if (['Principal','Guidance Counselor','Registrar','Admin'].includes(userType) || data.user_id == currentUser) {
-                            buttons += `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-1"></i>Edit</button>`;
-                            buttons += `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-1"></i>Delete</button>`;
+                            buttons += `<button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}"><i class="bx bx-edit me-2"></i>Edit</button>`;
+                            buttons += `<button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}"><i class="bx bx-trash me-2"></i>Delete</button>`;
                         }
 
                         let isActive = data.status === 'active';
@@ -453,7 +453,7 @@ if (isset($user_id)) {
                         let statusText = isActive ? 'Active' : 'Inactive';
                         let statusIcon = isActive ? 'bx-check-circle' : 'bx-x-circle';
 
-                        buttons += `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-1"></i>${statusText}</button>`;
+                        buttons += `<button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}"><i class="bx ${statusIcon} me-2"></i>${statusText}</button>`;
 
                         return buttons;
                     }

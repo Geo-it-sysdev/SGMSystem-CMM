@@ -119,31 +119,36 @@ if (isset($user_id)) {
                                                         <?php endif; ?>
                                                     </div>
 
-                                                         <!-- Dropdown Filter -->
-            <div class="dropdown mb-3">
-                <button class="btn btn-outline-primary dropdown-toggle rounded-pill"
-                        type="button"
-                        id="filterDropdown_<?= $grade_id ?>"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                    Filter Options
-                </button>
-                <ul class="dropdown-menu p-3" aria-labelledby="filterDropdown_<?= $grade_id ?>">
-                    <?php
+                                                    <!-- Dropdown Filter -->
+                                                    <div class="dropdown mb-3">
+                                                        <button
+                                                            class="btn btn-outline-primary dropdown-toggle rounded-pill"
+                                                            type="button" id="filterDropdown_<?= $grade_id ?>"
+                                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Filter Options
+                                                        </button>
+                                                        <ul class="dropdown-menu p-3"
+                                                            aria-labelledby="filterDropdown_<?= $grade_id ?>">
+                                                            <?php
                     // Get sections for this grade dynamically
                     $sections = $this->StudentModel->get_all_students($grade, null, 'active');
                     $unique_sections = array_unique(array_column($sections, 'section'));
                     foreach ($unique_sections as $sec):
                     ?>
-                    <li class="form-check">
-                        <input class="form-check-input filter-check" type="checkbox" value="<?= $sec ?>" id="<?= $grade_id ?>_chk_<?= $sec ?>">
-                        <label class="form-check-label" for="<?= $grade_id ?>_chk_<?= $sec ?>">
-                            Section <?= $sec ?>
-                        </label>
-                    </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
+                                                            <li class="form-check">
+                                                                <input class="form-check-input filter-check"
+                                                                    type="checkbox" value="<?= $sec ?>"
+                                                                    id="<?= $grade_id ?>_chk_<?= $sec ?>"
+                                                                    <?= 'checked' ?>>
+
+                                                                <label class="form-check-label"
+                                                                    for="<?= $grade_id ?>_chk_<?= $sec ?>">
+                                                                    Section <?= $sec ?>
+                                                                </label>
+                                                            </li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    </div>
 
 
                                                     <!-- Right side: Switch -->
@@ -424,8 +429,10 @@ if (isset($user_id)) {
                             });
 
                             d.grade_level = gradeLevel;
-                            d.status = tabPane.find('#student_history').is(':checked') ? 'inactive' : 'active';
-                            d.section = selectedSections.length ? selectedSections : null; // send sections
+                            d.status = tabPane.find('#student_history').is(':checked') ?
+                                'inactive' : 'active';
+                            d.section = selectedSections.length ? selectedSections :
+                            null; // send sections
                         }
                     },
                     columns: [{
@@ -450,16 +457,16 @@ if (isset($user_id)) {
                         {
                             data: 'grade_level'
                         },
-                       {
+                        {
                             data: 'school_year',
-                            render: function (data) {
+                            render: function(data) {
                                 if (!data) return '';
                                 return new Date(data).getFullYear();
                             }
                         },
                         {
                             data: 'status',
-                            render: function (data, type, row) {
+                            render: function(data, type, row) {
                                 if (data === 'active') {
                                     return '<span class="badge bg-success">Active</span>';
                                 } else if (data === 'inactive') {
@@ -548,23 +555,23 @@ if (isset($user_id)) {
             });
 
 
-     $(document).on('change', '.filter-check', function() {
-    let tabPane = $(this).closest('.tab-pane');
-    let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+            $(document).on('change', '.filter-check', function() {
+                let tabPane = $(this).closest('.tab-pane');
+                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-    // Get all checked sections
-    let selectedSections = [];
-    tabPane.find('.filter-check:checked').each(function() {
-        selectedSections.push($(this).val());
-    });
+                // Get all checked sections
+                let selectedSections = [];
+                tabPane.find('.filter-check:checked').each(function() {
+                    selectedSections.push($(this).val());
+                });
 
-    if (tables[gradeLevel]) {
-        // Filter the table based on checked sections
-        tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
-        // column(3) is "Section" column index (0-based)
-        // true = treat as regex, false = do not match exact
-    }
-});
+                if (tables[gradeLevel]) {
+                    // Filter the table based on checked sections
+                    tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
+                    // column(3) is "Section" column index (0-based)
+                    // true = treat as regex, false = do not match exact
+                }
+            });
 
 
 

@@ -189,7 +189,7 @@ class GradingSystem extends CI_Controller {
         }
     
         $data['grade_levels'] = $grades;
-        $data['is_admin'] = ($user->user_type === 'admin'); // adjust as per your role field
+        $data['is_admin'] = ($user->user_type === 'admin'); 
     
         $data['profile'] = $this->AdminModel->get_user($user_id);
        $this->load->view('template/header', $data);
@@ -205,7 +205,6 @@ class GradingSystem extends CI_Controller {
             redirect('AuthController/login_view');
             return;
         }
-        // $data['users'] = $this->AdminModel->get_pharma_users();
 
         $data['profile'] = $this->AdminModel->get_user($user_id);
         $this->load->view('template/header', $data);
@@ -236,7 +235,7 @@ class GradingSystem extends CI_Controller {
         }
     
         $data['grade_levels'] = $grades;
-        $data['is_admin'] = ($user->user_type === 'admin'); // adjust as per your role field
+        $data['is_admin'] = ($user->user_type === 'admin'); 
     
         $data['profile'] = $this->AdminModel->get_user($user_id);
        $this->load->view('template/header', $data);
@@ -252,7 +251,6 @@ class GradingSystem extends CI_Controller {
             redirect('AuthController/login_view');
             return;
         }
-        // $data['users'] = $this->AdminModel->get_pharma_users();
 
         $data['profile'] = $this->AdminModel->get_user($user_id);
         $this->load->view('template/header', $data);

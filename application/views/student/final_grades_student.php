@@ -732,9 +732,9 @@
             });
 
 
-            $('#studentDetailsModal').on('hidden.bs.modal', function() {
-                $('#finalGradesModal').modal('show');
-            });
+            // $('#studentDetailsModal').on('hidden.bs.modal', function() {
+            //     $('#finalGradesModal').modal('show');
+            // });
 
 
 

@@ -418,8 +418,13 @@ if (isset($user_id)) {
                         {
                             data: 'grade_level'
                         },
-                        {
-                            data: 'school_year'
+                       {
+                            data: 'school_year',
+                            render: function (data) {
+                                if (!data) return '';
+                                let date = new Date(data);
+                                return date.toISOString().split('T')[0];
+                            }
                         },
                         {
                             data: 'status',

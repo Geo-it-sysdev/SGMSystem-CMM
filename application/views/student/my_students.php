@@ -865,63 +865,64 @@ if (isset($user_id)) {
 
 
 <script>
-// Load sections for a grade
-function loadSections(activeGrade){
-    let dropdown = $(`#section_dropdown_${activeGrade}`);
-    let tbody = $(`#students_table_${activeGrade} tbody`);
-    dropdown.html('<option value="">Select Section</option>');
-    tbody.html(''); // clear students
+let activeGrade = $('.nav-link.active').text().replace(' Students','').trim();
 
-    $.post('<?= site_url("StudentController/get_sections_by_student") ?>',
-        { grade_level: activeGrade },
-        function(sections){
-            sections.forEach(sec => dropdown.append(`<option value="${sec.section}">${sec.section}</option>`));
-        }, 'json'
-    );
+// Load sections for active grade
+function loadSections() {
+    $.post('<?= site_url("StudentController/get_sections_by_student") ?>', { grade_level: activeGrade }, function(sections){
+        let html = '<option value="">Select Section</option>';
+        sections.forEach(sec => html += `<option value="${sec.section}">${sec.section}</option>`);
+        $('#section_dropdown').html(html);
+    }, 'json');
 }
 
 // Load students for selected section
-$('select[id^="section_dropdown_"]').on('change', function(){
-    let grade = $(this).attr('id').replace('section_dropdown_', '');
+$('#section_dropdown').on('change', function(){
     let section = $(this).val();
-    if(!section) return;
-
+    if (!section) return;
     $.post('<?= site_url("StudentController/get_students") ?>',
-        { grade_level: grade, section: section },
-        function(students){
-            let tbody = $(`#students_table_${grade} tbody`);
-            let html = '';
-            students.forEach(st => {
-                html += `<tr>
-                            <td><input type="checkbox" class="student_checkbox" value="${st.id}"></td>
-                            <td>${st.fullname}</td>
-                            <td>${st.section}</td>
-                        </tr>`;
-            });
-            tbody.html(html);
-        }, 'json'
-    );
+        { grade_level: activeGrade, section: section }, function(students){
+        let html = '';
+        students.forEach(st => {
+            html += `<tr>
+                        <td><input type="checkbox" class="student_checkbox" value="${st.id}"></td>
+                        <td>${st.fullname}</td>
+                        <td>${st.section}</td>
+                    </tr>`;
+        });
+        $('#students_table tbody').html(html);
+    }, 'json');
 });
 
-// Check/uncheck all for each grade tab
-$('input[id^="check_all_"]').on('change', function(){
-    let grade = $(this).attr('id').replace('check_all_', '');
-    $(`#students_table_${grade} .student_checkbox`).prop('checked', $(this).prop('checked'));
-});
-
-// When tab changes, reload sections
+// Update active grade when tab changes
 $('.nav-link').on('shown.bs.tab', function(e){
-    let grade = $(e.target).text().replace(' Students','').trim();
-    grade = grade.toLowerCase().replace(' ', '');
-    loadSections(grade);
+    activeGrade = $(e.target).text().replace(' Students','').trim();
+    loadSections();
 });
 
-// Initial load for first active tab
-let firstGrade = $('.nav-link.active').text().replace(' Students','').trim();
-firstGrade = firstGrade.toLowerCase().replace(' ', '');
-loadSections(firstGrade);
+// Check/uncheck all
+$(document).on('change','#check_all',function(){ $('.student_checkbox').prop('checked', $(this).prop('checked')); });
 
+// Submit selected students to tbl_student_assign_by_teacher
+$('#submit_selected').on('click', function(){
+    let ids = [];
+    $('.student_checkbox:checked').each(function(){ ids.push($(this).val()); });
+    if(ids.length == 0){ alert('No students selected'); return; }
 
+    $.post('<?= site_url("StudentController/submit_selected") ?>', { student_ids: ids }, function(res){
+        if(res.status == 'success'){
+            alert('Students assigned successfully!');
+            $('#students_table tbody').html('');
+            $('#section_dropdown').val('');
+            $('#TagstudentModal').modal('hide');
+        } else {
+            alert(res.message);
+        }
+    }, 'json');
+});
+
+// Initial load
+loadSections();
 </script>
 
     </div>

@@ -281,7 +281,7 @@ let finalGradesTableInstance = null;
                             data: 'grade_level'
                         },
                         {
-                            data: 'full_name'
+                            data: 'teacher'
                         },
                         {
                             data: 'section'
@@ -300,7 +300,7 @@ let finalGradesTableInstance = null;
                         data-section="${row.section}" 
                         data-subject="${row.subject}" 
                         data-quarter="${row.quarter}" 
-                        data-full_name="${row.full_name}" 
+                        data-full_name="${row.teacher}" 
                         data-grade_level="${row.grade_level}">
                         <i class="ri-eye-line"></i> Grades Details
                     </button>`;

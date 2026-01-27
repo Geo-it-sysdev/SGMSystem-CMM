@@ -670,12 +670,6 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'Missing Required Fields',
-                        html: `
-                <p>Please complete all required fields:</p>
-                <ul style="text-align:left;">
-                    ${missingFields.map(f => `<li>${f}</li>`).join('')}
-                </ul>
-            `,
                     });
                     return;
                 }

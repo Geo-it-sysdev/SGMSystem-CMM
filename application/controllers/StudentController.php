@@ -489,7 +489,7 @@ public function save_activity()
             $this->db->where('a.grade_level', $grade_level);
         }
 
-        $this->db->group_by(['a.subject', 'a.quarter', 'b.full_name']);
+        $this->db->group_by(['a.subject', 'a.quarter',  'c.section', 'b.full_name']);
         $query = $this->db->get()->result();
 
         $data = [];

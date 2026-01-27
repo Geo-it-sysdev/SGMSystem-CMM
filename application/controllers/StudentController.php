@@ -162,22 +162,42 @@ public function update_student()
     // GET SECTIONS BY GRADE LEVEL
     // ---------------------------
     public function get_sections()
-    {
-        $grade_level = $this->input->get('grade_level');
-        $user_id = $this->session->userdata('po_user'); 
+{
+    $grade_level = $this->input->get('grade_level');
+    $activities_id_header = $this->input->get('activities_id_header'); // new parameter
+    $user_id = $this->session->userdata('po_user'); 
 
-        $this->db->where('user_id', $user_id);
-        if (!empty($grade_level)) {
-            $this->db->where('grade_level', $grade_level);
-        }
+    // Get all sections for this user and grade_level
+    $this->db->select('s.section, COUNT(s.id) as total_students')
+             ->from('tbl_students s');
 
-        $sections = $this->db->select('section')
-                             ->distinct()
-                             ->get('tbl_students')
-                             ->result_array();
-
-        echo json_encode(array_column($sections, 'section'));
+    if (!empty($grade_level)) {
+        $this->db->where('s.grade_level', $grade_level);
     }
+
+    $this->db->group_by('s.section');
+    $sections = $this->db->get()->result_array();
+
+    $available_sections = [];
+
+    foreach ($sections as $sec) {
+        $section = $sec['section'];
+        $total_students = $sec['total_students'];
+
+        // Count how many students in this section are already in tbl_activities_lines for this activity
+        $this->db->where('activities_id_header', $activities_id_header);
+        $this->db->where('section', $section);
+        $already_added = $this->db->from('tbl_activities_lines')->count_all_results();
+
+        // Show section only if not all students are already added
+        if ($already_added < $total_students) {
+            $available_sections[] = $section;
+        }
+    }
+
+    echo json_encode($available_sections);
+}
+
 
     // ---------------------------
     // GET STUDENTS BY SECTION

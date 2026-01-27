@@ -521,10 +521,15 @@
                             render: function(data, type, row) {
                                 let buttonHtml = `
                                 <button class="btn btn-sm btn-outline-success tagBtn position-relative me-1"
-                                    data-id="${row.id}"
-                                    data-grade_level="${row.grade_level}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#tagModal">
+                                    data-id = "${row.id}"
+                                    data-grade_level = "${row.grade_level}"
+                                    data-subject = "${row.subject}"
+                                    data-activity_type = "${row.activity_type}"
+                                    data-description = "${row.description}"
+                                    data-activity_date = "${row.activity_date}"
+                                    data-overall = "${row.overall}"
+                                    data-bs-toggle = "modal"
+                                    data-bs-target = "#tagModal" > 
                                     <i class="bi bi-tag-fill"></i> Add Grade
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill ${
                                         row.pending_count == 0 ? 'bg-success' : 'bg-danger'
@@ -533,6 +538,8 @@
                                     </span>
                                 </button>
                                 `;
+
+                                
 
                                 let teacherButtons = `
                                 <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
@@ -1107,7 +1114,7 @@
                             // Reload your activityTable
                             if ($.fn.DataTable.isDataTable('.activityTable')) {
                                 $('.activityTable').DataTable().ajax.reload(null,
-                                false); // false = don't reset pagination
+                                    false); // false = don't reset pagination
                             }
 
                             // Optionally, reload your grades table too

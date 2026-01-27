@@ -391,45 +391,19 @@ public function update_student()
         echo json_encode($subjects);
     }
 
-    // Fetch activities by grade
-    // public function fetch_activitie() {
-    //     $grade_level = $this->input->post('grade_level');
-    //     $user_id = $this->session->userdata('po_user');
-    //     $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
-    //     echo json_encode(['data'=>$data]);
-    // }
+  
 
     public function fetch_activitie()
-{
-    $grade_level = $this->input->post('grade_level');
-    $user_id = $this->session->userdata('po_user');
+    {
+        $grade_level = $this->input->post('grade_level');
+        $user_id = $this->session->userdata('po_user');
 
-    $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
-    echo json_encode(['data' => $data]);
-}
+        $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
+        echo json_encode(['data' => $data]);
+    }
 
 
-public function get_pending_students()
-{
-    $activity_id = $this->input->post('activity_id');   // Activity header ID
-    $grade_level = $this->input->post('grade_level');   // e.g., 'Grade 8'
 
-    $query = $this->db->query("
-        SELECT COUNT(a.id) AS pending_count
-        FROM tbl_students AS a
-        WHERE a.grade_level = ?
-          AND NOT EXISTS (
-              SELECT 1
-              FROM tbl_activities_lines AS b
-              JOIN tbl_activities_header AS c
-                ON c.id = b.activities_id_header
-              WHERE b.student_id = a.id
-                AND c.id = ?
-          )
-    ", [$grade_level, $activity_id]);
-
-    echo json_encode($query->row());
-}
 
 
 

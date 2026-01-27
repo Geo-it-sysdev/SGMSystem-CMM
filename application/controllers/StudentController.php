@@ -283,29 +283,30 @@ public function update_student()
 
     
     
-    public function fetch_grades($activity_id)
-    {
-        $this->db->select("
-            a.id,
-            a.grade_level,
-            a.subject,
-            a.activity_type,
-            a.overall,
-            b.id AS line_id,
-            b.student_name,
-            b.section AS sections,
-            b.score,
-            b.remarks
-        ");
-        $this->db->from('tbl_activities_header AS a');
-        $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
-        $this->db->join('tbl_students AS c', 'c.id = b.student_id', 'left');
-        $this->db->where('a.id', $activity_id);
-        $this->db->where('c.status', 'active'); 
-        $query = $this->db->get();
-    
-        echo json_encode($query->result());
-    }
+  public function fetch_grades($activity_id)
+{
+    $this->db->select("
+        a.id,
+        a.grade_level,
+        a.subject,
+        a.activity_type,
+        a.overall,
+        b.id AS line_id,
+        b.student_name,
+        b.section AS sections,
+        b.score,
+        b.remarks
+    ");
+    $this->db->from('tbl_activities_header AS a');
+    $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
+    $this->db->join('tbl_students AS c', 'c.id = b.student_id', 'left');
+    $this->db->where('a.id', $activity_id);
+    $this->db->where('c.status', 'active'); 
+    $query = $this->db->get();
+
+    echo json_encode($query->result());
+}
+
 
     public function update_grade() {
         $id = $this->input->post('grade_id');

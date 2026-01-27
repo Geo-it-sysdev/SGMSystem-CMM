@@ -226,122 +226,146 @@
 
 
 
-      <!-- Tag Modal -->
-<div class="modal fade" id="tagModal" tabindex="-1" aria-labelledby="tagModalLabel" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
+        <!-- Tag Modal -->
+        <div class="modal fade" id="tagModal" tabindex="-1" aria-labelledby="tagModalLabel" aria-hidden="true"
+            data-bs-backdrop="static">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+          
+                    <div class="modal-header">
+                        
+                              
+                        <h5 class="modal-title">Tag Grades</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Add Grades Button -->
+                        <div class="mb-3 d-flex align-items-center">
+                            <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+                            <button type="button" class="btn btn-outline-success me-2 rounded-pill"
+                                id="openAddGradesBtn">
+                                <i class="bi bi-journal-check me-1"></i> Add Score
+                            </button>
+                            <?php endif; ?>
+                            <!-- <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle rounded-pill" type="button"
+                                    id="filterG11Button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="ri-filter-3-line me-1"></i> Filter Section
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="filterG11Button">
+                                    <li><a class="dropdown-item" href="#" onclick="setFilter('Proverbs')">Proverbs</a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#" onclick="setFilter('Psalm')">Psalm</a></li>
+                                    <hr class="dropdown-divider">
+                                    <div class="d-flex justify-content-center mt-2 mb-2">
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                            onclick="clearFilter()">Clear Filter</button>
+                                    </div>
+                                </ul>
+                            </div> -->
+                        </div>
+                         <!-- <ul class="nav nav-tabs nav-border-top nav-border-top-primary mb-3" role="tablist">
+                                         <li class="nav-item">
+                                             <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
+                                                Section 1
+                                             </a>
+                                         </li>
+                                         <li class="nav-item">
+                                             <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
+                                                Section 2
+                                             </a>
+                                         </li>
+                                         <li class="nav-item">
+                                             <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
+                                                Section 3
+                                             </a>
+                                         </li>
+                                         <li class="nav-item">
+                                             <a class="nav-link active" data-bs-toggle="tab"  role="tab" aria-selected="true">
+                                                Section 4
+                                             </a>
+                                         </li>
+                                     </ul> -->
+                                     <ul class="nav nav-tabs nav-border-top nav-border-top-primary mb-3" id="sectionTabs" role="tablist">
+    <!-- Tabs will be injected dynamically via JS -->
+</ul>
 
-            <!-- Modal Header -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="tagModalLabel">Tag Grades</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <!-- Activity Info -->
+                        <div class="row mb-3">
+                            <!-- Inputs Row -->
+
+
+                            <div class="row mb-3 equal-width">
+                                <div class="col">
+                                    <label for="subjects" class="form-label">Subjects</label>
+                                    <input type="text" id="subjects" name="subjects"
+                                        class="form-control underline-input" autocomplete="off" readonly
+                                        style="text-align:center;">
+                                </div>
+
+                                <div class="col">
+                                    <label for="activity" class="form-label">Activity Type</label>
+                                    <input type="text" id="activity" name="activity"
+                                        class="form-control underline-input" autocomplete="off" readonly
+                                        style="text-align:center;">
+                                </div>
+                                <div class="col">
+                                    <label for="description" class="form-label">Description</label>
+                                    <input type="text" id="description" name="description"
+                                        class="form-control underline-input" autocomplete="off" readonly
+                                        style="text-align:center;">
+                                </div>
+
+                                <div class="col">
+                                    <label for="dates" class="form-label">Date Activity</label>
+                                    <input type="date" id="dates" name="dates" class="form-control underline-input"
+                                        autocomplete="off" readonly style="text-align:center;">
+                                </div>
+
+                                <div class="col">
+                                    <label for="overalls" class="form-label">Overall</label>
+                                    <input type="text" id="overalls" name="overall" class="form-control underline-input"
+                                        autocomplete="off" readonly style="text-align:center;">
+                                </div>
+
+                                <div class="col">
+                                    <label for="passing" class="form-label">Passing Score</label>
+                                    <input type="text" id="passing" name="passing" class="form-control underline-input"
+                                        autocomplete="off" readonly style="text-align:center;">
+                                </div>
+
+                            </div>
+
+
+
+
+
+                            <!-- Grades Table -->
+                            <div class="table-responsive">
+                                <table class="table table-bordered dt-responsive nowrap table-striped align-middle "
+                                    style="width:100%" id="gradesTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Section</th>
+                                            <th>Score</th>
+                                            <th>Remarks</th>
+                                            <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+                                            <th>Action</th>
+                                            <?php endif; ?>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <!-- Modal Body -->
-            <div class="modal-body">
-                
-                <!-- Tabs -->
-                <ul class="nav nav-tabs nav-justified nav-border-top nav-border-top-success mb-3" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-bs-toggle="tab" href="#tab-home" role="tab" aria-selected="true">
-                            <i class="ri-home-5-line align-middle me-1"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="tab" href="#tab-profile" role="tab" aria-selected="false">
-                            <i class="ri-user-line me-1 align-middle"></i> Profile
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="tab" href="#tab-messages" role="tab" aria-selected="false">
-                            <i class="ri-question-answer-line align-middle me-1"></i> Messages
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Tab Content -->
-                <div class="tab-content">
-                    <!-- Home Tab -->
-                    <div class="tab-pane fade show active" id="tab-home" role="tabpanel">
-                        <p>Home tab content here.</p>
-                    </div>
-
-                    <!-- Profile Tab -->
-                    <div class="tab-pane fade" id="tab-profile" role="tabpanel">
-                        <p>Profile tab content here.</p>
-                    </div>
-
-                    <!-- Messages Tab -->
-                    <div class="tab-pane fade" id="tab-messages" role="tabpanel">
-                        <p>Messages tab content here.</p>
-                    </div>
-                </div>
-
-                <!-- Add Grades Button -->
-                <div class="mb-3 d-flex align-items-center mt-3">
-                    <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                        <button type="button" class="btn btn-outline-success me-2 rounded-pill" id="openAddGradesBtn">
-                            <i class="bi bi-journal-check me-1"></i> Add Score
-                        </button>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Activity Info (Your Existing Inputs) -->
-                <div class="row mb-3 equal-width">
-                    <div class="col">
-                        <label for="subjects" class="form-label">Subjects</label>
-                        <input type="text" id="subjects" name="subjects" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
-                    </div>
-                    <div class="col">
-                        <label for="activity" class="form-label">Activity Type</label>
-                        <input type="text" id="activity" name="activity" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
-                    </div>
-                    <div class="col">
-                        <label for="description" class="form-label">Description</label>
-                        <input type="text" id="description" name="description" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
-                    </div>
-                    <div class="col">
-                        <label for="dates" class="form-label">Date Activity</label>
-                        <input type="date" id="dates" name="dates" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
-                    </div>
-                    <div class="col">
-                        <label for="overalls" class="form-label">Overall</label>
-                        <input type="text" id="overalls" name="overall" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
-                    </div>
-                    <div class="col">
-                        <label for="passing" class="form-label">Passing Score</label>
-                        <input type="text" id="passing" name="passing" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
-                    </div>
-                </div>
-
-                <!-- Grades Table -->
-                <div class="table-responsive">
-                    <table class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%" id="gradesTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Student</th>
-                                <th>Section</th>
-                                <th>Score</th>
-                                <th>Remarks</th>
-                                <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                                    <th>Action</th>
-                                <?php endif; ?>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-            </div>
-
         </div>
-    </div>
-</div>
 
 
         <!-- Add Grades Modal -->
@@ -770,107 +794,117 @@
 
             var editGradeModal = new bootstrap.Modal(document.getElementById('editGradeModal'));
 
-            function loadGradesTable(activityTypeId) {
+           function loadGradesTable(activityTypeId) {
+    var overallScore = parseFloat($('#overalls').val()) || 0;
 
-                var overallScore = parseFloat($('#overalls').val()) || 0;
-                var passingPercentage = 75;
-                var passingScore = (overallScore * passingPercentage) / 100;
+    $.ajax({
+        url: '<?= base_url("StudentController/fetch_grades") ?>/' + activityTypeId,
+        method: 'GET',
+        dataType: 'json',
+        success: function(res) {
+            // Ensure returned data is an array
+            var list = Array.isArray(res) ? res : (res.data ? res.data : []);
 
-                $.ajax({
-                    url: '<?= base_url("StudentController/fetch_grades") ?>/' + activityTypeId,
-                    method: 'GET',
-                    dataType: 'json',
+            // Filter out invalid rows
+            list = list.filter(g => g && g.student_name);
 
-                    success: function(res) {
+            // Extract unique sections
+            var sections = [...new Set(list.map(g => g.sections))];
 
-                        // Ensure returned data is an array
-                        var list = Array.isArray(res) ? res : (res.data ? res.data : []);
+            // Build tabs dynamically
+            var tabsHtml = '';
+            sections.forEach((section, index) => {
+                tabsHtml += `
+                    <li class="nav-item">
+                        <a class="nav-link ${index === 0 ? 'active' : ''}" data-section="${section}" href="#" role="tab">
+                            ${section}
+                        </a>
+                    </li>
+                `;
+            });
+            $('#sectionTabs').html(tabsHtml);
 
-                        // 🔥 FIX: Filter out empty objects so NO FAKE ROW is created
-                        list = list.filter(g => g && g.student_name);
+            // Draw DataTable for the first section by default
+            drawGradesTable(list, sections[0], overallScore);
 
-                        var rows = list.map(g => {
+            // Tab click event to filter table
+            $('#sectionTabs a').on('click', function(e) {
+                e.preventDefault();
+                $('#sectionTabs a').removeClass('active');
+                $(this).addClass('active');
+                var section = $(this).data('section');
+                drawGradesTable(list, section, overallScore);
+            });
+        },
+        error: function() {
+            Swal.fire('Error', 'Failed to load grades data.', 'error');
+        }
+    });
+}
 
-                            var percentDisplay = '0% - Failed';
+function drawGradesTable(data, section, overallScore) {
+    var passingPercentage = 75;
+    var passingScore = (overallScore * passingPercentage) / 100;
 
-                            if (overallScore > 0 && g.score != null && g.score !== "") {
-                                var percent = (g.score / overallScore) * 100;
-                                var status = (g.score >= passingScore) ? 'Passed' :
-                                    'Failed';
-                                percentDisplay = percent.toFixed(0) + '% - ' + status;
-                            }
+    // Filter by section
+    var filtered = data.filter(g => g.sections === section);
 
-                            var actions = `
-                <button class="btn btn-sm btn-outline-primary editGradeBtn"
-                    data-id="${g.line_id}"
-                    data-name="${g.student_name}"
-                    data-section="${g.sections}"
-                    data-score="${g.score}">
-                    <i class="bi bi-pencil-square me-1"></i>Edit
-                </button>
+    var rows = filtered.map(g => {
+        var percentDisplay = '0% - Failed';
+        if (overallScore > 0 && g.score != null && g.score !== "") {
+            var percent = (g.score / overallScore) * 100;
+            var status = (g.score >= passingScore) ? 'Passed' : 'Failed';
+            percentDisplay = percent.toFixed(0) + '% - ' + status;
+        }
 
-                <button class="btn btn-sm btn-outline-danger deleteGradeBtn"
-                    data-id="${g.line_id}">
-                    <i class="bi bi-trash me-1"></i>Delete
-                </button>
-            `;
+        var actions = `
+            <button class="btn btn-sm btn-outline-primary editGradeBtn"
+                data-id="${g.line_id}"
+                data-name="${g.student_name}"
+                data-section="${g.sections}"
+                data-score="${g.score}">
+                <i class="bi bi-pencil-square me-1"></i>Edit
+            </button>
 
-                            return [
-                                g.student_name,
-                                g.sections,
-                                g.score,
-                                percentDisplay,
-                                actions
-                            ];
-                        });
+            <button class="btn btn-sm btn-outline-danger deleteGradeBtn"
+                data-id="${g.line_id}">
+                <i class="bi bi-trash me-1"></i>Delete
+            </button>
+        `;
 
-                        // Update DataTable
-                        if ($.fn.DataTable.isDataTable('#gradesTable')) {
-                            var table = $('#gradesTable').DataTable();
-                            table.clear();
+        return [
+            g.student_name,
+            g.sections,
+            g.score,
+            percentDisplay,
+            actions
+        ];
+    });
 
-                            if (rows.length > 0) {
-                                table.rows.add(rows).draw();
-                            } else {
-                                table.draw(); // Shows “No data available”
-                            }
+    // Initialize or reload DataTable
+    if ($.fn.DataTable.isDataTable('#gradesTable')) {
+        var table = $('#gradesTable').DataTable();
+        table.clear();
+        if (rows.length > 0) table.rows.add(rows).draw();
+        else table.draw();
+    } else {
+        $('#gradesTable').DataTable({
+            data: rows,
+            columns: [
+                { title: "Student" },
+                { title: "Section" },
+                { title: "Score" },
+                { title: "Remarks" },
+                <?php if ($this->session->userdata('user_type') === 'Teacher'): ?> 
+                { title: "Action", orderable: false, searchable: false } 
+                <?php endif; ?>
+            ],
+            responsive: true,
+            language: { emptyTable: "No data available" }
+        });
+    }
+}
 
-                        } else {
-                            $('#gradesTable').DataTable({
-                                data: rows,
-                                columns: [{
-                                        title: "Student"
-                                    },
-                                    {
-                                        title: "Section"
-                                    },
-                                    {
-                                        title: "Score"
-                                    },
-                                    {
-                                        title: "Remarks"
-                                    },
-                                    <?php if ($this->session->userdata('user_type') === 'Teacher'): ?> {
-                                        title: "Action",
-                                        orderable: false,
-                                        searchable: false
-                                    }
-                                    <?php endif; ?>
-
-                                ],
-                                responsive: true,
-                                language: {
-                                    emptyTable: "No data available"
-                                }
-                            });
-                        }
-                    },
-
-                    error: function() {
-                        Swal.fire('Error', 'Failed to load grades data.', 'error');
-                    }
-                });
-            }
 
 
             // Open Edit Modal

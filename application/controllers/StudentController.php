@@ -471,7 +471,7 @@ public function save_activity()
         $user_id    = $this->session->userdata('po_user'); 
         $user_type  = $this->session->userdata('user_type'); 
 
-        $this->db->select('a.id, a.subject, a.grade_level, a.quarter, b.full_name, c.section GROUP_CONCAT(c.section SEPARATOR " | "), a.activity_date');
+        $this->db->select('a.id, a.subject, a.grade_level, a.quarter, b.full_name, GROUP_CONCAT(c.section SEPARATOR " | ") AS section, a.activity_date');
         $this->db->from('tbl_activities_header AS a');
         $this->db->join('tbl_activities_lines AS c', 'c.activities_id_header = a.id', 'left');
         $this->db->join('tbl_users AS b', 'b.id = a.user_id', 'left');

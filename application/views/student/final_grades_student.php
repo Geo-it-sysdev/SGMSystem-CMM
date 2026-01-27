@@ -412,6 +412,7 @@ let finalGradesTableInstance = null;
                             </button>`;
                         },
                         orderable: false,
+                         info: false,
                         searchable: false
                     }
                 ],

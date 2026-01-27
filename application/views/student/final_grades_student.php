@@ -136,7 +136,12 @@
                     <br>
   
 
-                   <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist"></ul>
+                  <div class="ms-3"> <!-- ms-3 adds margin-left -->
+    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
+        <!-- your tab items here -->
+    </ul>
+</div>
+
 
 
                     <div class="modal-body">

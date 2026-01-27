@@ -536,6 +536,8 @@
                             data-bs-toggle="modal"
                             data-bs-target="#tagModal">
                             <i class="bi bi-tag-fill"></i> Add Grade
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">+99
+                                                     <span class="visually-hidden">unread messages </span></span>
                         </button>
                         <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
                         <button class="btn btn-sm btn-outline-primary editBtn" data-id="${row.id}">
@@ -544,10 +546,7 @@
                         <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${row.id}">
                             <i class="ri-delete-bin-line"></i> Delete
                         </button>
-                        <button type="button" class="btn btn-primary position-relative">
-                                                Mails  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">+99
-                                                     <span class="visually-hidden">unread messages </span></span>
-                                             </button>
+                        
                         <?php endif; ?>
 
                     `;

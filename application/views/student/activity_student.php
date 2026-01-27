@@ -526,7 +526,7 @@
                             searchable: false,
                             render: function(data, type, row) {
                                 return `
-                        <button class="btn btn-sm btn-outline-success tagBtn"
+                        <button class="btn btn-sm btn-outline-success tagBtn position-relative"
                             data-id="${row.id}"
                             data-subject="${row.subject}"
                             data-activity_type="${row.activity_type}"

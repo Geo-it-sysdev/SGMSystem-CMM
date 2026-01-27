@@ -231,7 +231,10 @@
             data-bs-backdrop="static">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
-                     <ul class="nav nav-tabs nav-justified nav-border-top nav-border-top-success mb-3" role="tablist">
+          
+                    <div class="modal-header">
+                        
+                              <ul class="nav nav-tabs nav-justified nav-border-top nav-border-top-success mb-3" role="tablist">
                                          <li class="nav-item">
                                              <a class="nav-link active" data-bs-toggle="tab" href="#nav-border-justified-home" role="tab" aria-selected="false">
                                                  <i class="ri-home-5-line align-middle me-1"></i> Home
@@ -248,9 +251,6 @@
                                              </a>
                                          </li>
                                      </ul>
-                    <div class="modal-header">
-                        
-                   
                         <h5 class="modal-title">Tag Grades</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>

@@ -131,31 +131,14 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Final Grades</h5>
-                         
+
                     </div>
                     <br>
-  <ul class="nav nav-tabs nav-border-top nav-border-top-primary mb-3" role="tablist">
-                                         <li class="nav-item">
-                                             <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
-                                                Section 1
-                                             </a>
-                                         </li>
-                                         <li class="nav-item">
-                                             <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
-                                                Section 2
-                                             </a>
-                                         </li>
-                                         <li class="nav-item">
-                                             <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
-                                                Section 3
-                                             </a>
-                                         </li>
-                                         <li class="nav-item">
-                                             <a class="nav-link active" data-bs-toggle="tab"  role="tab" aria-selected="true">
-                                                Section 4
-                                             </a>
-                                         </li>
-                                     </ul>
+
+
+                    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
+                    </ul>
+
 
                     <div class="modal-body">
                         <div class="row mb-3 equal-width">
@@ -276,7 +259,7 @@
         <script>
         $(document).ready(function() {
             let isSwitchingModal = false;
-let finalGradesTableInstance = null;
+            let finalGradesTableInstance = null;
 
             // Initialize all activity tables
             $('.activityTable').each(function() {
@@ -352,8 +335,8 @@ let finalGradesTableInstance = null;
                 }
             });
 
-           $(document).on('click', '.viewBtn', function () {
-                let section = $(this).data('section');
+            $(document).on('click', '.viewBtn', function() {
+                let section = $(this).data('section'); // e.g., "A | B | C"
                 let subject = $(this).data('subject');
                 let quarter = $(this).data('quarter');
                 let grade_level = $(this).data('grade_level');
@@ -365,56 +348,76 @@ let finalGradesTableInstance = null;
                 $('#subjects').val(subject);
                 $('#full_name').val(full_name);
 
-                // Destroy only if really exists
+                // Destroy existing table
                 if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
                     $('#finalGradesTable').DataTable().destroy();
                 }
                 $('#finalGradesTable tbody').empty();
 
-                // Store instance
-                finalGradesTableInstance = $('#finalGradesTable').DataTable({
+                // Create tabs dynamically
+                let sectionsArr = section.split(' | ').sort(); // sort alphabetically
+                let tabsHtml = '';
+                sectionsArr.forEach((sec, index) => {
+                    tabsHtml += `
+            <li class="nav-item">
+                <a class="nav-link ${index === 0 ? 'active' : ''}" data-section="${sec}" href="#" role="tab">${sec}</a>
+            </li>
+        `;
+                });
+                $('#sectionTabs').html(tabsHtml);
+
+                // Initialize DataTable
+                let finalGradesTableInstance = $('#finalGradesTable').DataTable({
                     ajax: {
                         url: "<?= site_url('StudentController/fetch_final_grades'); ?>",
                         type: 'POST',
                         data: {
-                            section,
+                            section: sectionsArr.join(' | '), // send all sections
                             subject,
                             quarter,
                             grade_level
                         },
                         dataSrc: 'data'
                     },
-                    columns: [
-                        { data: 'student_name' },
-                        { data: 'section' },
-                        { data: 'final_grade' },
+                    columns: [{
+                            data: 'student_name'
+                        },
+                        {
+                            data: 'section'
+                        },
+                        {
+                            data: 'final_grade'
+                        },
                         {
                             data: 'remarks',
-                            render: function (data) {
+                            render: function(data) {
                                 let badgeClass = 'bg-secondary';
                                 if (data === "Outstanding") badgeClass = "bg-success";
-                                else if (data === "Very Satisfactory") badgeClass = "bg-primary";
-                                else if (data === "Satisfactory") badgeClass = "bg-info";
-                                else if (data === "Fair") badgeClass = "bg-warning text-dark";
-                                else if (data === "Did Not Meet Expectations") badgeClass = "bg-danger";
+                                else if (data === "Very Satisfactory") badgeClass =
+                                    "bg-primary";
+                                else if (data === "Satisfactory") badgeClass =
+                                "bg-info";
+                                else if (data === "Fair") badgeClass =
+                                    "bg-warning text-dark";
+                                else if (data === "Did Not Meet Expectations")
+                                    badgeClass = "bg-danger";
                                 else if (data === "Failure") badgeClass = "bg-dark";
-
                                 return `<span class="badge ${badgeClass}">${data}</span>`;
                             }
                         },
                         {
                             data: null,
-                            render: function (d) {
+                            render: function(d) {
                                 return `<button class="btn btn-sm btn-outline-primary viewDetailsBtn"
-                                    data-student_name="${d.student_name}"
-                                    data-section="${d.section}"
-                                    data-subject="${d.subject || $('#subjects').val()}"
-                                    data-quarter="${$('#quarter').val()}"
-                                    data-full_name="${$('#full_name').val()}"
-                                    data-grade_level="${$('#grade_level').val()}"
-                                    data-final_grade="${d.final_grade}">
-                                    <i class="bi bi-journal-text"></i> View Details
-                                </button>`;
+                        data-student_name="${d.student_name}"
+                        data-section="${d.section}"
+                        data-subject="${subject}"
+                        data-quarter="${quarter}"
+                        data-full_name="${full_name}"
+                        data-grade_level="${grade_level}"
+                        data-final_grade="${d.final_grade}">
+                        <i class="bi bi-journal-text"></i> View Details
+                    </button>`;
                             },
                             orderable: false,
                             searchable: false
@@ -425,8 +428,23 @@ let finalGradesTableInstance = null;
                     searching: true
                 });
 
+                // Filter table by tab click
+                $(document).off('click', '#sectionTabs .nav-link').on('click', '#sectionTabs .nav-link',
+                    function(e) {
+                        e.preventDefault();
+                        $('#sectionTabs .nav-link').removeClass('active');
+                        $(this).addClass('active');
+                        let selectedSection = $(this).data('section');
+
+                        // Filter DataTable
+                        finalGradesTableInstance.column(1).search('^' + selectedSection + '$', true,
+                            false).draw();
+                    });
+
+                // Show modal
                 $('#finalGradesModal').modal('show');
             });
+
 
 
 
@@ -653,7 +671,7 @@ let finalGradesTableInstance = null;
 
                 });
 
-               isSwitchingModal = true;
+                isSwitchingModal = true;
                 $('#finalGradesModal').modal('hide');
                 $('#studentDetailsModal').modal('show');
 
@@ -749,8 +767,8 @@ let finalGradesTableInstance = null;
             });
 
 
-            $('#finalGradesModal').on('hidden.bs.modal', function () {
-                if (isSwitchingModal) return; 
+            $('#finalGradesModal').on('hidden.bs.modal', function() {
+                if (isSwitchingModal) return;
 
                 // Real close → clean up
                 if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
@@ -760,7 +778,7 @@ let finalGradesTableInstance = null;
             });
 
 
-            $('#studentDetailsModal').on('hidden.bs.modal', function () {
+            $('#studentDetailsModal').on('hidden.bs.modal', function() {
                 isSwitchingModal = false;
 
                 $('#finalGradesModal').modal('show');

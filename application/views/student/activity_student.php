@@ -539,7 +539,7 @@
                                 </button>
                                 `;
 
-                                
+
 
                                 let teacherButtons = `
                                 <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
@@ -968,7 +968,13 @@
                                 gradeId,
                             method: 'POST',
                             success: function() {
-                                row.remove().draw(false); // remove row dynamically
+                                row.remove().draw(false);
+
+                                if ($.fn.DataTable.isDataTable('#gradesTable')) {
+                                    $('#gradesTable').DataTable().ajax.reload(null,
+                                        false);
+                                }
+
                                 Swal.fire('Deleted!', 'Grade has been deleted.',
                                     'success');
                             },
@@ -980,6 +986,7 @@
                     }
                 });
             });
+
 
 
 

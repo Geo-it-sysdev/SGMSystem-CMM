@@ -525,32 +525,89 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row) {
-                                return `
-                      <button class="btn btn-sm btn-outline-success tagBtn position-relative"
-    data-id="${row.id}"
-    data-grade_level="${row.grade_level}"
-    data-bs-toggle="modal"
-    data-bs-target="#tagModal">
+                                // ✅ Add Grade button with badge
+                                let buttonHtml = `
+        <button class="btn btn-sm btn-outline-success tagBtn position-relative"
+            data-id="${row.id}"
+            data-grade_level="${row.grade_level}"
+            data-bs-toggle="modal"
+            data-bs-target="#tagModal">
+            <i class="bi bi-tag-fill"></i> Add Grade
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger pendingCount">
+                0
+            </span>
+        </button>
+        `;
 
-    <i class="bi bi-tag-fill"></i> Add Grade
-    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger pendingCount">
-        0
-    </span>
-</button>
+                                // ✅ Keep Teacher edit/delete buttons intact
+                                let teacherButtons = `
+        <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${row.id}">
+                <i class="ri-edit-line"></i> Edit
+            </button>
+            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${row.id}">
+                <i class="ri-delete-bin-line"></i> Delete
+            </button>
+        <?php endif; ?>
+        `;
 
-                        <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                        <button class="btn btn-sm btn-outline-primary editBtn" data-id="${row.id}">
-                            <i class="ri-edit-line"></i> Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${row.id}">
-                            <i class="ri-delete-bin-line"></i> Delete
-                        </button>
-                        
-                        <?php endif; ?>
+                                // Combine buttons
+                                let allButtons = buttonHtml + teacherButtons;
 
-                    `;
+                                // ✅ Fetch pending count for Add Grade badge
+                                setTimeout(function() { // small delay to ensure button is in DOM
+                                    let $button = $('#activityTable_' + row
+                                        .grade_level.replace(' ', '') +
+                                        ' button[data-id="' + row.id + '"]');
+
+                                    $.ajax({
+                                        url: "<?= base_url('StudentController/get_pending_students') ?>",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: {
+                                            activity_id: row.id,
+                                            grade_level: row.grade_level
+                                        },
+                                        success: function(res) {
+                                            let count = res
+                                                .pending_count ?? 0;
+
+                                            if ($button.length) {
+                                                $button.find(
+                                                    '.pendingCount'
+                                                    ).text(
+                                                    count);
+                                                if (count == 0) {
+                                                    $button.find(
+                                                            '.pendingCount'
+                                                            )
+                                                        .removeClass(
+                                                            'bg-danger'
+                                                            )
+                                                        .addClass(
+                                                            'bg-success'
+                                                            );
+                                                } else {
+                                                    $button.find(
+                                                            '.pendingCount'
+                                                            )
+                                                        .removeClass(
+                                                            'bg-success'
+                                                            )
+                                                        .addClass(
+                                                            'bg-danger'
+                                                            );
+                                                }
+                                            }
+                                        }
+                                    });
+                                }, 100);
+
+                                return allButtons;
                             }
                         }
+
+
                         <?php endif; ?>
                     ]
                 });
@@ -560,33 +617,7 @@
             });
 
 
-            $(document).on('click', '.tagBtn', function() {
-                let activity_id = $(this).data('id');
-                let grade_level = $(this).data('grade_level');
-                let badge = $(this).find('.pendingCount');
 
-                $.ajax({
-                    url: "<?= base_url('StudentController/get_pending_students') ?>",
-                    type: "POST",
-                    dataType: "json",
-                    data: {
-                        activity_id: activity_id,
-                        grade_level: grade_level
-                    },
-                    success: function(res) {
-                        let count = res.pending_count ?? 0;
-
-                        badge.text(count);
-
-                        // optional UX
-                        if (count == 0) {
-                            badge.removeClass('bg-danger').addClass('bg-success');
-                        } else {
-                            badge.removeClass('bg-success').addClass('bg-danger');
-                        }
-                    }
-                });
-            });
 
 
 

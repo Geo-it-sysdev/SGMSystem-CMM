@@ -126,25 +126,6 @@ public function update_student()
     }
 
 
-    public function get_pending_students_by_grade()
-    {
-        $activity_id = $this->input->post('activity_id');
-        $grade_level = $this->input->post('grade_level');
-
-        $query = $this->db->query("
-            SELECT a.fullname, a.section, a.grade_level
-            FROM tbl_students AS a
-            LEFT JOIN tbl_activities_lines AS b 
-                ON b.student_id = a.id 
-                AND b.activities_id_header = ?
-            WHERE b.student_id IS NULL
-            AND a.grade_level = ?
-        ", [$activity_id, $grade_level]);
-
-        echo json_encode($query->result());
-    }
-
-
     // end add / edit / delete student
 
 
@@ -417,6 +398,25 @@ public function update_student()
         $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
         echo json_encode(['data'=>$data]);
     }
+
+   public function get_pending_students()
+{
+    $activity_id = $this->input->post('activity_id');
+    $grade_level = $this->input->post('grade_level');
+
+    $query = $this->db->query("
+        SELECT COUNT(a.id) AS pending_count
+        FROM tbl_students AS a
+        LEFT JOIN tbl_activities_lines AS b 
+               ON b.student_id = a.id AND b.activities_id_header = ?
+        WHERE b.student_id IS NULL
+        AND a.grade_level = ?
+    ", [$activity_id, $grade_level]);
+
+    echo json_encode($query->row());
+}
+
+
 
 public function save_activity()
 {

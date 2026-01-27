@@ -596,19 +596,19 @@
 
                 // Activity Type (SELECT)
                 $('#activityTypeContainer').html(`
-        <label>Activity Type</label>
-        <select name="activity_type" id="activity_type" class="form-select" required>
-            <option disabled selected>-- Select Activity Type --</option>
-            <option>Activity Sheets</option>
-            <option>Quiz</option>
-            <option>Assignment</option>
-            <option>Project</option>
-            <option>Performance Task</option>
-            <option>Written Task</option>
-            <option>Exam</option>
-            <option>Group Activity</option>
-        </select>
-    `);
+                    <label>Activity Type</label>
+                    <select name="activity_type" id="activity_type" class="form-select" required>
+                        <option disabled selected>-- Select Activity Type --</option>
+                        <option>Activity Sheets</option>
+                        <option>Quiz</option>
+                        <option>Assignment</option>
+                        <option>Project</option>
+                        <option>Performance Task</option>
+                        <option>Written Task</option>
+                        <option>Exam</option>
+                        <option>Group Activity</option>
+                    </select>
+                `);
 
                 // Subjects
                 $.getJSON("<?= site_url('StudentController/get_allowed_subjects'); ?>", function(
@@ -636,10 +636,10 @@
                     $('#grade_level').html(`<option>${d.grade_level}</option>`);
 
                     $('#activityTypeContainer').html(`
-            <label>Activity Type</label>
-            <input type="text" name="activity_type" class="form-control"
-                   value="${d.activity_type}" required>
-        `);
+                        <label>Activity Type</label>
+                        <input type="text" name="activity_type" class="form-control"
+                            value="${d.activity_type}" required>
+                    `);
 
                     $.getJSON("<?= site_url('StudentController/get_allowed_subjects'); ?>",
                         function(subjects) {
@@ -658,7 +658,6 @@
                 });
             });
 
-            // SAVE
             // SAVE
             $('#studentForm').submit(function(e) {
                 e.preventDefault();

@@ -525,7 +525,6 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row) {
-                                // ✅ Add Grade button with badge
                                 let buttonHtml = `
         <button class="btn btn-sm btn-outline-success tagBtn position-relative"
             data-id="${row.id}"
@@ -539,7 +538,7 @@
         </button>
         `;
 
-                                // ✅ Keep Teacher edit/delete buttons intact
+                                // Keep Teacher Edit/Delete buttons intact
                                 let teacherButtons = `
         <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
             <button class="btn btn-sm btn-outline-primary editBtn" data-id="${row.id}">
@@ -551,11 +550,10 @@
         <?php endif; ?>
         `;
 
-                                // Combine buttons
                                 let allButtons = buttonHtml + teacherButtons;
 
-                                // ✅ Fetch pending count for Add Grade badge
-                                setTimeout(function() { // small delay to ensure button is in DOM
+                                // Fetch pending count for Add Grade badge
+                                setTimeout(function() {
                                     let $button = $('#activityTable_' + row
                                         .grade_level.replace(' ', '') +
                                         ' button[data-id="' + row.id + '"]');

@@ -412,12 +412,6 @@ public function save_activity()
         'activity_date' => date('Y-m-d')
     ];
 
-    // foreach ($data as $k => $v) {
-    //     if ($v === '' || $v === null) {
-    //         echo json_encode(['status'=>false,'message'=>'All fields are required.']);
-    //         return;
-    //     }
-    // }
 
     // Auto-number activity (ADD ONLY)
     if (!$data['id']) {

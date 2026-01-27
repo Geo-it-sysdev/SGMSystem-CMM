@@ -131,13 +131,12 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Final Grades</h5>
-
+                         
                     </div>
                     <br>
+  
 
-
-                    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
-                    </ul>
+                   <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist"></ul>
 
 
                     <div class="modal-body">
@@ -259,7 +258,7 @@
         <script>
         $(document).ready(function() {
             let isSwitchingModal = false;
-            let finalGradesTableInstance = null;
+let finalGradesTableInstance = null;
 
             // Initialize all activity tables
             $('.activityTable').each(function() {
@@ -335,80 +334,71 @@
                 }
             });
 
-            $(document).on('click', '.viewBtn', function() {
-                let section = $(this).data('section'); // e.g., "A | B | C"
-                let subject = $(this).data('subject');
-                let quarter = $(this).data('quarter');
-                let grade_level = $(this).data('grade_level');
-                let full_name = $(this).data('full_name');
+           $(document).on('click', '.viewBtn', function () {
+    let section = $(this).data('section'); // e.g., "A | B | C"
+    let subject = $(this).data('subject');
+    let quarter = $(this).data('quarter');
+    let grade_level = $(this).data('grade_level');
+    let full_name = $(this).data('full_name');
 
-                // Fill modal inputs
-                $('#grade_level').val(grade_level);
-                $('#quarter').val(quarter);
-                $('#subjects').val(subject);
-                $('#full_name').val(full_name);
+    // Fill modal inputs
+    $('#grade_level').val(grade_level);
+    $('#quarter').val(quarter);
+    $('#subjects').val(subject);
+    $('#full_name').val(full_name);
 
-                // Destroy existing table
-                if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
-                    $('#finalGradesTable').DataTable().destroy();
-                }
-                $('#finalGradesTable tbody').empty();
+    // Destroy existing table if exists
+    if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
+        $('#finalGradesTable').DataTable().destroy();
+    }
+    $('#finalGradesTable tbody').empty();
 
-                // Create tabs dynamically
-                let sectionsArr = section.split(' | ').sort(); // sort alphabetically
-                let tabsHtml = '';
-                sectionsArr.forEach((sec, index) => {
-                    tabsHtml += `
+    // Create section tabs dynamically, sorted alphabetically
+    let sectionsArr = section.split(' | ').sort();
+    let tabsHtml = '';
+    sectionsArr.forEach((sec, index) => {
+        tabsHtml += `
             <li class="nav-item">
                 <a class="nav-link ${index === 0 ? 'active' : ''}" data-section="${sec}" href="#" role="tab">${sec}</a>
             </li>
         `;
-                });
-                $('#sectionTabs').html(tabsHtml);
+    });
+    $('#sectionTabs').html(tabsHtml);
 
-                // Initialize DataTable
-                let finalGradesTableInstance = $('#finalGradesTable').DataTable({
-                    ajax: {
-                        url: "<?= site_url('StudentController/fetch_final_grades'); ?>",
-                        type: 'POST',
-                        data: {
-                            section: sectionsArr.join(' | '), // send all sections
-                            subject,
-                            quarter,
-                            grade_level
-                        },
-                        dataSrc: 'data'
-                    },
-                    columns: [{
-                            data: 'student_name'
-                        },
-                        {
-                            data: 'section'
-                        },
-                        {
-                            data: 'final_grade'
-                        },
-                        {
-                            data: 'remarks',
-                            render: function(data) {
-                                let badgeClass = 'bg-secondary';
-                                if (data === "Outstanding") badgeClass = "bg-success";
-                                else if (data === "Very Satisfactory") badgeClass =
-                                    "bg-primary";
-                                else if (data === "Satisfactory") badgeClass =
-                                "bg-info";
-                                else if (data === "Fair") badgeClass =
-                                    "bg-warning text-dark";
-                                else if (data === "Did Not Meet Expectations")
-                                    badgeClass = "bg-danger";
-                                else if (data === "Failure") badgeClass = "bg-dark";
-                                return `<span class="badge ${badgeClass}">${data}</span>`;
-                            }
-                        },
-                        {
-                            data: null,
-                            render: function(d) {
-                                return `<button class="btn btn-sm btn-outline-primary viewDetailsBtn"
+    // Initialize DataTable
+    let finalGradesTableInstance = $('#finalGradesTable').DataTable({
+        ajax: {
+            url: "<?= site_url('StudentController/fetch_final_grades'); ?>",
+            type: 'POST',
+            data: {
+                section: sectionsArr.join(' | '), // send all sections
+                subject,
+                quarter,
+                grade_level
+            },
+            dataSrc: 'data'
+        },
+        columns: [
+            { data: 'student_name' },
+            { data: 'section' },
+            { data: 'final_grade' },
+            {
+                data: 'remarks',
+                render: function (data) {
+                    let badgeClass = 'bg-secondary';
+                    if (data === "Outstanding") badgeClass = "bg-success";
+                    else if (data === "Very Satisfactory") badgeClass = "bg-primary";
+                    else if (data === "Satisfactory") badgeClass = "bg-info";
+                    else if (data === "Fair") badgeClass = "bg-warning text-dark";
+                    else if (data === "Did Not Meet Expectations") badgeClass = "bg-danger";
+                    else if (data === "Failure") badgeClass = "bg-dark";
+                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                }
+            },
+            {
+                data: null,
+                render: function (d) {
+                    return `<button class="btn btn-sm btn-outline-primary viewDetailsBtn"
                         data-student_name="${d.student_name}"
                         data-section="${d.section}"
                         data-subject="${subject}"
@@ -418,32 +408,34 @@
                         data-final_grade="${d.final_grade}">
                         <i class="bi bi-journal-text"></i> View Details
                     </button>`;
-                            },
-                            orderable: false,
-                            searchable: false
-                        }
-                    ],
-                    responsive: true,
-                    paging: true,
-                    searching: true
-                });
+                },
+                orderable: false,
+                searchable: false
+            }
+        ],
+        responsive: true,
+        paging: true,
+        searching: true,
+        initComplete: function() {
+            // Automatically filter DataTable by the active tab on load
+            let activeSection = $('#sectionTabs .nav-link.active').data('section');
+            finalGradesTableInstance.column(1).search('^' + activeSection + '$', true, false).draw();
+        }
+    });
 
-                // Filter table by tab click
-                $(document).off('click', '#sectionTabs .nav-link').on('click', '#sectionTabs .nav-link',
-                    function(e) {
-                        e.preventDefault();
-                        $('#sectionTabs .nav-link').removeClass('active');
-                        $(this).addClass('active');
-                        let selectedSection = $(this).data('section');
+    // Filter table when tab clicked
+    $(document).off('click', '#sectionTabs .nav-link').on('click', '#sectionTabs .nav-link', function(e) {
+        e.preventDefault();
+        $('#sectionTabs .nav-link').removeClass('active');
+        $(this).addClass('active');
 
-                        // Filter DataTable
-                        finalGradesTableInstance.column(1).search('^' + selectedSection + '$', true,
-                            false).draw();
-                    });
+        let selectedSection = $(this).data('section');
+        finalGradesTableInstance.column(1).search('^' + selectedSection + '$', true, false).draw();
+    });
 
-                // Show modal
-                $('#finalGradesModal').modal('show');
-            });
+    // Show modal
+    $('#finalGradesModal').modal('show');
+});
 
 
 
@@ -671,7 +663,7 @@
 
                 });
 
-                isSwitchingModal = true;
+               isSwitchingModal = true;
                 $('#finalGradesModal').modal('hide');
                 $('#studentDetailsModal').modal('show');
 
@@ -767,8 +759,8 @@
             });
 
 
-            $('#finalGradesModal').on('hidden.bs.modal', function() {
-                if (isSwitchingModal) return;
+            $('#finalGradesModal').on('hidden.bs.modal', function () {
+                if (isSwitchingModal) return; 
 
                 // Real close → clean up
                 if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
@@ -778,7 +770,7 @@
             });
 
 
-            $('#studentDetailsModal').on('hidden.bs.modal', function() {
+            $('#studentDetailsModal').on('hidden.bs.modal', function () {
                 isSwitchingModal = false;
 
                 $('#finalGradesModal').modal('show');

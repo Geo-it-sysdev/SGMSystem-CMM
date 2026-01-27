@@ -539,7 +539,7 @@
                                 </button>
                                 `;
 
-
+                                
 
                                 let teacherButtons = `
                                 <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
@@ -948,7 +948,7 @@
 
 
             // Delete with Swal
-            $(document).on('click', '.deleteGradeBtn', function() {
+           $(document).on('click', '.deleteGradeBtn', function() {
                 var gradeId = $(this).data('id');
                 var table = $('#gradesTable').DataTable();
                 var row = table.row($(this).parents('tr'));
@@ -964,23 +964,20 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '<?= base_url("StudentController/delete_grade") ?>/' +
-                                gradeId,
+                            url: '<?= base_url("StudentController/delete_grade") ?>/' + gradeId,
                             method: 'POST',
                             success: function() {
-                                row.remove().draw(false);
+                                row.remove().draw(false); // remove row dynamically
 
-                                if ($.fn.DataTable.isDataTable('#gradesTable')) {
-                                    $('#gradesTable').DataTable().ajax.reload(null,
-                                        false);
+                                // Reload the activityTable
+                                if ($.fn.DataTable.isDataTable('.activityTable')) {
+                                    $('.activityTable').DataTable().ajax.reload(null, false); // false = keep paging
                                 }
 
-                                Swal.fire('Deleted!', 'Grade has been deleted.',
-                                    'success');
+                                Swal.fire('Deleted!', 'Grade has been deleted.', 'success');
                             },
                             error: function() {
-                                Swal.fire('Error', 'Failed to delete grade',
-                                    'error');
+                                Swal.fire('Error', 'Failed to delete grade', 'error');
                             }
                         });
                     }

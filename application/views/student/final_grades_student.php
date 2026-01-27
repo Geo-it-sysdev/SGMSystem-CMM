@@ -412,12 +412,12 @@ let finalGradesTableInstance = null;
                             </button>`;
                         },
                         orderable: false,
-                         info: false,
                         searchable: false
                     }
                 ],
                 responsive: true,
                 paging: true,
+                 info: false,
                 searching: true,
                 initComplete: function() {
                     // Automatically filter DataTable by the active tab on load

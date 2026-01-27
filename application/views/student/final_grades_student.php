@@ -321,7 +321,7 @@ let finalGradesTableInstance = null;
                     ],
                     order: [
                         [5, 'desc']
-                    ], // Sort by activity_date descending
+                    ], 
                     destroy: true
                 });
             });
@@ -337,25 +337,22 @@ let finalGradesTableInstance = null;
             });
 
            $(document).on('click', '.viewBtn', function () {
-            let section = $(this).data('section'); // e.g., "A | B | C"
+            let section = $(this).data('section'); 
             let subject = $(this).data('subject');
             let quarter = $(this).data('quarter');
             let grade_level = $(this).data('grade_level');
             let full_name = $(this).data('full_name');
 
-            // Fill modal inputs
             $('#grade_level').val(grade_level);
             $('#quarter').val(quarter);
             $('#subjects').val(subject);
             $('#full_name').val(full_name);
 
-            // Destroy existing table if exists
             if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
                 $('#finalGradesTable').DataTable().destroy();
             }
             $('#finalGradesTable tbody').empty();
 
-            // Create section tabs dynamically, sorted alphabetically
             let sectionsArr = section.split(' | ').sort();
             let tabsHtml = '';
             sectionsArr.forEach((sec, index) => {
@@ -373,7 +370,7 @@ let finalGradesTableInstance = null;
                     url: "<?= site_url('StudentController/fetch_final_grades'); ?>",
                     type: 'POST',
                     data: {
-                        section: sectionsArr.join(' | '), // send all sections
+                        section: sectionsArr.join(' | '), 
                         subject,
                         quarter,
                         grade_level
@@ -422,13 +419,11 @@ let finalGradesTableInstance = null;
                     infoFiltered: "" 
                 },
                 initComplete: function() {
-                    // Automatically filter DataTable by the active tab on load
                     let activeSection = $('#sectionTabs .nav-link.active').data('section');
                     finalGradesTableInstance.column(1).search('^' + activeSection + '$', true, false).draw();
                 }
             });
 
-            // Filter table when tab clicked
             $(document).off('click', '#sectionTabs .nav-link').on('click', '#sectionTabs .nav-link', function(e) {
                 e.preventDefault();
                 $('#sectionTabs .nav-link').removeClass('active');

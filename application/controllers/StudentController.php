@@ -398,58 +398,44 @@ public function update_student()
         echo json_encode(['data'=>$data]);
     }
 
-    public function save_activity()
+public function save_activity()
 {
-    $id = $this->input->post('id');
-    $user_id = $this->session->userdata('po_user');
-    $user_type = $this->session->userdata('user_type');
-
     $data = [
+        'id' => $this->input->post('id'),
         'grade_level' => $this->input->post('grade_level'),
         'subject' => $this->input->post('subject'),
         'quarter' => $this->input->post('quarter'),
         'activity_type' => trim($this->input->post('activity_type')),
         'description' => $this->input->post('descrip'),
         'overall' => $this->input->post('overall'),
-        'activity_date' => date('Y-m-d'),
-        'user_id' => $user_id
+        'user_id' => $this->session->userdata('po_user'),
+        'activity_date' => date('Y-m-d')
     ];
 
-    // REQUIRED VALIDATION
-    // foreach ($data as $key => $value) {
-    //     if ($value === '' || $value === null) {
-    //         echo json_encode(['status' => false, 'message' => 'All fields are required.']);
-    //         return;
-    //     }
-    // }
-
-    // Teacher subject permission
-    if ($user_type === 'Teacher') {
-        $allowed = $this->StudentModel->get_user_subjects($user_id);
-        if (!in_array($data['subject'], $allowed)) {
-            echo json_encode(['status' => false, 'message' => 'Unauthorized subject.']);
+    foreach ($data as $k => $v) {
+        if ($v === '' || $v === null) {
+            echo json_encode(['status'=>false,'message'=>'All fields are required.']);
             return;
         }
     }
 
-    // Auto-number activity type (ADD ONLY)
-    if (!$id) {
+    // Auto-number activity (ADD ONLY)
+    if (!$data['id']) {
         $count = $this->StudentModel
             ->count_activity_type($data['grade_level'], $data['subject'], $data['quarter'], $data['activity_type']);
-
         $data['activity_type'] .= ' ' . ($count + 1);
     }
 
-    // SAVE
-    if ($id) {
-        $result = $this->StudentModel->update($id, $user_id, $data);
+    if ($data['id']) {
+        $result = $this->StudentModel->update($data['id'], $data['user_id'], $data);
         $msg = $result ? 'Activity updated successfully' : 'Update failed';
     } else {
+        unset($data['id']);
         $result = $this->StudentModel->insert($data);
         $msg = $result ? 'Activity added successfully' : 'Insert failed';
     }
 
-    echo json_encode(['status' => $result, 'message' => $msg]);
+    echo json_encode(['status'=>$result,'message'=>$msg]);
 }
 
 

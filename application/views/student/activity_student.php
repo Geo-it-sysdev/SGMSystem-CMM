@@ -163,28 +163,31 @@
                             <h5 class="modal-title">Add Activity</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
+
                         <div class="modal-body">
                             <input type="hidden" name="id" id="id">
+                            <!-- IMPORTANT -->
+                            <input type="hidden" name="grade_level" id="hidden_grade_level">
 
                             <div class="row">
                                 <div class="col-md-6 mb-2">
                                     <label>Grade Level</label>
-                                    <select name="grade_level" id="grade_level" class="form-control" required>
-                                        <option value="" selected disabled>-- Select Grade Level --</option>
+                                    <select id="grade_level" class="form-control" disabled>
+                                        <option>Auto-selected</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6 mb-2">
                                     <label>Subject</label>
                                     <select name="subject" id="subject" class="form-select" required>
-                                        <option value="" selected disabled>-- Select Subject --</option>
+                                        <option disabled selected>-- Select Subject --</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6 mb-2">
                                     <label>Quarter</label>
                                     <select name="quarter" id="quarter" class="form-select" required>
-                                        <option value="" selected disabled>-- Select Quarter --</option>
+                                        <option disabled selected>-- Select Quarter --</option>
                                         <option>1st Quarter</option>
                                         <option>2nd Quarter</option>
                                         <option>3rd Quarter</option>
@@ -192,26 +195,12 @@
                                     </select>
                                 </div>
 
-                                <!-- Dynamic Activity Type Container -->
-                                <div class="col-md-6 mb-2" id="activityTypeContainer">
-                                    <label>Activity Type</label>
-                                    <select name="activity_type" id="activity_type" class="form-select" required>
-                                        <option value="" selected disabled>-- Select Activity Type --</option>
-                                        <option>Activity Sheets</option>
-                                        <option>Quiz</option>
-                                        <option>Assignment</option>
-                                        <option>Project</option>
-                                        <option>Performance Task</option>
-                                        <option>Written Task</option>
-                                        <option>Exam</option>
-                                        <option>Group Activity</option>
-                                    </select>
-                                </div>
+                                <div class="col-md-6 mb-2" id="activityTypeContainer"></div>
 
                                 <div class="col-md-6 mb-2">
                                     <label>Description</label>
                                     <select name="descrip" id="descrip" class="form-select" required>
-                                        <option value="" selected disabled>-- Select Description --</option>
+                                        <option disabled selected>-- Select Description --</option>
                                         <option>Written Works</option>
                                         <option>Performance Task</option>
                                         <option>Quarterly Assessment</option>
@@ -220,11 +209,11 @@
 
                                 <div class="col-md-6 mb-2">
                                     <label>Score Overall</label>
-                                    <input type="number" name="overall" id="overall" class="form-control" required
-                                        placeholder="Enter Score Overall">
+                                    <input type="number" name="overall" id="overall" class="form-control" required>
                                 </div>
                             </div>
                         </div>
+
                         <div class="modal-footer">
                             <button type="submit" id="saveBtn" class="btn btn-success">Save</button>
                             <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
@@ -570,18 +559,35 @@
 
             <?php if ($is_admin || $grade_levels): ?>
 
-            $('.addActivityBtn').on('click', function() {
+            const gradeMap = {
+                'grade7-student': 'Grade 7',
+                'grade8-student': 'Grade 8',
+                'grade9-student': 'Grade 9',
+                'grade10-student': 'Grade 10',
+                'grade11-student': 'Grade 11',
+                'grade12-student': 'Grade 12'
+            };
+
+            // ADD ACTIVITY
+            $('.addActivityBtn').click(function() {
 
                 $('#studentForm')[0].reset();
                 $('#id').val('');
                 $('#saveBtn').text('Save');
                 $('.modal-title').text('Add Activity');
 
+                // Detect active tab grade
+                let activeTab = $('.tab-pane.show.active').attr('id');
+                let grade = gradeMap[activeTab] ?? '';
+
+                $('#hidden_grade_level').val(grade);
+                $('#grade_level').html(`<option>${grade}</option>`);
+
                 // Activity Type (SELECT)
                 $('#activityTypeContainer').html(`
         <label>Activity Type</label>
         <select name="activity_type" id="activity_type" class="form-select" required>
-            <option value="" selected disabled>-- Select Activity Type --</option>
+            <option disabled selected>-- Select Activity Type --</option>
             <option>Activity Sheets</option>
             <option>Quiz</option>
             <option>Assignment</option>
@@ -593,36 +599,16 @@
         </select>
     `);
 
-                // Fetch Grades
-                $.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>", function(grades) {
-                    let gradeSelect = $('#grade_level');
-                    gradeSelect.empty();
-
-                    let activeTab = $('.tab-pane.show.active').attr('id');
-                    let defaultGrade = activeTab ? activeTab.replace('-student', '') : '';
-
-                    grades.forEach(g => {
-                        let id = g.toLowerCase().replace(/\s+/g, '');
-                        gradeSelect.append(
-                            `<option value="${g}" ${id === defaultGrade ? 'selected' : ''}>${g}</option>`
-                            );
-                    });
-
-                    gradeSelect.prop('disabled', true);
-                });
-
-                // Fetch Subjects
+                // Subjects
                 $.getJSON("<?= site_url('StudentController/get_allowed_subjects'); ?>", function(
                     subjects) {
-                    let subject = $('#subject');
-                    subject.empty().append(
-                        '<option disabled selected>-- Select Subject --</option>');
-                    subjects.forEach(s => subject.append(`<option value="${s}">${s}</option>`));
+                    let s = $('#subject');
+                    s.empty().append('<option disabled selected>-- Select Subject --</option>');
+                    subjects.forEach(v => s.append(`<option value="${v}">${v}</option>`));
                 });
 
                 $('#ActivityModal').modal('show');
             });
-
 
             // EDIT ACTIVITY
             $(document).on('click', '.editBtn', function() {
@@ -632,47 +618,36 @@
                 $('#saveBtn').text('Update');
                 $('.modal-title').text('Edit Activity');
 
-                $.getJSON("<?= site_url('StudentController/get_activity/'); ?>" + id, function(data) {
+                $.getJSON("<?= site_url('StudentController/get_activity/'); ?>" + id, function(d) {
 
-                    $('#id').val(data.id);
+                    $('#id').val(d.id);
+                    $('#hidden_grade_level').val(d.grade_level);
+                    $('#grade_level').html(`<option>${d.grade_level}</option>`);
 
-                    // Activity Type (INPUT)
                     $('#activityTypeContainer').html(`
             <label>Activity Type</label>
-            <input type="text" name="activity_type" id="activity_type"
-                class="form-control" value="${data.activity_type}" required>
+            <input type="text" name="activity_type" class="form-control"
+                   value="${d.activity_type}" required>
         `);
 
-                    // Grades
-                    $.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>",
-                        function(grades) {
-                            let grade = $('#grade_level');
-                            grade.empty();
-                            grades.forEach(g => grade.append(
-                                `<option value="${g}">${g}</option>`));
-                            grade.val(data.grade_level).prop('disabled', true);
-                        });
-
-                    // Subjects
                     $.getJSON("<?= site_url('StudentController/get_allowed_subjects'); ?>",
                         function(subjects) {
-                            let subject = $('#subject');
-                            subject.empty();
-                            subjects.forEach(s => subject.append(
-                                `<option value="${s}">${s}</option>`));
-                            subject.val(data.subject);
+                            let s = $('#subject');
+                            s.empty();
+                            subjects.forEach(v => s.append(
+                                `<option value="${v}">${v}</option>`));
+                            s.val(d.subject);
                         });
 
-                    $('#quarter').val(data.quarter);
-                    $('#descrip').val(data.description);
-                    $('#overall').val(data.overall);
+                    $('#quarter').val(d.quarter);
+                    $('#descrip').val(d.description);
+                    $('#overall').val(d.overall);
 
                     $('#ActivityModal').modal('show');
                 });
             });
 
-
-            // SAVE FORM
+            // SAVE
             $('#studentForm').submit(function(e) {
                 e.preventDefault();
 
@@ -683,7 +658,6 @@
                     dataType: "json",
                     success: function(res) {
                         Swal.fire(res.message, '', res.status ? 'success' : 'error');
-
                         if (res.status) {
                             $('#ActivityModal').modal('hide');
                             $('.activityTable').each(function() {

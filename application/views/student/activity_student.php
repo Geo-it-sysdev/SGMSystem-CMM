@@ -536,7 +536,7 @@
                             data-bs-toggle="modal"
                             data-bs-target="#tagModal">
                             <i class="bi bi-tag-fill"></i> Add Grade
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">+99
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">2
                                                      <span class="visually-hidden">unread messages </span></span>
                         </button>
                         <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>

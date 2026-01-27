@@ -131,9 +131,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Final Grades</h5>
-                    </div>
-                    
-   <ul class="nav nav-tabs nav-border-top nav-border-top-primary mb-3" role="tablist">
+                          <ul class="nav nav-tabs nav-border-top nav-border-top-primary mb-3" role="tablist">
                                          <li class="nav-item">
                                              <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
                                                 Section 1
@@ -155,6 +153,9 @@
                                              </a>
                                          </li>
                                      </ul>
+                    </div>
+                    
+ 
                     <div class="modal-body">
                         <div class="row mb-3 equal-width">
                             <div class="col"> <label for="grade_level" class="form-label">Grade Level</label> <input

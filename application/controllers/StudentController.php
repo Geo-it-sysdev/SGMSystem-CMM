@@ -416,12 +416,12 @@ public function update_student()
     ];
 
     // REQUIRED VALIDATION
-    foreach ($data as $key => $value) {
-        if ($value === '' || $value === null) {
-            echo json_encode(['status' => false, 'message' => 'All fields are required.']);
-            return;
-        }
-    }
+    // foreach ($data as $key => $value) {
+    //     if ($value === '' || $value === null) {
+    //         echo json_encode(['status' => false, 'message' => 'All fields are required.']);
+    //         return;
+    //     }
+    // }
 
     // Teacher subject permission
     if ($user_type === 'Teacher') {

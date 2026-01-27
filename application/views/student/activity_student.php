@@ -648,9 +648,39 @@
             });
 
             // SAVE
+            // SAVE
             $('#studentForm').submit(function(e) {
                 e.preventDefault();
 
+                let isValid = true;
+                let missingFields = [];
+
+                // check all required fields
+                $('#studentForm').find('[required]').each(function() {
+                    if (!$(this).val()) {
+                        isValid = false;
+
+                        let label = $(this).closest('.mb-3').find('label').text();
+                        missingFields.push(label || 'Required field');
+                    }
+                });
+
+                // if not valid → show swal
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing Required Fields',
+                        html: `
+                <p>Please complete all required fields:</p>
+                <ul style="text-align:left;">
+                    ${missingFields.map(f => `<li>${f}</li>`).join('')}
+                </ul>
+            `,
+                    });
+                    return;
+                }
+
+                // proceed if valid
                 $.ajax({
                     url: "<?= site_url('StudentController/save_activity'); ?>",
                     type: "POST",
@@ -667,6 +697,7 @@
                     }
                 });
             });
+
 
             <?php endif; ?>
 

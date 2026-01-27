@@ -162,25 +162,22 @@ public function update_student()
     // GET SECTIONS BY GRADE LEVEL
     // ---------------------------
     public function get_sections()
-{
-    $grade_level = $this->input->get('grade_level');
-    $user_id = $this->session->userdata('po_user'); 
+    {
+        $grade_level = $this->input->get('grade_level');
+        $user_id = $this->session->userdata('po_user'); 
 
-    $this->db->select('s.section')
-             ->distinct()
-             ->from('tbl_students s')
-             ->join('tbl_activities_lines a', 'a.student_id = s.id AND a.user_id = ' . (int)$user_id, 'left')
-             ->where('a.student_id IS NULL'); // Only students not yet added
+        $this->db->where('user_id', $user_id);
+        if (!empty($grade_level)) {
+            $this->db->where('grade_level', $grade_level);
+        }
 
-    if (!empty($grade_level)) {
-        $this->db->where('s.grade_level', $grade_level);
+        $sections = $this->db->select('section')
+                             ->distinct()
+                             ->get('tbl_students')
+                             ->result_array();
+
+        echo json_encode(array_column($sections, 'section'));
     }
-
-    $sections = $this->db->get()->result_array();
-
-    echo json_encode(array_column($sections, 'section'));
-}
-
 
     // ---------------------------
     // GET STUDENTS BY SECTION

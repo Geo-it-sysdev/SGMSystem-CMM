@@ -226,137 +226,122 @@
 
 
 
-        <!-- Tag Modal -->
-        <div class="modal fade" id="tagModal" tabindex="-1" aria-labelledby="tagModalLabel" aria-hidden="true"
-            data-bs-backdrop="static">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-          
-                    <div class="modal-header">
-                        
-                              <ul class="nav nav-tabs nav-justified nav-border-top nav-border-top-success mb-3" role="tablist">
-                                         <li class="nav-item">
-                                             <a class="nav-link active" data-bs-toggle="tab" href="#nav-border-justified-home" role="tab" aria-selected="false">
-                                                 <i class="ri-home-5-line align-middle me-1"></i> Home
-                                             </a>
-                                         </li>
-                                         <li class="nav-item">
-                                             <a class="nav-link" data-bs-toggle="tab" href="#nav-border-justified-profile" role="tab" aria-selected="false">
-                                                 <i class="ri-user-line me-1 align-middle"></i> Profile
-                                             </a>
-                                         </li>
-                                         <li class="nav-item">
-                                             <a class="nav-link" data-bs-toggle="tab" href="#nav-border-justified-messages" role="tab" aria-selected="false">
-                                                 <i class="ri-question-answer-line align-middle me-1"></i>Messages
-                                             </a>
-                                         </li>
-                                     </ul>
-                        <h5 class="modal-title">Tag Grades</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      <!-- Tag Modal -->
+<div class="modal fade" id="tagModal" tabindex="-1" aria-labelledby="tagModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="tagModalLabel">Tag Grades</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                
+                <!-- Tabs -->
+                <ul class="nav nav-tabs nav-justified nav-border-top nav-border-top-success mb-3" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#tab-home" role="tab" aria-selected="true">
+                            <i class="ri-home-5-line align-middle me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#tab-profile" role="tab" aria-selected="false">
+                            <i class="ri-user-line me-1 align-middle"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#tab-messages" role="tab" aria-selected="false">
+                            <i class="ri-question-answer-line align-middle me-1"></i> Messages
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Home Tab -->
+                    <div class="tab-pane fade show active" id="tab-home" role="tabpanel">
+                        <p>Home tab content here.</p>
                     </div>
-                    <div class="modal-body">
-                        <!-- Add Grades Button -->
-                        <div class="mb-3 d-flex align-items-center">
-                            <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                            <button type="button" class="btn btn-outline-success me-2 rounded-pill"
-                                id="openAddGradesBtn">
-                                <i class="bi bi-journal-check me-1"></i> Add Score
-                            </button>
-                            <?php endif; ?>
-                            <!-- <div class="dropdown">
-                                <button class="btn btn-outline-secondary dropdown-toggle rounded-pill" type="button"
-                                    id="filterG11Button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="ri-filter-3-line me-1"></i> Filter Section
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="filterG11Button">
-                                    <li><a class="dropdown-item" href="#" onclick="setFilter('Proverbs')">Proverbs</a>
-                                    </li>
-                                    <li><a class="dropdown-item" href="#" onclick="setFilter('Psalm')">Psalm</a></li>
-                                    <hr class="dropdown-divider">
-                                    <div class="d-flex justify-content-center mt-2 mb-2">
-                                        <button type="button" class="btn btn-outline-danger btn-sm"
-                                            onclick="clearFilter()">Clear Filter</button>
-                                    </div>
-                                </ul>
-                            </div> -->
-                        </div>
 
-                        <!-- Activity Info -->
-                        <div class="row mb-3">
-                            <!-- Inputs Row -->
+                    <!-- Profile Tab -->
+                    <div class="tab-pane fade" id="tab-profile" role="tabpanel">
+                        <p>Profile tab content here.</p>
+                    </div>
 
-
-                            <div class="row mb-3 equal-width">
-                                <div class="col">
-                                    <label for="subjects" class="form-label">Subjects</label>
-                                    <input type="text" id="subjects" name="subjects"
-                                        class="form-control underline-input" autocomplete="off" readonly
-                                        style="text-align:center;">
-                                </div>
-
-                                <div class="col">
-                                    <label for="activity" class="form-label">Activity Type</label>
-                                    <input type="text" id="activity" name="activity"
-                                        class="form-control underline-input" autocomplete="off" readonly
-                                        style="text-align:center;">
-                                </div>
-                                <div class="col">
-                                    <label for="description" class="form-label">Description</label>
-                                    <input type="text" id="description" name="description"
-                                        class="form-control underline-input" autocomplete="off" readonly
-                                        style="text-align:center;">
-                                </div>
-
-                                <div class="col">
-                                    <label for="dates" class="form-label">Date Activity</label>
-                                    <input type="date" id="dates" name="dates" class="form-control underline-input"
-                                        autocomplete="off" readonly style="text-align:center;">
-                                </div>
-
-                                <div class="col">
-                                    <label for="overalls" class="form-label">Overall</label>
-                                    <input type="text" id="overalls" name="overall" class="form-control underline-input"
-                                        autocomplete="off" readonly style="text-align:center;">
-                                </div>
-
-                                <div class="col">
-                                    <label for="passing" class="form-label">Passing Score</label>
-                                    <input type="text" id="passing" name="passing" class="form-control underline-input"
-                                        autocomplete="off" readonly style="text-align:center;">
-                                </div>
-
-                            </div>
-
-
-
-
-
-                            <!-- Grades Table -->
-                            <div class="table-responsive">
-                                <table class="table table-bordered dt-responsive nowrap table-striped align-middle "
-                                    style="width:100%" id="gradesTable">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Student</th>
-                                            <th>Section</th>
-                                            <th>Score</th>
-                                            <th>Remarks</th>
-                                            <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                                            <th>Action</th>
-                                            <?php endif; ?>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                        </div>
+                    <!-- Messages Tab -->
+                    <div class="tab-pane fade" id="tab-messages" role="tabpanel">
+                        <p>Messages tab content here.</p>
                     </div>
                 </div>
+
+                <!-- Add Grades Button -->
+                <div class="mb-3 d-flex align-items-center mt-3">
+                    <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+                        <button type="button" class="btn btn-outline-success me-2 rounded-pill" id="openAddGradesBtn">
+                            <i class="bi bi-journal-check me-1"></i> Add Score
+                        </button>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Activity Info (Your Existing Inputs) -->
+                <div class="row mb-3 equal-width">
+                    <div class="col">
+                        <label for="subjects" class="form-label">Subjects</label>
+                        <input type="text" id="subjects" name="subjects" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
+                    </div>
+                    <div class="col">
+                        <label for="activity" class="form-label">Activity Type</label>
+                        <input type="text" id="activity" name="activity" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
+                    </div>
+                    <div class="col">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" id="description" name="description" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
+                    </div>
+                    <div class="col">
+                        <label for="dates" class="form-label">Date Activity</label>
+                        <input type="date" id="dates" name="dates" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
+                    </div>
+                    <div class="col">
+                        <label for="overalls" class="form-label">Overall</label>
+                        <input type="text" id="overalls" name="overall" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
+                    </div>
+                    <div class="col">
+                        <label for="passing" class="form-label">Passing Score</label>
+                        <input type="text" id="passing" name="passing" class="form-control underline-input" autocomplete="off" readonly style="text-align:center;">
+                    </div>
+                </div>
+
+                <!-- Grades Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%" id="gradesTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student</th>
+                                <th>Section</th>
+                                <th>Score</th>
+                                <th>Remarks</th>
+                                <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+                                    <th>Action</th>
+                                <?php endif; ?>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
             </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+            </div>
+
         </div>
+    </div>
+</div>
 
 
         <!-- Add Grades Modal -->

@@ -125,6 +125,24 @@ public function update_student()
         }
     }
 
+
+    public function get_pending_students()
+    {
+        $activity_id = $this->input->post('activity_id');
+        $grade_level = $this->input->post('grade_level');
+
+        $query = $this->db->query("
+            SELECT COUNT(c.id) AS pending_count
+            FROM tbl_students c
+            LEFT JOIN tbl_activities_lines b 
+                ON b.student_id = c.id
+            WHERE c.grade_level = ?
+            AND (b.activities_id_header IS NULL OR b.activities_id_header != ?)
+        ", [$grade_level, $activity_id]);
+
+        echo json_encode($query->row());
+    }
+
     // end add / edit / delete student
 
 

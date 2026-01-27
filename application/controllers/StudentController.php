@@ -398,103 +398,60 @@ public function update_student()
         echo json_encode(['data'=>$data]);
     }
 
-    public function save_activity() {
-        $id = $this->input->post('id');
-        $user_id = $this->session->userdata("po_user");
-        $user_type = $this->session->userdata("user_type");
-        $grade_level = $this->input->post('grade_level'); 
-        $subject = $this->input->post('subject');
-        $quarter = $this->input->post('quarter');
-        $activity_type = $this->input->post('activity_type');
+    public function save_activity()
+{
+    $id = $this->input->post('id');
+    $user_id = $this->session->userdata('po_user');
+    $user_type = $this->session->userdata('user_type');
 
-        // Junior High subjects
-        $gradeSubjects = [
-            "Grade 7" => ["Filipino", "English", "Mathematics", "Science", "Araling Panlipunan", "MAPEH", "ESP", "TLE"],
-            "Grade 8" => ["Filipino", "English", "Mathematics", "Science", "Araling Panlipunan", "MAPEH", "ESP", "TLE"],
-            "Grade 9" => ["Filipino", "English", "Mathematics", "Science", "Araling Panlipunan", "MAPEH", "ESP", "TLE"],
-            "Grade 10" => ["Filipino", "English", "Mathematics", "Science", "Araling Panlipunan", "MAPEH", "ESP", "TLE"]
-        ];
+    $data = [
+        'grade_level' => $this->input->post('grade_level'),
+        'subject' => $this->input->post('subject'),
+        'quarter' => $this->input->post('quarter'),
+        'activity_type' => trim($this->input->post('activity_type')),
+        'description' => $this->input->post('descrip'),
+        'overall' => $this->input->post('overall'),
+        'activity_date' => date('Y-m-d'),
+        'user_id' => $user_id
+    ];
 
-        // Senior High Core and Strand Subjects
-        $strandSubjects = [
-            "ICT" => ["Computer Systems Servicing (CSS)", "Programming", "Data Communication", "Computer Networking"],
-            "ABM" => ["Business Math", "Business Finance", "Organization & Management", "Principles of Marketing", "Applied Economics", "Business Ethics & Social Responsibility"],
-            "HUMSS" => ["Creative Writing", "Creative Nonfiction", "Introduction to World Religions", "Philippine Politics and Governance", "Social Science 1", "Social Science 2"],
-            "STEM_A" => ["Pre-Calculus", "Basic Calculus", "General Biology 1", "General Biology 2", "General Physics 1", "General Physics 2", "General Chemistry 1", "General Chemistry 2"],
-            "INDUSTRIAL_ARTS" => ["Welding", "Automotive Servicing", "Electrical Installation", "Carpentry"],
-            "HOME_ECONOMICS" => ["Cookery", "Bread & Pastry", "Housekeeping", "Food & Beverage Services"],
-            "Common" => [
-                "Oral Communication","Reading and Writing","Komunikasyon at Pananaliksik","Pagbasa at Pagsusuri",
-                "21st Century Literature","Contemporary Philippine Arts","Media and Information Literacy",
-                "General Mathematics","Statistics and Probability","Earth and Life Science","Physical Science",
-                "Personal Development","Understanding Culture Society and Politics","Physical Education & Health (PEH)",
-                "Empowerment Technologies (E-Tech)","Filipino sa Piling Larangan","Practical Research 1",
-                "Practical Research 2","Inquiries Investigations & Immersion","Entrepreneurship"
-            ]
-        ];
-
-        // Merge all SHS subjects for validation
-        $allSHSSubjects = [];
-        foreach($strandSubjects as $strand => $subjects){
-            $allSHSSubjects = array_merge($allSHSSubjects, $subjects);
-        }
-
-        // Validation
-        if(isset($gradeSubjects[$grade_level])) {
-            // Junior High
-            if(!in_array($subject, $gradeSubjects[$grade_level])) {
-                echo json_encode(['status'=>false, 'message'=>'Selected subject does not match the grade.']);
-                return;
-            }
-        } elseif(in_array($grade_level, ["Grade 11", "Grade 12"])) {
-            // Senior High
-            if(!in_array($subject, $allSHSSubjects)) {
-                echo json_encode(['status'=>false, 'message'=>'Selected subject does not match Grade 11/12 subjects.']);
-                return;
-            }
-        } else {
-            echo json_encode(['status'=>false, 'message'=>'Invalid grade level.']);
+    // REQUIRED VALIDATION
+    foreach ($data as $key => $value) {
+        if ($value === '' || $value === null) {
+            echo json_encode(['status' => false, 'message' => 'All fields are required.']);
             return;
         }
-
-        // Teacher permission check
-        if($user_type === 'Teacher'){
-            $allowed_subjects = $this->StudentModel->get_user_subjects($user_id);
-            if(!in_array($subject, $allowed_subjects)){
-                echo json_encode(['status'=>false,'message'=>'You are not allowed to save activity for this subject.']);
-                return;
-            }
-        }
-
-        // Handle duplicate activity type
-        if (!$id) { 
-            $count = $this->StudentModel->count_activity_type($grade_level, $subject, $quarter, $activity_type);
-            $activity_type .= ' ' . ($count + 1);
-        }
-
-        // Prepare data
-        $data = [
-            'grade_level' => $grade_level,
-            'quarter' => $quarter,
-            'subject' => $subject,
-            'activity_type' => $activity_type,
-            'description' => $this->input->post('descrip'),
-            'overall' => $this->input->post('overall'),
-            'activity_date' => date('Y-m-d'),
-            'user_id' => $user_id
-        ];
-
-        // Insert or update
-        if($id){
-            $result = $this->StudentModel->update($id, $user_id, $data);
-            $msg = $result ? 'Activity updated successfully' : 'You cannot update this activity';
-        } else {
-            $result = $this->StudentModel->insert($data);
-            $msg = $result ? 'Activity added successfully' : 'Failed to add activity';
-        }
-
-        echo json_encode(['status'=>$result,'message'=>$msg]);
     }
+
+    // Teacher subject permission
+    if ($user_type === 'Teacher') {
+        $allowed = $this->StudentModel->get_user_subjects($user_id);
+        if (!in_array($data['subject'], $allowed)) {
+            echo json_encode(['status' => false, 'message' => 'Unauthorized subject.']);
+            return;
+        }
+    }
+
+    // Auto-number activity type (ADD ONLY)
+    if (!$id) {
+        $count = $this->StudentModel
+            ->count_activity_type($data['grade_level'], $data['subject'], $data['quarter'], $data['activity_type']);
+
+        $data['activity_type'] .= ' ' . ($count + 1);
+    }
+
+    // SAVE
+    if ($id) {
+        $result = $this->StudentModel->update($id, $user_id, $data);
+        $msg = $result ? 'Activity updated successfully' : 'Update failed';
+    } else {
+        $result = $this->StudentModel->insert($data);
+        $msg = $result ? 'Activity added successfully' : 'Insert failed';
+    }
+
+    echo json_encode(['status' => $result, 'message' => $msg]);
+}
+
 
 
 

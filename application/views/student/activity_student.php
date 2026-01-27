@@ -249,7 +249,7 @@
                     <div class="modal-body">
                         <!-- Add Grades Button -->
                         <div class="mb-3 d-flex align-items-center">
-                        <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+                            <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
                             <button type="button" class="btn btn-outline-success me-2 rounded-pill"
                                 id="openAddGradesBtn">
                                 <i class="bi bi-journal-check me-1"></i> Add Score
@@ -570,133 +570,132 @@
 
             <?php if ($is_admin || $grade_levels): ?>
 
-            // Add Activity button
-            $('.addActivityBtn').click(function() {
+            $('.addActivityBtn').on('click', function() {
+
                 $('#studentForm')[0].reset();
                 $('#id').val('');
                 $('#saveBtn').text('Save');
                 $('.modal-title').text('Add Activity');
 
-                // Activity Type as SELECT
-                let options = `
-                <option value="" selected disabled>-- Select Activity Type --</option>
-                <option>Activity Sheets</option>
-                <option>Quiz</option>
-                <option>Assignment</option>
-                <option>Project</option>
-                <option>Performance Task</option>
-                <option>Written Task</option>
-                <option>Exam</option>
-                <option>Group Activity</option>
-    `;
-                $('#activityTypeContainer').html(
-                    `<label>Activity Type</label><select name="activity_type" id="activity_type" class="form-select" required>${options}</select>`
-                );
+                // Activity Type (SELECT)
+                $('#activityTypeContainer').html(`
+        <label>Activity Type</label>
+        <select name="activity_type" id="activity_type" class="form-select" required>
+            <option value="" selected disabled>-- Select Activity Type --</option>
+            <option>Activity Sheets</option>
+            <option>Quiz</option>
+            <option>Assignment</option>
+            <option>Project</option>
+            <option>Performance Task</option>
+            <option>Written Task</option>
+            <option>Exam</option>
+            <option>Group Activity</option>
+        </select>
+    `);
 
-                // Fetch grades
+                // Fetch Grades
                 $.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>", function(grades) {
                     let gradeSelect = $('#grade_level');
-                    gradeSelect.empty(); 
+                    gradeSelect.empty();
 
-                    let defaultGrade = $('.tab-pane.show.active').attr('id');
-                    defaultGrade = defaultGrade ? defaultGrade.replace('-student', '') : '';
+                    let activeTab = $('.tab-pane.show.active').attr('id');
+                    let defaultGrade = activeTab ? activeTab.replace('-student', '') : '';
 
                     grades.forEach(g => {
-                        let gradeId = g.toLowerCase().replace(/\s+/g,'');
-                        let selected = (gradeId === defaultGrade) ? 'selected' : '';
-                        gradeSelect.append('<option value="' + g + '" ' + selected + '>' + g + '</option>');
+                        let id = g.toLowerCase().replace(/\s+/g, '');
+                        gradeSelect.append(
+                            `<option value="${g}" ${id === defaultGrade ? 'selected' : ''}>${g}</option>`
+                            );
                     });
 
                     gradeSelect.prop('disabled', true);
                 });
 
-
-
-                // Fetch subjects
+                // Fetch Subjects
                 $.getJSON("<?= site_url('StudentController/get_allowed_subjects'); ?>", function(
                     subjects) {
-                    let subjectSelect = $('#subject');
-                    subjectSelect.empty().append(
-                        '<option value="" selected disabled>-- Select Subject --</option>');
-                    subjects.forEach(s => subjectSelect.append('<option value="' + s + '">' +
-                        s + '</option>'));
+                    let subject = $('#subject');
+                    subject.empty().append(
+                        '<option disabled selected>-- Select Subject --</option>');
+                    subjects.forEach(s => subject.append(`<option value="${s}">${s}</option>`));
                 });
 
                 $('#ActivityModal').modal('show');
             });
 
-            // Edit Activity button
-            $(document).on('click', '.editBtn', function() {
-                let id = $(this).data('id');
 
+            // EDIT ACTIVITY
+            $(document).on('click', '.editBtn', function() {
+
+                let id = $(this).data('id');
                 $('#studentForm')[0].reset();
                 $('#saveBtn').text('Update');
-
-                // Only here we change the modal title
                 $('.modal-title').text('Edit Activity');
 
                 $.getJSON("<?= site_url('StudentController/get_activity/'); ?>" + id, function(data) {
+
                     $('#id').val(data.id);
 
-                    // Activity Type as INPUT
+                    // Activity Type (INPUT)
                     $('#activityTypeContainer').html(`
-                        <label>Activity Type</label>
-                        <input type="text" name="activity_type" id="activity_type" class="form-control" required
-                            placeholder="Enter Activity Type" value="${data.activity_type}">
-                    `);
+            <label>Activity Type</label>
+            <input type="text" name="activity_type" id="activity_type"
+                class="form-control" value="${data.activity_type}" required>
+        `);
 
-                    // Populate grades
+                    // Grades
                     $.getJSON("<?= site_url('StudentController/get_allowed_grades'); ?>",
                         function(grades) {
-                            let gradeSelect = $('#grade_level');
-                            gradeSelect.empty().append(
-                                '<option value="" selected disabled>-- Select Grade Level --</option>'
-                            );
-                            grades.forEach(g => gradeSelect.append('<option value="' + g +
-                                '">' + g + '</option>'));
-                            $('#grade_level').val(data.grade_level);
+                            let grade = $('#grade_level');
+                            grade.empty();
+                            grades.forEach(g => grade.append(
+                                `<option value="${g}">${g}</option>`));
+                            grade.val(data.grade_level).prop('disabled', true);
                         });
 
-                    // Populate subjects
+                    // Subjects
                     $.getJSON("<?= site_url('StudentController/get_allowed_subjects'); ?>",
                         function(subjects) {
-                            let subjectSelect = $('#subject');
-                            subjectSelect.empty().append(
-                                '<option value="" selected disabled>-- Select Subject --</option>'
-                            );
-                            subjects.forEach(s => subjectSelect.append('<option value="' +
-                                s + '">' + s + '</option>'));
-                            $('#subject').val(data.subject);
+                            let subject = $('#subject');
+                            subject.empty();
+                            subjects.forEach(s => subject.append(
+                                `<option value="${s}">${s}</option>`));
+                            subject.val(data.subject);
                         });
 
+                    $('#quarter').val(data.quarter);
                     $('#descrip').val(data.description);
                     $('#overall').val(data.overall);
-                    $('#quarter').val(data.quarter);
 
                     $('#ActivityModal').modal('show');
                 });
             });
 
 
-
+            // SAVE FORM
             $('#studentForm').submit(function(e) {
                 e.preventDefault();
+
                 $.ajax({
                     url: "<?= site_url('StudentController/save_activity'); ?>",
-                    method: "POST",
+                    type: "POST",
                     data: $(this).serialize(),
                     dataType: "json",
                     success: function(res) {
                         Swal.fire(res.message, '', res.status ? 'success' : 'error');
+
                         if (res.status) {
                             $('#ActivityModal').modal('hide');
                             $('.activityTable').each(function() {
-                                $(this).data('tableInstance').ajax.reload();
+                                $(this).DataTable().ajax.reload(null, false);
                             });
                         }
                     }
                 });
             });
+
+            <?php endif; ?>
+
 
             // ✅ Delete Activity
             $(document).on('click', '.deleteBtn', function() {
@@ -721,7 +720,7 @@
                 });
             });
 
-            <?php endif; ?>
+
 
             // ✅ Tag Button Click
             $(document).on('click', '.tagBtn', function() {
@@ -837,8 +836,7 @@
                                     {
                                         title: "Remarks"
                                     },
-                                    <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                                    {
+                                    <?php if ($this->session->userdata('user_type') === 'Teacher'): ?> {
                                         title: "Action",
                                         orderable: false,
                                         searchable: false
@@ -976,136 +974,145 @@
 
 
 
-           const addGradesModal = new bootstrap.Modal(document.getElementById('addGradesModal'));
+            const addGradesModal = new bootstrap.Modal(document.getElementById('addGradesModal'));
 
-// -------------------------------
-// OPEN MODAL
-// -------------------------------
-$('#openAddGradesBtn').click(function() {
-    let activeTab = $('.arrow-navtabs .nav-link.active').text().trim();
-    let gradeLevel = activeTab.replace(' Activity', '');
+            // -------------------------------
+            // OPEN MODAL
+            // -------------------------------
+            $('#openAddGradesBtn').click(function() {
+                let activeTab = $('.arrow-navtabs .nav-link.active').text().trim();
+                let gradeLevel = activeTab.replace(' Activity', '');
 
-    $.ajax({
-        url: '<?= base_url("StudentController/get_sections") ?>',
-        method: 'GET',
-        data: { grade_level: gradeLevel },
-        dataType: 'json',
-        success: function(sections) {
-            let options = '<option value="" disabled selected>Select Section</option>';
-            sections.forEach(sec => {
-                options += `<option value="${sec}">${sec}</option>`;
-            });
-            $('#section').html(options);
+                $.ajax({
+                    url: '<?= base_url("StudentController/get_sections") ?>',
+                    method: 'GET',
+                    data: {
+                        grade_level: gradeLevel
+                    },
+                    dataType: 'json',
+                    success: function(sections) {
+                        let options =
+                            '<option value="" disabled selected>Select Section</option>';
+                        sections.forEach(sec => {
+                            options += `<option value="${sec}">${sec}</option>`;
+                        });
+                        $('#section').html(options);
 
-            $('#EnterScoreTable tbody').html(`
+                        $('#EnterScoreTable tbody').html(`
                 <tr><td colspan="2" class="text-center text-muted">Select a section</td></tr>
             `);
-        }
-    });
+                    }
+                });
 
-    addGradesModal.show();
-});
-
-// -------------------------------
-// LOAD STUDENTS INTO TABLE
-// -------------------------------
-$('#section').change(function() {
-    const section = $(this).val();
-    const activityTypeId = $('#activity_type_id').val();
-
-    $.ajax({
-        url: '<?= base_url("StudentController/get_students_by_section") ?>',
-        method: 'GET',
-        data: { section, activity_type_id: activityTypeId },
-        dataType: 'json',
-        success: function(students) {
-
-            students.sort((a, b) => {
-                let nameA = a.fullname.split(' ')[0].toLowerCase();
-                let nameB = b.fullname.split(' ')[0].toLowerCase();
-                return nameA.localeCompare(nameB);
+                addGradesModal.show();
             });
 
-            let males = students.filter(s => s.gender === "Male");
-            let females = students.filter(s => s.gender === "Female");
+            // -------------------------------
+            // LOAD STUDENTS INTO TABLE
+            // -------------------------------
+            $('#section').change(function() {
+                const section = $(this).val();
+                const activityTypeId = $('#activity_type_id').val();
 
-            let rows = "";
+                $.ajax({
+                    url: '<?= base_url("StudentController/get_students_by_section") ?>',
+                    method: 'GET',
+                    data: {
+                        section,
+                        activity_type_id: activityTypeId
+                    },
+                    dataType: 'json',
+                    success: function(students) {
 
-            if (males.length > 0) {
-                rows += `<tr class="table-primary"><td colspan="2"><strong>Male</strong></td></tr>`;
-                males.forEach(s => {
-                    rows += `
+                        students.sort((a, b) => {
+                            let nameA = a.fullname.split(' ')[0].toLowerCase();
+                            let nameB = b.fullname.split(' ')[0].toLowerCase();
+                            return nameA.localeCompare(nameB);
+                        });
+
+                        let males = students.filter(s => s.gender === "Male");
+                        let females = students.filter(s => s.gender === "Female");
+
+                        let rows = "";
+
+                        if (males.length > 0) {
+                            rows +=
+                                `<tr class="table-primary"><td colspan="2"><strong>Male</strong></td></tr>`;
+                            males.forEach(s => {
+                                rows += `
                         <tr>
                             <td>${s.fullname}</td>
                             <td><input type="number" class="form-control score-input" data-id="${s.id}" placeholder="Enter score"></td>
                         </tr>`;
-                });
-            }
+                            });
+                        }
 
-            if (females.length > 0) {
-                rows += `<tr class="table-danger"><td colspan="2"><strong>Female</strong></td></tr>`;
-                females.forEach(s => {
-                    rows += `
+                        if (females.length > 0) {
+                            rows +=
+                                `<tr class="table-danger"><td colspan="2"><strong>Female</strong></td></tr>`;
+                            females.forEach(s => {
+                                rows += `
                         <tr>
                             <td>${s.fullname}</td>
                             <td><input type="number" class="form-control score-input" data-id="${s.id}" placeholder="Enter score"></td>
                         </tr>`;
+                            });
+                        }
+
+                        if (students.length === 0) {
+                            rows =
+                                `<tr><td colspan="2" class="text-center text-muted">No available students</td></tr>`;
+                        }
+
+                        $('#EnterScoreTable tbody').html(rows);
+                    }
                 });
-            }
+            });
 
-            if (students.length === 0) {
-                rows = `<tr><td colspan="2" class="text-center text-muted">No available students</td></tr>`;
-            }
+            // -------------------------------
+            // SAVE ALL SCORES
+            // -------------------------------
+            $('#saveGradeBtn').click(function() {
+                let payload = {
+                    activity_type_id: $('#activity_type_id').val(),
+                    section: $('#section').val(),
+                    scores: {}
+                };
 
-            $('#EnterScoreTable tbody').html(rows);
-        }
-    });
-});
-
-// -------------------------------
-// SAVE ALL SCORES
-// -------------------------------
-$('#saveGradeBtn').click(function() {
-    let payload = {
-        activity_type_id: $('#activity_type_id').val(),
-        section: $('#section').val(),
-        scores: {}
-    };
-
-    $('.score-input').each(function() {
-        const sid = $(this).data('id');
-        const scr = $(this).val();
-        payload.scores[sid] = scr;
-    });
-
-    $.ajax({
-        url: '<?= base_url("StudentController/save_grade_bulk") ?>',
-        method: 'POST',
-        data: payload,
-        dataType: 'json',
-        success: function(res) {
-            if (res.status === "success") {
-                Swal.fire({
-                    icon: "success",
-                    title: "Saved!",
-                    text: "All students' scores saved successfully!"
+                $('.score-input').each(function() {
+                    const sid = $(this).data('id');
+                    const scr = $(this).val();
+                    payload.scores[sid] = scr;
                 });
 
-                addGradesModal.hide();
+                $.ajax({
+                    url: '<?= base_url("StudentController/save_grade_bulk") ?>',
+                    method: 'POST',
+                    data: payload,
+                    dataType: 'json',
+                    success: function(res) {
+                        if (res.status === "success") {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Saved!",
+                                text: "All students' scores saved successfully!"
+                            });
 
-                // Reload table after saving
-                let activityTypeId = $('#activity_type_id').val();
-                loadGradesTable(activityTypeId); // Your existing function
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: res.message
+                            addGradesModal.hide();
+
+                            // Reload table after saving
+                            let activityTypeId = $('#activity_type_id').val();
+                            loadGradesTable(activityTypeId); // Your existing function
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: res.message
+                            });
+                        }
+                    }
                 });
-            }
-        }
-    });
-});
+            });
 
 
         });

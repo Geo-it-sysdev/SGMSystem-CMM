@@ -440,179 +440,107 @@
             };
 
             // ✅ Initialize DataTables for each grade-level table
-            $('.activityTable').each(function() {
-                let grade_id = $(this).attr('id').replace('activityTable_', '');
-                let grade_level = grade_map[grade_id];
+            // Initialize DataTables for each grade-level table
+$('.activityTable').each(function() {
+    let grade_id = $(this).attr('id').replace('activityTable_', '');
+    let grade_level = grade_map[grade_id];
 
-                let table = $(this).DataTable({
-                    responsive: true,
-                    paging: true,
-                    searching: true,
-                    ordering: true,
-                    info: true,
-                    processing: true,
-                    language: {
-                        search: '',
-                        searchPlaceholder: 'Search...',
-                        processing: '<div class="table-loader"></div>'
-                    },
-                    ajax: {
-                        url: "<?= site_url('StudentController/fetch_activitie'); ?>",
-                        type: 'POST',
-                        data: {
-                            grade_level: grade_level
-                        },
-                        dataSrc: 'data'
-                    },
-                    columns: [{
-                            data: 'grade_level'
-                        },
-                        {
-                            data: 'subject'
-                        },
-                        {
-                            data: 'activity_type'
-                        },
-                        {
-                            data: 'quarter'
-                        },
-                        {
-                            data: 'overall'
-                        },
-                        {
-                            data: 'activity_date'
-                        },
-                        {
-                            data: 'description',
-                            render: function(data, type, row) {
+    let table = $(this).DataTable({
+        responsive: true,
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        processing: true,
+        language: {
+            search: '',
+            searchPlaceholder: 'Search...',
+            processing: '<div class="table-loader"></div>'
+        },
+        ajax: {
+            url: "<?= site_url('StudentController/fetch_activitie'); ?>",
+            type: 'POST',
+            data: { grade_level: grade_level },
+            dataSrc: 'data'
+        },
+        columns: [
+            { data: 'grade_level' },
+            { data: 'subject' },
+            { data: 'activity_type' },
+            { data: 'quarter' },
+            { data: 'overall' },
+            { data: 'activity_date' },
+            {
+                data: 'description',
+                render: function(data, type, row) {
+                    let percentage = '';
+                    let bgClass = '';
 
-                                let percentage = '';
-                                let bgClass = '';
+                    let gradeNum = parseInt(row.grade_level.replace("Grade ", ""));
 
-                                // GET grade level number (7,8,9,10,11,12)
-                                let gradeNum = parseInt(row.grade_level.replace(
-                                    "Grade ", ""));
+                    let written = '30%', performance = '50%', quarterly = '20%';
+                    if (gradeNum >= 11) {
+                        written = '25%';
+                        performance = '50%';
+                        quarterly = '25%';
+                    }
 
-                                // DEFAULT values (Grade 7–10)
-                                let written = '30%';
-                                let performance = '50%';
-                                let quarterly = '20%';
+                    if (data === 'Written Works') {
+                        bgClass = 'bg-primary text-white';
+                        percentage = `(${written})`;
+                    } else if (data === 'Performance Task') {
+                        bgClass = 'bg-success text-white';
+                        percentage = `(${performance})`;
+                    } else if (data === 'Quarterly Assessment') {
+                        bgClass = 'bg-warning text-dark';
+                        percentage = `(${quarterly})`;
+                    }
 
-                                // IF Grade 11–12 override %
-                                if (gradeNum >= 11) {
-                                    written = '25%';
-                                    performance = '50%';
-                                    quarterly = '25%';
-                                }
+                    return `<span class="badge ${bgClass}">${data} ${percentage}</span>`;
+                }
+            },
+            <?php if ($is_admin || $grade_levels): ?>
+            {
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    let buttonHtml = `
+                    <button class="btn btn-sm btn-outline-success tagBtn position-relative"
+                        data-id="${row.id}"
+                        data-grade_level="${row.grade_level}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#tagModal">
+                        <i class="bi bi-tag-fill"></i> Add Grade
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill ${
+                            row.pending_count == 0 ? 'bg-success' : 'bg-danger'
+                        } pendingCount">
+                            ${row.pending_count}
+                        </span>
+                    </button>
+                    `;
 
-                                // SET COLORS
-                                if (data === 'Written Works') {
-                                    bgClass = 'bg-primary text-white';
-                                    percentage = `(${written})`;
-                                } else if (data === 'Performance Task') {
-                                    bgClass = 'bg-success text-white';
-                                    percentage = `(${performance})`;
-                                } else if (data === 'Quarterly Assessment') {
-                                    bgClass = 'bg-warning text-dark';
-                                    percentage = `(${quarterly})`;
-                                }
+                    let teacherButtons = `
+                    <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+                        <button class="btn btn-sm btn-outline-primary editBtn" data-id="${row.id}">
+                            <i class="ri-edit-line"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${row.id}">
+                            <i class="ri-delete-bin-line"></i> Delete
+                        </button>
+                    <?php endif; ?>
+                    `;
 
-                                return `<span class="badge ${bgClass}">${data} ${percentage}</span>`;
-                            }
-                        },
-                        <?php if ($is_admin || $grade_levels): ?> {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            render: function(data, type, row) {
-                                let buttonHtml = `
-        <button class="btn btn-sm btn-outline-success tagBtn position-relative"
-            data-id="${row.id}"
-            data-grade_level="${row.grade_level}"
-            data-bs-toggle="modal"
-            data-bs-target="#tagModal">
-            <i class="bi bi-tag-fill"></i> Add Grade
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger pendingCount">
-                0
-            </span>
-        </button>
-        `;
+                    return buttonHtml + teacherButtons;
+                }
+            }
+            <?php endif; ?>
+        ]
+    });
 
-                                // Keep Teacher Edit/Delete buttons intact
-                                let teacherButtons = `
-        <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-            <button class="btn btn-sm btn-outline-primary editBtn" data-id="${row.id}">
-                <i class="ri-edit-line"></i> Edit
-            </button>
-            <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${row.id}">
-                <i class="ri-delete-bin-line"></i> Delete
-            </button>
-        <?php endif; ?>
-        `;
+    $(this).data('tableInstance', table);
+});
 
-                                let allButtons = buttonHtml + teacherButtons;
-
-                                // Fetch pending count for Add Grade badge
-                                setTimeout(function() {
-                                    let $button = $('#activityTable_' + row
-                                        .grade_level.replace(' ', '') +
-                                        ' button[data-id="' + row.id + '"]');
-
-                                    $.ajax({
-                                        url: "<?= base_url('StudentController/get_pending_students') ?>",
-                                        type: "POST",
-                                        dataType: "json",
-                                        data: {
-                                            activity_id: row.id,
-                                            grade_level: row.grade_level
-                                        },
-                                        success: function(res) {
-                                            let count = res
-                                                .pending_count ?? 0;
-
-                                            if ($button.length) {
-                                                $button.find(
-                                                    '.pendingCount'
-                                                    ).text(
-                                                    count);
-                                                if (count == 0) {
-                                                    $button.find(
-                                                            '.pendingCount'
-                                                            )
-                                                        .removeClass(
-                                                            'bg-danger'
-                                                            )
-                                                        .addClass(
-                                                            'bg-success'
-                                                            );
-                                                } else {
-                                                    $button.find(
-                                                            '.pendingCount'
-                                                            )
-                                                        .removeClass(
-                                                            'bg-success'
-                                                            )
-                                                        .addClass(
-                                                            'bg-danger'
-                                                            );
-                                                }
-                                            }
-                                        }
-                                    });
-                                }, 100);
-
-                                return allButtons;
-                            }
-                        }
-
-
-                        <?php endif; ?>
-                    ]
-                });
-
-                // ✅ Store instance for later use
-                $(this).data('tableInstance', table);
-            });
 
 
 

@@ -198,18 +198,49 @@ class StudentModel extends CI_Model {
     }
 
     // Get activities by grade for this user
-    public function get_by_grade($grade_level, $user_id = null) {
-        $user_type = $this->session->userdata('user_type'); 
+    // public function get_by_grade($grade_level, $user_id = null) {
+    //     $user_type = $this->session->userdata('user_type'); 
     
-        $this->db->where('grade_level', $grade_level);
+    //     $this->db->where('grade_level', $grade_level);
     
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
-            if (!$user_id) return [];
-            $this->db->where('user_id', $user_id);
-        }
+    //     if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
+    //         if (!$user_id) return [];
+    //         $this->db->where('user_id', $user_id);
+    //     }
     
-        return $this->db->order_by('id', 'DESC')->get($this->table)->result();
+    //     return $this->db->order_by('id', 'DESC')->get($this->table)->result();
+    // }
+
+
+    public function get_by_grade($grade_level, $user_id = null)
+{
+    $user_type = $this->session->userdata('user_type');
+
+    $this->db->select("a.*,
+        (
+            SELECT COUNT(s.id)
+            FROM tbl_students s
+            WHERE s.grade_level = a.grade_level
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM tbl_activities_lines l
+                  WHERE l.student_id = s.id
+                    AND l.activities_id_header = a.id
+              )
+        ) AS pending_count
+    ");
+    $this->db->from("tbl_activities_header a");
+    $this->db->where("a.grade_level", $grade_level);
+
+    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
+        if (!$user_id) return [];
+        $this->db->where('a.user_id', $user_id);
     }
+
+    $this->db->order_by("a.id", "DESC");
+    return $this->db->get()->result();
+}
+
     
 
     // Get single activity by ID

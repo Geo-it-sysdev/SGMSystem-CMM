@@ -392,12 +392,22 @@ public function update_student()
     }
 
     // Fetch activities by grade
-    public function fetch_activitie() {
-        $grade_level = $this->input->post('grade_level');
-        $user_id = $this->session->userdata('po_user');
-        $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
-        echo json_encode(['data'=>$data]);
-    }
+    // public function fetch_activitie() {
+    //     $grade_level = $this->input->post('grade_level');
+    //     $user_id = $this->session->userdata('po_user');
+    //     $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
+    //     echo json_encode(['data'=>$data]);
+    // }
+
+    public function fetch_activitie()
+{
+    $grade_level = $this->input->post('grade_level');
+    $user_id = $this->session->userdata('po_user');
+
+    $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
+    echo json_encode(['data' => $data]);
+}
+
 
 public function get_pending_students()
 {

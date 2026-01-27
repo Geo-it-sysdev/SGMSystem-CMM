@@ -231,10 +231,10 @@
             data-bs-backdrop="static">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
-          
+
                     <div class="modal-header">
-                        
-                              
+
+
                         <h5 class="modal-title">Tag Grades</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
@@ -264,7 +264,7 @@
                                 </ul>
                             </div> -->
                         </div>
-                         <!-- <ul class="nav nav-tabs nav-border-top nav-border-top-primary mb-3" role="tablist">
+                        <!-- <ul class="nav nav-tabs nav-border-top nav-border-top-primary mb-3" role="tablist">
                                          <li class="nav-item">
                                              <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
                                                 Section 1
@@ -286,7 +286,8 @@
                                              </a>
                                          </li>
                                      </ul> -->
-                                     <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist"></ul>
+                        <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs"
+                            role="tablist"></ul>
 
                         <!-- Activity Info -->
                         <div class="row mb-3">
@@ -565,7 +566,7 @@
                                 </button>
                                 `;
 
-                                
+
 
                                 let teacherButtons = `
                                 <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
@@ -792,128 +793,134 @@
 
             var editGradeModal = new bootstrap.Modal(document.getElementById('editGradeModal'));
 
-           function loadGradesTable(activityTypeId) {
-    var overallScore = parseFloat($('#overalls').val()) || 0;
+            function loadGradesTable(activityTypeId) {
+                var overallScore = parseFloat($('#overalls').val()) || 0;
 
-    $.ajax({
-        url: '<?= base_url("StudentController/fetch_grades") ?>/' + activityTypeId,
-        method: 'GET',
-        dataType: 'json',
-        success: function(res) {
-            // Ensure returned data is an array
-            var list = Array.isArray(res) ? res : (res.data ? res.data : []);
+                $.ajax({
+                    url: '<?= base_url("StudentController/fetch_grades") ?>/' + activityTypeId,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(res) {
+                        var list = Array.isArray(res) ? res : (res.data ? res.data : []);
 
-            // Filter out invalid rows
-            list = list.filter(g => g && g.student_name);
+                        list = list.filter(g => g && g.student_name);
 
-            // Extract unique sections
-            var sections = [...new Set(list.map(g => g.sections))];
+                        var sections = [...new Set(list.map(g => g.sections))];
 
-            // Build tabs dynamically
-            var tabsHtml = '';
-            sections.forEach((section, index) => {
-                tabsHtml += `
+                        var tabsHtml = '';
+                        sections.forEach((section, index) => {
+                            tabsHtml += `
                     <li class="nav-item">
                         <a class="nav-link ${index === 0 ? 'active' : ''}" data-section="${section}" href="#" role="tab">
                             ${section}
                         </a>
                     </li>
                 `;
-            });
-            $('#sectionTabs').html(tabsHtml);
+                        });
+                        $('#sectionTabs').html(tabsHtml);
 
-            // Draw DataTable for the first section by default
-            drawGradesTable(list, sections[0], overallScore);
+                        drawGradesTable(list, sections[0], overallScore);
 
-            // Tab click event to filter table
-            $('#sectionTabs a').on('click', function(e) {
-                e.preventDefault();
-                $('#sectionTabs a').removeClass('active');
-                $(this).addClass('active');
-                var section = $(this).data('section');
-                drawGradesTable(list, section, overallScore);
-            });
-        },
-        error: function() {
-            Swal.fire('Error', 'Failed to load grades data.', 'error');
-        }
-    });
-}
+                        $('#sectionTabs a').on('click', function(e) {
+                            e.preventDefault();
+                            $('#sectionTabs a').removeClass('active');
+                            $(this).addClass('active');
+                            var section = $(this).data('section');
+                            drawGradesTable(list, section, overallScore);
+                        });
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'Failed to load grades data.', 'error');
+                    }
+                });
+            }
 
-function drawGradesTable(data, section, overallScore) {
-    var passingPercentage = 75;
-    var passingScore = (overallScore * passingPercentage) / 100;
+            function drawGradesTable(data, section, overallScore) {
+                var passingPercentage = 75;
+                var passingScore = (overallScore * passingPercentage) / 100;
 
-    // Filter by section
-    var filtered = data.filter(g => g.sections === section);
+                // Filter by section
+                var filtered = data.filter(g => g.sections === section);
 
-    var rows = filtered.map(g => {
-        var percentDisplay = '0% - Failed';
-        if (overallScore > 0 && g.score != null && g.score !== "") {
-            var percent = (g.score / overallScore) * 100;
-            var status = (g.score >= passingScore) ? 'Passed' : 'Failed';
-            percentDisplay = percent.toFixed(0) + '% - ' + status;
-        }
+                var rows = filtered.map(g => {
+                    var percentDisplay = '0% - Failed';
+                    if (overallScore > 0 && g.score != null && g.score !== "") {
+                        var percent = (g.score / overallScore) * 100;
+                        var status = (g.score >= passingScore) ? 'Passed' : 'Failed';
+                        percentDisplay = percent.toFixed(0) + '% - ' + status;
+                    }
 
-        var actions = `
-            <button class="btn btn-sm btn-outline-primary editGradeBtn"
-                data-id="${g.line_id}"
-                data-name="${g.student_name}"
-                data-section="${g.sections}"
-                data-score="${g.score}">
-                <i class="bi bi-pencil-square me-1"></i>Edit
-            </button>
+                    var actions = `
+                        <button class="btn btn-sm btn-outline-primary editGradeBtn"
+                            data-id="${g.line_id}"
+                            data-name="${g.student_name}"
+                            data-section="${g.sections}"
+                            data-score="${g.score}">
+                            <i class="bi bi-pencil-square me-1"></i>Edit
+                        </button>
 
-            <button class="btn btn-sm btn-outline-danger deleteGradeBtn"
-                data-id="${g.line_id}">
-                <i class="bi bi-trash me-1"></i>Delete
-            </button>
-        `;
+                        <button class="btn btn-sm btn-outline-danger deleteGradeBtn"
+                            data-id="${g.line_id}">
+                            <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                    `;
 
-        return [
-            g.student_name,
-            g.sections,
-            g.score,
-            percentDisplay,
-            actions
-        ];
-    });
+                    return [
+                        g.student_name,
+                        g.sections,
+                        g.score,
+                        percentDisplay,
+                        actions
+                    ];
+                });
 
-    // Initialize or reload DataTable
-    if ($.fn.DataTable.isDataTable('#gradesTable')) {
-        var table = $('#gradesTable').DataTable();
-        table.clear();
-        if (rows.length > 0) table.rows.add(rows).draw();
-        else table.draw();
-    } else {
-        $('#gradesTable').DataTable({
-            data: rows,
-            columns: [
-                { title: "Student" },
-                { title: "Section" },
-                { title: "Score" },
-                { title: "Remarks" },
-                <?php if ($this->session->userdata('user_type') === 'Teacher'): ?> 
-                { title: "Action", orderable: false, searchable: false } 
-                <?php endif; ?>
-            ],
-            responsive: true,
-            language: { emptyTable: "No data available" }
-        });
-    }
-}
+                // Initialize or reload DataTable
+                if ($.fn.DataTable.isDataTable('#gradesTable')) {
+                    var table = $('#gradesTable').DataTable();
+                    table.clear();
+                    if (rows.length > 0) table.rows.add(rows).draw();
+                    else table.draw();
+                } else {
+                    $('#gradesTable').DataTable({
+                        data: rows,
+                        columns: [{
+                                title: "Student"
+                            },
+                            {
+                                title: "Section"
+                            },
+                            {
+                                title: "Score"
+                            },
+                            {
+                                title: "Remarks"
+                            },
+                            <?php if ($this->session->userdata('user_type') === 'Teacher'): ?> {
+                                title: "Action",
+                                orderable: false,
+                                searchable: false
+                            }
+                            <?php endif; ?>
+                        ],
+                        responsive: true,
+                        language: {
+                            emptyTable: "No data available"
+                        }
+                    });
+                }
+            }
 
 
 
             // Open Edit Modal
             $(document).on('click', '.editGradeBtn', function() {
                 var table = $('#gradesTable').DataTable();
-                var row = table.row($(this).parents('tr')).data(); // get current row data
+                var row = table.row($(this).parents('tr')).data(); 
 
-                $('#editGradeId').val($(this).data('id')); // grade ID from button
-                $('#editStudentName').val(row[0]); // Student Name
-                $('#editSection').val(row[1]); // Section
-                $('#editScore').val(row[2]); // Score
+                $('#editGradeId').val($(this).data('id'));  
+                $('#editStudentName').val(row[0]);  
+                $('#editSection').val(row[1]);  
+                $('#editScore').val(row[2]);  
 
                 // Set the modal title dynamically
                 $('#editGradeModal .modal-title').text('Edit Grade for ' + row[0]);
@@ -984,7 +991,7 @@ function drawGradesTable(data, section, overallScore) {
 
 
             // Delete with Swal
-           $(document).on('click', '.deleteGradeBtn', function() {
+            $(document).on('click', '.deleteGradeBtn', function() {
                 var gradeId = $(this).data('id');
                 var table = $('#gradesTable').DataTable();
                 var row = table.row($(this).parents('tr'));
@@ -1000,20 +1007,24 @@ function drawGradesTable(data, section, overallScore) {
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '<?= base_url("StudentController/delete_grade") ?>/' + gradeId,
+                            url: '<?= base_url("StudentController/delete_grade") ?>/' +
+                                gradeId,
                             method: 'POST',
                             success: function() {
                                 row.remove().draw(false); // remove row dynamically
 
                                 // Reload the activityTable
                                 if ($.fn.DataTable.isDataTable('.activityTable')) {
-                                    $('.activityTable').DataTable().ajax.reload(null, false); // false = keep paging
+                                    $('.activityTable').DataTable().ajax.reload(
+                                        null, false); // false = keep paging
                                 }
 
-                                Swal.fire('Deleted!', 'Grade has been deleted.', 'success');
+                                Swal.fire('Deleted!', 'Grade has been deleted.',
+                                    'success');
                             },
                             error: function() {
-                                Swal.fire('Error', 'Failed to delete grade', 'error');
+                                Swal.fire('Error', 'Failed to delete grade',
+                                    'error');
                             }
                         });
                     }

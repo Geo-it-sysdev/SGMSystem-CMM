@@ -735,26 +735,36 @@
 
             // ✅ Delete Activity
             $(document).on('click', '.deleteBtn', function() {
-                let id = $(this).data('id');
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "This record will be permanently deleted.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, delete it!'
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        $.getJSON("<?= site_url('StudentController/delete_activity/'); ?>" + id,
-                            function(res) {
-                                Swal.fire(res.status ? 'Deleted!' : 'Error deleting', '',
-                                    'success');
-                                $('.activityTable').each(function() {
-                                    $(this).data('tableInstance').ajax.reload();
-                                });
-                            });
-                    }
-                });
+            let id = $(this).data('id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This record will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    $.getJSON("<?= site_url('StudentController/delete_activity/'); ?>" + id, function(res) {
+                        Swal.fire(
+                            res.status ? 'Deleted!' : 'Error deleting',
+                            '',
+                            res.status ? 'success' : 'error'
+                        );
+
+                        // Reload each activity table
+                        $('.activityTable').each(function() {
+                            $(this).data('tableInstance').ajax.reload();
+                        });
+
+                        // Reload the tab section
+                        // Simple way: re-fetch content from server (AJAX)
+                        $('#sectionTabs').load(location.href + ' #sectionTabs > *');
+                    });
+                }
             });
+        });
+
 
 
 

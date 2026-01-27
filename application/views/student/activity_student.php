@@ -505,7 +505,7 @@
                             searchable: false,
                             render: function(data, type, row) {
                                 let buttonHtml = `
-                                <button class="btn btn-sm btn-outline-success tagBtn position-relative me-2"
+                                <button class="btn btn-sm btn-outline-success tagBtn position-relative me-1"
                                     data-id="${row.id}"
                                     data-grade_level="${row.grade_level}"
                                     data-bs-toggle="modal"
@@ -521,7 +521,7 @@
 
                                 let teacherButtons = `
                                 <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                                    <button class="btn btn-sm btn-outline-primary editBtn me-2" data-id="${row.id}">
+                                    <button class="btn btn-sm btn-outline-primary editBtn me-1" data-id="${row.id}">
                                         <i class="ri-edit-line"></i> Edit
                                     </button>
                                     <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${row.id}">

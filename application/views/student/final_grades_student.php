@@ -417,8 +417,10 @@ let finalGradesTableInstance = null;
                 ],
                 responsive: true,
                 paging: true,
-                 info: false,
                 searching: true,
+                language: {
+                    infoFiltered: "" 
+                },
                 initComplete: function() {
                     // Automatically filter DataTable by the active tab on load
                     let activeSection = $('#sectionTabs .nav-link.active').data('section');

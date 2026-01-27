@@ -329,7 +329,7 @@ let finalGradesTableInstance = null;
 
            $(document).on('click', '.viewBtn', function () {
                 let section = $(this).data('section');
-                let subject = $(this).data('subject');
+                // let subject = $(this).data('subject');
                 let quarter = $(this).data('quarter');
                 let grade_level = $(this).data('grade_level');
                 let full_name = $(this).data('full_name');

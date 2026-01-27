@@ -534,7 +534,7 @@ public function save_activity()
         $this->db->where('a.subject', $subject);
         $this->db->where('a.quarter', $quarter);
         $this->db->where('a.grade_level', $grade_level);
-        // $this->db->where('b.section', $section);
+        $this->db->where('b.section', $section);
         $this->db->where('d.status', 'active');
 
         // Only filter by user_id if the user is NOT Principal, Registrar, or Guidance Councilor

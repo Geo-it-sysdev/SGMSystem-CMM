@@ -670,6 +670,7 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'Missing Required Fields',
+                        html: `<p>Please complete all required fields:</p>`,
                     });
                     return;
                 }

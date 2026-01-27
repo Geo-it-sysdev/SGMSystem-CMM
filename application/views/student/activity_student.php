@@ -459,25 +459,41 @@
                     ajax: {
                         url: "<?= site_url('StudentController/fetch_activitie'); ?>",
                         type: 'POST',
-                        data: { grade_level: grade_level },
+                        data: {
+                            grade_level: grade_level
+                        },
                         dataSrc: 'data'
                     },
-                    columns: [
-                        { data: 'grade_level' },
-                        { data: 'subject' },
-                        { data: 'activity_type' },
-                        { data: 'quarter' },
-                        { data: 'overall' },
-                        { data: 'activity_date' },
+                    columns: [{
+                            data: 'grade_level'
+                        },
+                        {
+                            data: 'subject'
+                        },
+                        {
+                            data: 'activity_type'
+                        },
+                        {
+                            data: 'quarter'
+                        },
+                        {
+                            data: 'overall'
+                        },
+                        {
+                            data: 'activity_date'
+                        },
                         {
                             data: 'description',
                             render: function(data, type, row) {
                                 let percentage = '';
                                 let bgClass = '';
 
-                                let gradeNum = parseInt(row.grade_level.replace("Grade ", ""));
+                                let gradeNum = parseInt(row.grade_level.replace(
+                                    "Grade ", ""));
 
-                                let written = '30%', performance = '50%', quarterly = '20%';
+                                let written = '30%',
+                                    performance = '50%',
+                                    quarterly = '20%';
                                 if (gradeNum >= 11) {
                                     written = '25%';
                                     performance = '50%';
@@ -498,8 +514,7 @@
                                 return `<span class="badge ${bgClass}">${data} ${percentage}</span>`;
                             }
                         },
-                        <?php if ($is_admin || $grade_levels): ?>
-                        {
+                        <?php if ($is_admin || $grade_levels): ?> {
                             data: null,
                             orderable: false,
                             searchable: false,
@@ -1089,9 +1104,15 @@
 
                             addGradesModal.hide();
 
-                            // Reload table after saving
+                            // Reload your activityTable
+                            if ($.fn.DataTable.isDataTable('.activityTable')) {
+                                $('.activityTable').DataTable().ajax.reload(null,
+                                false); // false = don't reset pagination
+                            }
+
+                            // Optionally, reload your grades table too
                             let activityTypeId = $('#activity_type_id').val();
-                            loadGradesTable(activityTypeId); // Your existing function
+                            loadGradesTable(activityTypeId);
                         } else {
                             Swal.fire({
                                 icon: "error",
@@ -1101,6 +1122,7 @@
                         }
                     }
                 });
+
             });
 
 

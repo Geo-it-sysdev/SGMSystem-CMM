@@ -801,12 +801,15 @@
                     method: 'GET',
                     dataType: 'json',
                     success: function(res) {
+                        // Ensure returned data is an array
                         var list = Array.isArray(res) ? res : (res.data ? res.data : []);
-
                         list = list.filter(g => g && g.student_name);
 
+                        // Extract unique sections and sort alphabetically
                         var sections = [...new Set(list.map(g => g.sections))];
+                        sections.sort((a, b) => a.localeCompare(b)); // Alphabetical order
 
+                        // Build tabs dynamically
                         var tabsHtml = '';
                         sections.forEach((section, index) => {
                             tabsHtml += `
@@ -819,8 +822,10 @@
                         });
                         $('#sectionTabs').html(tabsHtml);
 
+                        // Draw DataTable for the first alphabetically sorted section
                         drawGradesTable(list, sections[0], overallScore);
 
+                        // Tab click event to filter table
                         $('#sectionTabs a').on('click', function(e) {
                             e.preventDefault();
                             $('#sectionTabs a').removeClass('active');
@@ -839,7 +844,6 @@
                 var passingPercentage = 75;
                 var passingScore = (overallScore * passingPercentage) / 100;
 
-                // Filter by section
                 var filtered = data.filter(g => g.sections === section);
 
                 var rows = filtered.map(g => {
@@ -851,19 +855,19 @@
                     }
 
                     var actions = `
-                        <button class="btn btn-sm btn-outline-primary editGradeBtn"
-                            data-id="${g.line_id}"
-                            data-name="${g.student_name}"
-                            data-section="${g.sections}"
-                            data-score="${g.score}">
-                            <i class="bi bi-pencil-square me-1"></i>Edit
-                        </button>
+            <button class="btn btn-sm btn-outline-primary editGradeBtn"
+                data-id="${g.line_id}"
+                data-name="${g.student_name}"
+                data-section="${g.sections}"
+                data-score="${g.score}">
+                <i class="bi bi-pencil-square me-1"></i>Edit
+            </button>
 
-                        <button class="btn btn-sm btn-outline-danger deleteGradeBtn"
-                            data-id="${g.line_id}">
-                            <i class="bi bi-trash me-1"></i>Delete
-                        </button>
-                    `;
+            <button class="btn btn-sm btn-outline-danger deleteGradeBtn"
+                data-id="${g.line_id}">
+                <i class="bi bi-trash me-1"></i>Delete
+            </button>
+        `;
 
                     return [
                         g.student_name,
@@ -874,7 +878,6 @@
                     ];
                 });
 
-                // Initialize or reload DataTable
                 if ($.fn.DataTable.isDataTable('#gradesTable')) {
                     var table = $('#gradesTable').DataTable();
                     table.clear();
@@ -912,15 +915,16 @@
 
 
 
+
             // Open Edit Modal
             $(document).on('click', '.editGradeBtn', function() {
                 var table = $('#gradesTable').DataTable();
-                var row = table.row($(this).parents('tr')).data(); 
+                var row = table.row($(this).parents('tr')).data();
 
-                $('#editGradeId').val($(this).data('id'));  
-                $('#editStudentName').val(row[0]);  
-                $('#editSection').val(row[1]);  
-                $('#editScore').val(row[2]);  
+                $('#editGradeId').val($(this).data('id'));
+                $('#editStudentName').val(row[0]);
+                $('#editSection').val(row[1]);
+                $('#editScore').val(row[2]);
 
                 // Set the modal title dynamically
                 $('#editGradeModal .modal-title').text('Edit Grade for ' + row[0]);

@@ -232,6 +232,25 @@
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
+                         <ul class="nav nav-pills arrow-navtabs nav-primary bg-light mb-3 flex-wrap">
+                                        <?php
+                                            $all_grades = ['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'];
+                                            $active_set = false;
+
+                                            foreach ($all_grades as $grade):
+                                                if (in_array('All',$grade_levels) || in_array($grade,$grade_levels)):
+                                                    $grade_id = strtolower(str_replace(' ','',$grade));
+                                                    $active_class = (!$active_set)?'active':'';
+                                                    $active_set = true;
+                                            ?>
+                                        <li class="nav-item">
+                                            <a href="#<?= $grade_id ?>-student" data-bs-toggle="tab"
+                                                class="nav-link <?= $active_class ?>">
+                                                <?= $grade ?> Activity
+                                            </a>
+                                        </li>
+                                        <?php endif; endforeach; ?>
+                                    </ul>
                         <h5 class="modal-title">Tag Grades</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>

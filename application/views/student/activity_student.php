@@ -286,9 +286,7 @@
                                              </a>
                                          </li>
                                      </ul> -->
-                                     <ul class="nav nav-tabs nav-border-top nav-border-top-primary mb-3" id="sectionTabs" role="tablist">
-    <!-- Tabs will be injected dynamically via JS -->
-</ul>
+                                     <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist"></ul>
 
                         <!-- Activity Info -->
                         <div class="row mb-3">

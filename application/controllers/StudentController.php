@@ -466,158 +466,165 @@ public function save_activity()
     
 
     // final grades
-    public function fetch_activities() {
-        $grade_level = $this->input->post('grade_level'); 
-        $user_id    = $this->session->userdata('po_user'); 
-        $user_type  = $this->session->userdata('user_type'); 
+   public function fetch_activities() {
+    $grade_level = $this->input->post('grade_level'); 
+    $user_id    = $this->session->userdata('po_user'); 
+    $user_type  = $this->session->userdata('user_type'); 
 
-        $this->db->select('a.id, a.subject, a.grade_level, a.quarter, b.full_name, GROUP_CONCAT(DISTINCT c.section SEPARATOR " | ") AS section, a.activity_date');
-        $this->db->from('tbl_activities_header AS a');
-        $this->db->join('tbl_activities_lines AS c', 'c.activities_id_header = a.id', 'left');
-        $this->db->join('tbl_users AS b', 'b.id = a.user_id', 'left');
-        $this->db->where('c.section IS NOT NULL', null, false);
+    $this->db->select('a.id, a.subject, a.grade_level, a.quarter, b.full_name, GROUP_CONCAT(DISTINCT c.section SEPARATOR " | ") AS section, a.activity_date');
+    $this->db->from('tbl_activities_header AS a');
+    $this->db->join('tbl_activities_lines AS c', 'c.activities_id_header = a.id', 'left');
+    $this->db->join('tbl_users AS b', 'b.id = a.user_id', 'left');
+    $this->db->where('c.section IS NOT NULL', null, false);
 
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
-            if (!$user_id) {
-                echo json_encode(['data' => []]);
-                return;
-            }
-            $this->db->where('a.user_id', $user_id);
+    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
+        if (!$user_id) {
+            echo json_encode(['data' => []]);
+            return;
         }
-
-        if ($grade_level && $grade_level != '') {
-            $this->db->where('a.grade_level', $grade_level);
-        }
-
-        $this->db->group_by(['a.subject', 'a.quarter', 'b.full_name']);
-        $query = $this->db->get()->result();
-
-        $data = [];
-        foreach ($query as $row) {
-            $data[] = [
-                'id'          => $row->id,
-                'grade_level' => $row->grade_level,
-                'subject'     => $row->subject,
-                'full_name'   => $row->full_name,
-                'section'     => $row->section,
-                'quarter'     => $row->quarter
-            ];
-        }
-
-        echo json_encode(['data' => $data]);
+        $this->db->where('a.user_id', $user_id);
     }
 
-
-    public function fetch_final_grades() {
-        // $section     = $this->input->post('section');
-        $subject     = $this->input->post('subject');
-        $quarter     = $this->input->post('quarter');
-        $grade_level = $this->input->post('grade_level');
-        $user_id     = $this->session->userdata('po_user');      
-        $user_type   = $this->session->userdata('user_type');   
-
-        if (in_array($grade_level, ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'])) {
-            $weight_WW = 0.30;
-            $weight_PT = 0.50;
-            $weight_QA = 0.20;
-        } else { // Grade 11–12
-            $weight_WW = 0.25;
-            $weight_PT = 0.50;
-            $weight_QA = 0.25;
-        }
-
-        $this->db->select('a.id, a.description AS activity_type, a.overall AS overall_score, b.student_name, b.score, b.section, b.student_id, c.full_name');
-        $this->db->from('tbl_activities_header AS a');
-        $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
-        $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
-        $this->db->join('tbl_students AS d', 'd.id = b.student_id', 'left');
-        $this->db->where('a.subject', $subject);
-        $this->db->where('a.quarter', $quarter);
+    if ($grade_level && $grade_level != '') {
         $this->db->where('a.grade_level', $grade_level);
-        // $this->db->where('b.section', $section);
-        $this->db->where('d.status', 'active');
+    }
 
-        // Only filter by user_id if the user is NOT Principal, Registrar, or Guidance Councilor
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
-            $this->db->where('a.user_id', $user_id);
-        }
+    $this->db->group_by(['a.subject', 'a.quarter', 'b.full_name']);
+    $query = $this->db->get()->result();
 
-        $query = $this->db->get()->result();
+    $data = [];
+    foreach ($query as $row) {
+        $data[] = [
+            'id'          => $row->id,
+            'grade_level' => $row->grade_level,
+            'subject'     => $row->subject,
+            'full_name'   => $row->full_name,
+            'section'     => $row->section, // "A | B | C"
+            'quarter'     => $row->quarter
+        ];
+    }
 
-        $students = [];
+    echo json_encode(['data' => $data]);
+}
 
-        foreach ($query as $row) {
-            $name = $row->student_name;
 
-            if (!isset($students[$name])) {
-                $students[$name] = [
-                    'WW_total' => 0, 'WW_count' => 0, 'WW_overall' => 0,
-                    'PT_total' => 0, 'PT_count' => 0, 'PT_overall' => 0,
-                    'QA_total' => 0, 'QA_count' => 0, 'QA_overall' => 0
-                ];
-            }
 
-            if ($row->activity_type == 'Written Works') {
-                $students[$name]['WW_total'] += $row->score;
-                $students[$name]['WW_overall'] += $row->overall_score;
-                $students[$name]['WW_count']++;
-            } elseif ($row->activity_type == 'Performance Task') {
-                $students[$name]['PT_total'] += $row->score;
-                $students[$name]['PT_overall'] += $row->overall_score;
-                $students[$name]['PT_count']++;
-            } elseif ($row->activity_type == 'Quarterly Assessment') {
-                $students[$name]['QA_total'] += $row->score;
-                $students[$name]['QA_overall'] += $row->overall_score;
-                $students[$name]['QA_count']++;
-            }
-        }
+  public function fetch_final_grades() {
+    $sections     = $this->input->post('section'); // e.g. "A | B | C"
+    $sections_arr = explode(' | ', $sections);     // ["A", "B", "C"]
+    $subject      = $this->input->post('subject');
+    $quarter      = $this->input->post('quarter');
+    $grade_level  = $this->input->post('grade_level');
+    $user_id      = $this->session->userdata('po_user');      
+    $user_type    = $this->session->userdata('user_type');   
 
-        $data = [];
+    // Set weights
+    if (in_array($grade_level, ['Grade 7','Grade 8','Grade 9','Grade 10'])) {
+        $weight_WW = 0.30; $weight_PT = 0.50; $weight_QA = 0.20;
+    } else {
+        $weight_WW = 0.25; $weight_PT = 0.50; $weight_QA = 0.25;
+    }
 
-        foreach ($students as $student_name => $scores) {
-            $ww_percent = $scores['WW_overall'] ? ($scores['WW_total'] / $scores['WW_overall'] * 100) : 0;
-            $pt_percent = $scores['PT_overall'] ? ($scores['PT_total'] / $scores['PT_overall'] * 100) : 0;
-            $qa_percent = $scores['QA_overall'] ? ($scores['QA_total'] / $scores['QA_overall'] * 100) : 0;
+    $this->db->select('a.id, a.description AS activity_type, a.overall AS overall_score, b.student_name, b.score, b.section, b.student_id, c.full_name');
+    $this->db->from('tbl_activities_header AS a');
+    $this->db->join('tbl_activities_lines AS b','b.activities_id_header = a.id','left');
+    $this->db->join('tbl_users AS c','c.id = a.user_id','left');
+    $this->db->join('tbl_students AS d','d.id = b.student_id','left');
+    $this->db->where('a.subject', $subject);
+    $this->db->where('a.quarter', $quarter);
+    $this->db->where('a.grade_level', $grade_level);
+    $this->db->where_in('b.section', $sections_arr); // fetch all sections
+    $this->db->where('d.status','active');
 
-            $final_grade = ($ww_percent * $weight_WW) +
-                        ($pt_percent * $weight_PT) +
-                        ($qa_percent * $weight_QA);
+    if (!in_array($user_type,['Principal','Registrar','Guidance Councilor','Admin'])) {
+        $this->db->where('a.user_id',$user_id);
+    }
 
-            if ($final_grade >= 90) {
-                $rating = '1.00'; $remarks = 'Outstanding';
-            } elseif ($final_grade >= 85) {
-                $rating = '1.25'; $remarks = 'Very Satisfactory';
-            } elseif ($final_grade >= 80) {
-                $rating = '1.50'; $remarks = 'Very Satisfactory';
-            } elseif ($final_grade >= 75) {
-                $rating = '1.75'; $remarks = 'Satisfactory';
-            } elseif ($final_grade >= 70) {
-                $rating = '2.00'; $remarks = 'Satisfactory';
-            } elseif ($final_grade >= 65) {
-                $rating = '2.25'; $remarks = 'Fair';
-            } elseif ($final_grade >= 60) {
-                $rating = '2.50'; $remarks = 'Fair';
-            } elseif ($final_grade >= 55) {
-                $rating = '2.75'; $remarks = 'Did Not Meet Expectations';
-            } elseif ($final_grade >= 50) {
-                $rating = '3.00'; $remarks = 'Did Not Meet Expectations';
-            } else {
-                $rating = '5.00'; $remarks = 'Failure';
-            }
+    $query = $this->db->get()->result();
 
-            $section_name = $query[0]->section ?? '';
-
-            $data[] = [
-                'student_name' => $student_name,
-                'section'      => $section_name,
-                'final_grade'  => round($final_grade, 2),
-                'depEd_rating' => $rating,
-                'remarks'      => $remarks
+    // Aggregate per student
+    $students = [];
+    foreach($query as $row){
+        $name = $row->student_name;
+        if(!isset($students[$name])){
+            $students[$name] = [
+                'WW_total'=>0,'WW_count'=>0,'WW_overall'=>0,
+                'PT_total'=>0,'PT_count'=>0,'PT_overall'=>0,
+                'QA_total'=>0,'QA_count'=>0,'QA_overall'=>0,
+                'section' => $row->section
             ];
         }
 
-        echo json_encode(['data' => $data]);
+        if($row->activity_type == 'Written Works'){
+            $students[$name]['WW_total'] += $row->score;
+            $students[$name]['WW_overall'] += $row->overall_score;
+            $students[$name]['WW_count']++;
+        } elseif($row->activity_type == 'Performance Task'){
+            $students[$name]['PT_total'] += $row->score;
+            $students[$name]['PT_overall'] += $row->overall_score;
+            $students[$name]['PT_count']++;
+        } elseif($row->activity_type == 'Quarterly Assessment'){
+            $students[$name]['QA_total'] += $row->score;
+            $students[$name]['QA_overall'] += $row->overall_score;
+            $students[$name]['QA_count']++;
+        }
     }
+
+    $data = [];
+    foreach($students as $student_name => $s){
+        $ww = $s['WW_overall'] ? ($s['WW_total']/$s['WW_overall']*100):0;
+        $pt = $s['PT_overall'] ? ($s['PT_total']/$s['PT_overall']*100):0;
+        $qa = $s['QA_overall'] ? ($s['QA_total']/$s['QA_overall']*100):0;
+        $final_grade = ($ww*$weight_WW)+($pt*$weight_PT)+($qa*$weight_QA);
+
+        // Ratings
+       // Ratings
+if($final_grade >= 90) {
+    $rating = '1.00';
+    $remarks = 'Outstanding';
+} elseif($final_grade >= 85) {
+    $rating = '1.25';
+    $remarks = 'Very Satisfactory';
+} elseif($final_grade >= 80) {
+    $rating = '1.50';
+    $remarks = 'Very Satisfactory';
+} elseif($final_grade >= 75) {
+    $rating = '1.75';
+    $remarks = 'Satisfactory';
+} elseif($final_grade >= 70) {
+    $rating = '2.00';
+    $remarks = 'Satisfactory';
+} elseif($final_grade >= 65) {
+    $rating = '2.25';
+    $remarks = 'Fair';
+} elseif($final_grade >= 60) {
+    $rating = '2.50';
+    $remarks = 'Fair';
+} elseif($final_grade >= 55) {
+    $rating = '2.75';
+    $remarks = 'Did Not Meet Expectations';
+} elseif($final_grade >= 50) {
+    $rating = '3.00';
+    $remarks = 'Did Not Meet Expectations';
+} else {
+    $rating = '5.00';
+    $remarks = 'Failure';
+}
+
+
+        $data[] = [
+            'student_name' => $student_name,
+            'section'      => $s['section'],
+            'final_grade'  => round($final_grade,2),
+            'depEd_rating' => $rating,
+            'remarks'      => $remarks
+        ];
+    }
+
+    echo json_encode(['data'=>$data]);
+}
+
+
 
 
 

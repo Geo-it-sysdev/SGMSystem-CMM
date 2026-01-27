@@ -327,81 +327,61 @@ let finalGradesTableInstance = null;
                 }
             });
 
-           $(document).on('click', '.viewBtn', function () {
-                let section = $(this).data('section');
-                let subject = $(this).data('subject');
-                let quarter = $(this).data('quarter');
-                let grade_level = $(this).data('grade_level');
-                let full_name = $(this).data('full_name');
+         $(document).on('click', '.viewBtn', function(){
+    let section = $(this).data('section'); // e.g. "A | B | C"
+    let subject = $(this).data('subject');
+    let quarter = $(this).data('quarter');
+    let grade_level = $(this).data('grade_level');
+    let full_name = $(this).data('full_name');
 
-                // Fill modal inputs
-                $('#grade_level').val(grade_level);
-                $('#quarter').val(quarter);
-                $('#subjects').val(subject);
-                $('#full_name').val(full_name);
+    $('#grade_level').val(grade_level);
+    $('#quarter').val(quarter);
+    $('#subjects').val(subject);
+    $('#full_name').val(full_name);
 
-                // Destroy only if really exists
-                if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
-                    $('#finalGradesTable').DataTable().destroy();
+    if($.fn.DataTable.isDataTable('#finalGradesTable')){
+        $('#finalGradesTable').DataTable().destroy();
+    }
+    $('#finalGradesTable tbody').empty();
+
+    $('#finalGradesTable').DataTable({
+        ajax:{
+            url:"<?= site_url('StudentController/fetch_final_grades');?>",
+            type:"POST",
+            data:{
+                section: section, // all sections concatenated
+                subject: subject,
+                quarter: quarter,
+                grade_level: grade_level
+            },
+            dataSrc:'data'
+        },
+        columns:[
+            {data:'student_name'},
+            {data:'section'},
+            {data:'final_grade'},
+            {
+                data:'remarks',
+                render:function(d){
+                    let cls='bg-secondary';
+                    if(d==='Outstanding') cls='bg-success';
+                    else if(d==='Very Satisfactory') cls='bg-primary';
+                    else if(d==='Satisfactory') cls='bg-info';
+                    else if(d==='Fair') cls='bg-warning text-dark';
+                    else if(d==='Did Not Meet Expectations') cls='bg-danger';
+                    else if(d==='Failure') cls='bg-dark';
+                    return `<span class="badge ${cls}">${d}</span>`;
                 }
-                $('#finalGradesTable tbody').empty();
+            }
+        ],
+        responsive:true,
+        paging:true,
+        searching:true
+    });
 
-                // Store instance
-                finalGradesTableInstance = $('#finalGradesTable').DataTable({
-                    ajax: {
-                        url: "<?= site_url('StudentController/fetch_final_grades'); ?>",
-                        type: 'POST',
-                        data: {
-                            section,
-                            subject,
-                            quarter,
-                            grade_level
-                        },
-                        dataSrc: 'data'
-                    },
-                    columns: [
-                        { data: 'student_name' },
-                        { data: 'section' },
-                        { data: 'final_grade' },
-                        {
-                            data: 'remarks',
-                            render: function (data) {
-                                let badgeClass = 'bg-secondary';
-                                if (data === "Outstanding") badgeClass = "bg-success";
-                                else if (data === "Very Satisfactory") badgeClass = "bg-primary";
-                                else if (data === "Satisfactory") badgeClass = "bg-info";
-                                else if (data === "Fair") badgeClass = "bg-warning text-dark";
-                                else if (data === "Did Not Meet Expectations") badgeClass = "bg-danger";
-                                else if (data === "Failure") badgeClass = "bg-dark";
+    $('#finalGradesModal').modal('show');
+});
 
-                                return `<span class="badge ${badgeClass}">${data}</span>`;
-                            }
-                        },
-                        {
-                            data: null,
-                            render: function (d) {
-                                return `<button class="btn btn-sm btn-outline-primary viewDetailsBtn"
-                                    data-student_name="${d.student_name}"
-                                    data-section="${d.section}"
-                                    data-subject="${d.subject || $('#subjects').val()}"
-                                    data-quarter="${$('#quarter').val()}"
-                                    data-full_name="${$('#full_name').val()}"
-                                    data-grade_level="${$('#grade_level').val()}"
-                                    data-final_grade="${d.final_grade}">
-                                    <i class="bi bi-journal-text"></i> View Details
-                                </button>`;
-                            },
-                            orderable: false,
-                            searchable: false
-                        }
-                    ],
-                    responsive: true,
-                    paging: true,
-                    searching: true
-                });
-
-                $('#finalGradesModal').modal('show');
-            });
 
 
 

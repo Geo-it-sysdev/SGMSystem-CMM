@@ -197,55 +197,41 @@ class StudentModel extends CI_Model {
         return $this->db->delete($this->table);
     }
 
-    // Get activities by grade for this user
-    // public function get_by_grade($grade_level, $user_id = null) {
-    //     $user_type = $this->session->userdata('user_type'); 
-    
-    //     $this->db->where('grade_level', $grade_level);
-    
-    //     if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
-    //         if (!$user_id) return [];
-    //         $this->db->where('user_id', $user_id);
-    //     }
-    
-    //     return $this->db->order_by('id', 'DESC')->get($this->table)->result();
-    // }
 
+    public function get_by_grade($grade_level, $user_id = null)
+    {
+        $user_type = $this->session->userdata('user_type');
 
-public function get_by_grade($grade_level, $user_id = null)
-{
-    $user_type = $this->session->userdata('user_type');
+        // Use session user if no user_id is provided
+        if (!$user_id) {
+            $user_id = $this->session->userdata("po_user");
+        }
 
-    // Use session user if no user_id is provided
-    if (!$user_id) {
-        $user_id = $this->session->userdata("po_user");
+        $this->db->select("a.*,
+            (
+                SELECT COUNT(s.id)
+                FROM tbl_students s
+                WHERE s.grade_level = a.grade_level
+                AND s.user_id = {$user_id}  -- only students assigned to this user
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM tbl_activities_lines l
+                    WHERE l.student_id = s.id
+                        AND l.activities_id_header = a.id
+                )
+            ) AS pending_count
+        ");
+        $this->db->from("tbl_activities_header a");
+        $this->db->where("a.grade_level", $grade_level);
+
+        // Filter activities header by user if not admin
+        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
+            $this->db->where('a.user_id', $user_id);
+        }
+
+        $this->db->order_by("a.id", "DESC");
+        return $this->db->get()->result();
     }
-
-    $this->db->select("a.*,
-        (
-            SELECT COUNT(s.id)
-            FROM tbl_students s
-            WHERE s.grade_level = a.grade_level
-              AND s.user_id = {$user_id}  -- only students assigned to this user
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM tbl_activities_lines l
-                  WHERE l.student_id = s.id
-                    AND l.activities_id_header = a.id
-              )
-        ) AS pending_count
-    ");
-    $this->db->from("tbl_activities_header a");
-    $this->db->where("a.grade_level", $grade_level);
-
-    // Filter activities header by user if not admin
-    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
-        $this->db->where('a.user_id', $user_id);
-    }
-
-    $this->db->order_by("a.id", "DESC");
-    return $this->db->get()->result();
-}
 
 
     

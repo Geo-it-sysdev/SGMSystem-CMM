@@ -411,6 +411,11 @@ if (isset($user_id)) {
                 <h5 class="modal-title">Add Students</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+              <div class="ms-4"> 
+                    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
+                    </ul>
+                </div>
+                
             <div class="modal-body">
                 <form id="tagStudentForm">
                     <table id="studentTable" class="table table-bordered dt-responsive nowrap table-striped align-middle"
@@ -455,10 +460,10 @@ $(document).ready(function() {
         { "data": "grade_level" }
     ],
     "responsive": true,
-    "paging": true,
+    "paging": false,
     "searching": true,
     "ordering": true,
-    "info": false,
+    "info": true,
     "processing": true,
     "language": {
         "search": '',

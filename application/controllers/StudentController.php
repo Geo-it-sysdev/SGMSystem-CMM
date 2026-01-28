@@ -133,23 +133,31 @@ public function update_student()
 
      // Fetch active students for modal
     public function fetch_active_students() {
-        $this->db->select('id, fullname, section, grade_level, status');
-        $this->db->from('tbl_students');
-        $this->db->where('status', 'active');
-        $query = $this->db->get();
+    $grade_level = $this->input->post('grade_level'); // get grade_level from AJAX
 
-        $data = [];
-        foreach ($query->result() as $row) {
-            $data[] = [
-                'id' => $row->id,
-                'fullname' => $row->fullname,
-                'section' => $row->section,
-                'grade_level' => $row->grade_level
-            ];
-        }
+    $this->db->select('id, fullname, section, grade_level, status');
+    $this->db->from('tbl_students');
+    $this->db->where('status', 'active');
 
-        echo json_encode(['data' => $data]);
+    if (!empty($grade_level)) {
+        $this->db->where('grade_level', $grade_level); // filter by grade_level
     }
+
+    $query = $this->db->get();
+
+    $data = [];
+    foreach ($query->result() as $row) {
+        $data[] = [
+            'id' => $row->id,
+            'fullname' => $row->fullname,
+            'section' => $row->section,
+            'grade_level' => $row->grade_level
+        ];
+    }
+
+    echo json_encode(['data' => $data]);
+}
+
 
     // Save selected students
     public function save_tagged_students() {

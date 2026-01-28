@@ -452,6 +452,9 @@ if (isset($user_id)) {
         $(document).ready(function() {
 
             let tables = {};
+            var currentGrade = '';
+            var currentSection = '';
+            var allStudents = []; 
 
             $('.tab-pane').each(function() {
                 let tabPane = $(this);
@@ -898,7 +901,6 @@ if (isset($user_id)) {
             });
 
 
-        });
 
 
 
@@ -906,11 +908,8 @@ if (isset($user_id)) {
         // tag student script   
 
 
-        $(document).ready(function() {
 
-            var currentGrade = '';
-            var currentSection = '';
-            var allStudents = []; // cache all students of current grade
+            // cache all students of current grade
 
             // Initialize DataTable once
             var table = $('#studentTable').DataTable({

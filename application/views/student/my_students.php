@@ -411,10 +411,11 @@ if (isset($user_id)) {
                 <h5 class="modal-title">Add Students</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-              <div class="ms-4"> 
-                    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
-                    </ul>
-                </div>
+                  <div class="ms-4"> 
+    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
+        <!-- Section tabs will be generated dynamically -->
+    </ul>
+</div>
 
             <div class="modal-body">
                 <form id="tagStudentForm">
@@ -443,22 +444,25 @@ if (isset($user_id)) {
 <!-- jQuery & DataTables scripts -->
 <script>
 $(document).ready(function() {
-    // Initialize DataTable without ajax yet
+
+    // Initialize DataTable
     var table = $('#studentTable').DataTable({
         "ajax": {
             "url": "<?= base_url('StudentController/fetch_active_students') ?>",
             "type": "POST",
             "data": function(d) {
-                // Get active tab grade
-                var activeTab = $('.nav-pills .nav-link.active').attr('href'); // e.g., "#grade7-student"
-                var grade_level = activeTab ? activeTab.replace('#', '').replace('-student','') : '';
-                
-                // Convert id back to readable grade
+                // Get active grade tab
+                var activeGrade = $('.nav-pills .nav-link.active').attr('href'); 
+                var grade_level = activeGrade ? activeGrade.replace('#', '').replace('-student','') : '';
                 grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
                     return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
                 });
-                
-                d.grade_level = grade_level; // send to server
+
+                // Get active section tab
+                var activeSection = $('#sectionTabs .nav-link.active').data('section') || '';
+
+                d.grade_level = grade_level; 
+                d.section = activeSection;  
             }
         },
         "columns": [
@@ -483,11 +487,45 @@ $(document).ready(function() {
             "search": '',
             "searchPlaceholder": ' Search...',
             "processing": '<div class="table-loader"></div>'
+        },
+        "initComplete": function(settings, json) {
+            generateSectionTabs(json.data); // Generate section tabs after table loads
         }
     });
 
-    // Reload table when tab changes
-    $('.nav-pills .nav-link').on('shown.bs.tab', function(e) {
+    // Function to generate section tabs dynamically
+    function generateSectionTabs(data) {
+        var sections = [];
+        data.forEach(function(student) {
+            if(student.section && !sections.includes(student.section)) {
+                sections.push(student.section);
+            }
+        });
+
+        sections.sort(); // Alphabetical sort
+
+        var html = '';
+        sections.forEach(function(sec, index){
+            html += `<li class="nav-item">
+                        <a class="nav-link ${index === 0 ? 'active' : ''}" data-section="${sec}" href="#">${sec}</a>
+                     </li>`;
+        });
+
+        $('#sectionTabs').html(html);
+    }
+
+    // Reload table when grade tab changes
+    $('.nav-pills .nav-link').on('shown.bs.tab', function() {
+        table.ajax.reload();
+        // Reset section tab to first
+        $('#sectionTabs .nav-link').removeClass('active').first().addClass('active');
+    });
+
+    // Reload table when section tab changes
+    $('#sectionTabs').on('click', '.nav-link', function(e) {
+        e.preventDefault();
+        $('#sectionTabs .nav-link').removeClass('active');
+        $(this).addClass('active');
         table.ajax.reload();
     });
 
@@ -512,7 +550,7 @@ $(document).ready(function() {
             success: function(response) {
                 if(response.status === 'success') {
                     alert(response.message);
-                    table.ajax.reload(); // refresh table
+                    table.ajax.reload();
                     $('#TagstudentModal').modal('hide');
                 } else {
                     alert(response.message);
@@ -520,7 +558,10 @@ $(document).ready(function() {
             }
         });
     });
+
 });
+
+
 
 </script>
 

@@ -622,7 +622,7 @@
 
                 let id = $(this).data('id');
                 $('#studentForm')[0].reset();
-                $('#saveBtn').text('Update');
+                $('#saveBtn').html('<i class="ri-edit-line me-1"></i> Update');
                 $('.modal-title').text('Edit Activity');
 
                 $.getJSON("<?= site_url('StudentController/get_activity/'); ?>" + id, function(d) {

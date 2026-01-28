@@ -246,7 +246,7 @@ public function save_tagged_students() {
     $this->db->from('tbl_students s');
     $this->db->join('tbl_tag_students t', 't.student_id = s.id', 'inner');
     $this->db->where('t.user_id', $user_id); // only students tagged to this user
-
+    $this->db->where('t.status', 'active');
     if (!empty($grade_level)) {
         $this->db->where('s.grade_level', $grade_level);
     }
@@ -259,37 +259,42 @@ public function save_tagged_students() {
     // ---------------------------
     // GET STUDENTS BY SECTION
     // ---------------------------
-    public function get_students_by_section()
-    {
-        $section = $this->input->get('section');
-        $activity_type_id = $this->input->get('activity_type_id');
-        $user_id = $this->session->userdata('po_user'); 
+   public function get_students_by_section()
+{
+    $section = $this->input->get('section');
+    $activity_type_id = $this->input->get('activity_type_id');
+    $user_id = $this->session->userdata('po_user'); 
 
-        $graded = $this->db->select('al.student_id')
-                           ->from('tbl_activities_lines al')
-                           ->join('tbl_students s', 's.id = al.student_id')
-                           ->where('al.activities_id_header', $activity_type_id)
-                           ->where('s.user_id', $user_id)
-                           ->get()
-                           ->result_array();
+    // Get students who already have activity lines
+    $graded = $this->db->select('al.student_id')
+                       ->from('tbl_activities_lines al')
+                       ->join('tbl_students s', 's.id = al.student_id', 'inner')
+                       ->join('tbl_tag_students t', 't.student_id = s.id', 'inner') // join tag table
+                       ->where('al.activities_id_header', $activity_type_id)
+                       ->where('t.user_id', $user_id) // filter by tagged user
+                       ->get()
+                       ->result_array();
 
-        $graded_ids = array_column($graded, 'student_id');
+    $graded_ids = array_column($graded, 'student_id');
 
-       $this->db->select('id, fullname, section, gender')
-            ->from('tbl_students')
-            ->where('section', $section)
-            ->where('user_id', $user_id)
-            ->where('status', 'active'); // only active
+    // Get students in the section, tagged to the user, and not yet graded
+    $this->db->select('s.id, s.fullname, s.section, s.gender');
+    $this->db->from('tbl_students s');
+    $this->db->join('tbl_tag_students t', 't.student_id = s.id', 'inner');
+    $this->db->where('s.section', $section);
+    $this->db->where('t.user_id', $user_id); // only students tagged to this user
+    $this->db->where('s.status', 'active');
+    $this->db->where('t.status', 'active');
 
-
-        if (!empty($graded_ids)) {
-            $this->db->where_not_in('id', $graded_ids);
-        }
-
-        $students = $this->db->get()->result_array();
-
-        echo json_encode($students);
+    if (!empty($graded_ids)) {
+        $this->db->where_not_in('s.id', $graded_ids);
     }
+
+    $students = $this->db->get()->result_array();
+
+    echo json_encode($students);
+}
+
 
     // ---------------------------
     // SAVE GRADES IN BULK

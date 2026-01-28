@@ -206,39 +206,40 @@ class StudentModel extends CI_Model {
 
 
     public function get_by_grade($grade_level, $user_id = null)
-    {
-        $user_type = $this->session->userdata('user_type');
+{
+    $user_type = $this->session->userdata('user_type');
 
-        // Use session user if no user_id is provided
-        if (!$user_id) {
-            $user_id = $this->session->userdata("po_user");
-        }
-
-        $this->db->select("a.*,
-            (
-                SELECT COUNT(s.id)
-                FROM tbl_students s
-                WHERE s.grade_level = a.grade_level
-                AND s.user_id = {$user_id}  -- only students assigned to this user
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM tbl_activities_lines l
-                    WHERE l.student_id = s.id
-                        AND l.activities_id_header = a.id
-                )
-            ) AS pending_count
-        ");
-        $this->db->from("tbl_activities_header a");
-        $this->db->where("a.grade_level", $grade_level);
-
-        // Filter activities header by user if not admin
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
-            $this->db->where('a.user_id', $user_id);
-        }
-
-        $this->db->order_by("a.id", "DESC");
-        return $this->db->get()->result();
+    // Use session user if no user_id is provided
+    if (!$user_id) {
+        $user_id = $this->session->userdata("po_user");
     }
+
+    $this->db->select("a.*,
+        (
+            SELECT COUNT(s.id)
+            FROM tbl_students s
+            INNER JOIN tbl_tag_students t ON t.student_id = s.id
+            WHERE s.grade_level = a.grade_level
+            AND t.user_id = {$user_id}  -- only students tagged to this user
+            AND NOT EXISTS (
+                SELECT 1
+                FROM tbl_activities_lines l
+                WHERE l.student_id = s.id
+                    AND l.activities_id_header = a.id
+            )
+        ) AS pending_count
+    ");
+    $this->db->from("tbl_activities_header a");
+    $this->db->where("a.grade_level", $grade_level);
+
+    // Filter activities header by user if not admin
+    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
+        $this->db->where('a.user_id', $user_id);
+    }
+
+    $this->db->order_by("a.id", "DESC");
+    return $this->db->get()->result();
+}
 
 
     

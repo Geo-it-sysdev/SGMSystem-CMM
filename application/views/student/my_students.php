@@ -418,7 +418,7 @@ if (isset($user_id)) {
             </div>
 
             <div class="modal-body">
-                <table class="table table-bordered" id="studentTable" width="100%">
+                <table class="table table-bordered" id="tagstudentTable" width="100%">
                     <thead>
                         <tr>
                             <th width="5%">
@@ -899,11 +899,11 @@ if (isset($user_id)) {
 
 
 <script>
-let studentTable;
+let tagstudentTable;
 
 $('#TagstudentModal').on('shown.bs.modal', function () {
-    if (!$.fn.DataTable.isDataTable('#studentTable')) {
-        studentTable = $('#studentTable').DataTable({
+    if (!$.fn.DataTable.isDataTable('#tagstudentTable')) {
+        tagstudentTable = $('#tagstudentTable').DataTable({
             ajax: {
                 url: "<?= base_url('StudentController/get_students') ?>",
                 type: "POST",
@@ -957,7 +957,7 @@ $('#saveStudents').on('click', function () {
             if (data.status) {
                 alert(data.message);
                 $('#TagstudentModal').modal('hide');
-                studentTable.ajax.reload();
+                tagstudentTable.ajax.reload();
             } else {
                 alert(data.message);
             }

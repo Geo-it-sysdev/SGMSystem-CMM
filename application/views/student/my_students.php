@@ -428,6 +428,7 @@ if (isset($user_id)) {
                                 <th>Full Name</th>
                                 <th>Section</th>
                                 <th>Grade Level</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -465,24 +466,33 @@ $(document).ready(function() {
             },
             { "data": "fullname" },
             { "data": "section" },
-            { "data": "grade_level" }
+            { "data": "grade_level" },
+            { 
+                "data": "is_tagged",
+                "render": function(data, type, row) {
+                    if (data) {
+                        return '<span class="badge bg-success">Already Added</span>';
+                    } else {
+                        return '<span class="badge bg-danger">Not Added</span>';
+                    }
+                }
+            }
         ],
         "responsive": true,
         "paging": false,
         "searching": true,
         "ordering": true,
         "info": true,
-        "processing": true, // enable processing
-        "language": {
-            "processing": '<div class="table-loader"></div>', // custom loader
-            "search": "_INPUT_",                              // keep input
-            "searchPlaceholder": " Search..."                // placeholder
-        }
+         "processing": true,
+         "language": {
+        "processing": '<div class="table-loader"></div>', // keep your loader
+        "search": "_INPUT_",                             // keep the search input
+        "searchPlaceholder": " Search..."               // placeholder text
+    }
     });
 
     // Load students of current grade from server
     function loadGradeStudents(grade) {
-        table.processing(true); // show loader
         $.ajax({
             url: "<?= base_url('StudentController/fetch_active_students') ?>",
             type: "POST",
@@ -492,9 +502,6 @@ $(document).ready(function() {
                 allStudents = response.data || [];
                 generateSectionTabs(allStudents);
                 filterTableBySection(); // show first section
-            },
-            complete: function() {
-                table.processing(false); // hide loader
             }
         });
     }

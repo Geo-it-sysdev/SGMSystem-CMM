@@ -135,6 +135,7 @@ public function update_student()
 public function fetch_active_students() {
     $grade_level = $this->input->post('grade_level'); 
     $section     = $this->input->post('section');     
+    $user_id     = $this->session->userdata('po_user'); // current user
 
     $this->db->select('id, fullname, section, grade_level, status');
     $this->db->from('tbl_students');
@@ -152,16 +153,25 @@ public function fetch_active_students() {
 
     $data = [];
     foreach ($query->result() as $row) {
+        // Check if this student is already tagged by this user
+        $exists = $this->db->get_where('tbl_tag_students', [
+            'student_id' => $row->id,
+            'user_id'    => $user_id,
+            'status'     => 'active'
+        ])->row();
+
         $data[] = [
-            'id' => $row->id,
-            'fullname' => $row->fullname,
-            'section' => $row->section,
-            'grade_level' => $row->grade_level
+            'id'         => $row->id,
+            'fullname'   => $row->fullname,
+            'section'    => $row->section,
+            'grade_level'=> $row->grade_level,
+            'is_tagged'  => $exists ? true : false // new field
         ];
     }
 
     echo json_encode(['data' => $data]);
 }
+
 
 
     // Save selected students

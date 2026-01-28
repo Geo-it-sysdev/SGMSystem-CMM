@@ -11,35 +11,44 @@ class StudentModel extends CI_Model {
 
     //    Add / edit / delete - student
     public function get_all_students($grade_level = null, $section = null, $status = 'active')
-    {
-        $user_id   = $this->session->userdata('po_user');
-        $user_type = $this->session->userdata('user_type');
+{
+    $user_id   = $this->session->userdata('po_user');
+    $user_type = $this->session->userdata('user_type');
 
-        $this->db->select('id, fullname, age, gender, section, grade_level, user_id, created_at AS school_year, status')
-                ->from('tbl_students');
+    $this->db->select('a.id, a.fullname, a.age, a.gender, a.section, a.grade_level, a.user_id, a.created_at AS school_year, a.status, b.student_id, b.user_id AS teacher_id')
+             ->from('tbl_students AS a')
+             ->join('tbl_tag_students AS b', 'b.student_id = a.id', 'left');
 
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor','Admin'])) {
-            if (!$user_id) return [];
-            $this->db->where('user_id', $user_id);
+    // Restrict access for non-admin users
+    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor', 'Admin'])) {
+        if (!$user_id) return [];
+        // If Teacher, only show students tagged to them
+        if ($user_type === 'Teacher') {
+            $this->db->where('b.user_id', $user_id);
+        } else {
+            // Other roles (non-admin) see only their own created students
+            $this->db->where('a.user_id', $user_id);
         }
-
-        if ($grade_level) {
-            $this->db->where('grade_level', $grade_level);
-        }
-
-        if ($section) {
-            if (is_array($section)) {
-                $this->db->where_in('section', $section);
-            } else {
-                $this->db->where('section', $section);
-            }
-        }
-
-        $this->db->where('status', $status ?: 'active');
-        $this->db->group_by('fullname');
-
-        return $this->db->get()->result();
     }
+
+    if ($grade_level) {
+        $this->db->where('a.grade_level', $grade_level);
+    }
+
+    if ($section) {
+        if (is_array($section)) {
+            $this->db->where_in('a.section', $section);
+        } else {
+            $this->db->where('a.section', $section);
+        }
+    }
+
+    $this->db->where('a.status', $status ?: 'active');
+    $this->db->group_by('a.fullname');
+
+    return $this->db->get()->result();
+}
+
     
 
     public function get_sections_by_grade() {

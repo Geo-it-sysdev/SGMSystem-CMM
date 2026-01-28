@@ -128,7 +128,56 @@ public function update_student()
 
     // end add / edit / delete student
 
+    //tag student
 
+     public function get_students()
+    {
+        $user_id = $this->input->post('user_id');
+
+        $this->db->select('id, fullname, section, grade_level, status');
+        $this->db->from('tbl_students');
+        $this->db->where('status', 'active');
+
+        $students = $this->db->get()->result();
+
+        echo json_encode([
+            'data' => $students
+        ]);
+    }
+
+    /* ==============================
+       SAVE TAGGED STUDENTS
+    =============================== */
+    public function save_tag_students()
+    {
+        $student_ids = $this->input->post('student_ids'); // array
+        $user_id     = $this->input->post('user_id');
+
+        if (empty($student_ids)) {
+            echo json_encode(['status' => false, 'message' => 'No students selected']);
+            return;
+        }
+
+        foreach ($student_ids as $student_id) {
+
+            // prevent duplicate entry
+            $exists = $this->db->where([
+                'student_id' => $student_id,
+                'user_id'    => $user_id
+            ])->get('tbl_tag_students')->row();
+
+            if (!$exists) {
+                $this->db->insert('tbl_tag_students', [
+                    'student_id' => $student_id,
+                    'user_id'    => $user_id,
+                    'status'     => 'active'
+                ]);
+            }
+        }
+
+        echo json_encode(['status' => true]);
+    }
+    // end tag student
  
 
 

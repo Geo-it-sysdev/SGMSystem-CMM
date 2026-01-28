@@ -118,6 +118,12 @@ if (isset($user_id)) {
                                                         </button>
                                                         <?php endif; ?>
 
+                                                        <button type="button"
+                                                            class="btn btn-outline-success add-btn rounded-pill"
+                                                            data-bs-toggle="modal" data-bs-target="#TagstudentModal">
+                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
+                                                        </button>
+
                                                         <div class="dropdown">
                                                             <button
                                                                 class="btn btn-outline-primary dropdown-toggle rounded-pill"
@@ -400,6 +406,109 @@ if (isset($user_id)) {
 
 
 
+        <div class="modal fade" id="TagstudentModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Select Students</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <table class="table table-bordered" id="studentTable" width="100%">
+                            <thead>
+                                <tr>
+                                    <th width="5%">
+                                        <input type="checkbox" id="checkAll">
+                                    </th>
+                                    <th>Student Name</th>
+                                    <th>Section</th>
+                                    <th>Grade Level</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-success" id="saveStudents">Save Selected</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+        let studentTable;
+
+        $('#TagstudentModal').on('shown.bs.modal', function() {
+            if (!$.fn.DataTable.isDataTable('#studentTable')) {
+                studentTable = $('#studentTable').DataTable({
+                    ajax: {
+                        url: "<?= base_url('StudentController/get_students') ?>",
+                        type: "POST",
+                        data: {
+                            user_id: "<?= $this->session->userdata('po_user'); ?>"
+                        }
+                    },
+                    columns: [{
+                            data: "id",
+                            render: function(data) {
+                                return `<input type="checkbox" class="student-check" value="${data}">`;
+                            }
+                        },
+                        {
+                            data: "fullname"
+                        },
+                        {
+                            data: "section"
+                        },
+                        {
+                            data: "grade_level"
+                        },
+                        {
+                            data: "status"
+                        }
+                    ]
+                });
+            }
+        });
+
+        /* Check all */
+        $('#checkAll').on('click', function() {
+            $('.student-check').prop('checked', this.checked);
+        });
+
+        /* Save selected */
+        $('#saveStudents').on('click', function() {
+            let students = [];
+
+            $('.student-check:checked').each(function() {
+                students.push($(this).val());
+            });
+
+            if (students.length === 0) {
+                alert('Please select at least one student');
+                return;
+            }
+
+            $.ajax({
+                url: "<?= base_url('StudentController/save_tag_students') ?>",
+                type: "POST",
+                data: {
+                    student_ids: students,
+                    user_id: "<?= $this->session->userdata('po_user'); ?>"
+                },
+                success: function(res) {
+                    alert('Students tagged successfully');
+                    $('#TagstudentModal').modal('hide');
+                }
+            });
+        });
+        </script>
+
+
         <script>
         $(document).ready(function() {
 
@@ -666,7 +775,7 @@ if (isset($user_id)) {
                 $('#id').val('');
                 $('#fullname').val('');
                 $('#age').val('');
-                $('#gender').val('Male'); 
+                $('#gender').val('Male');
                 setGradeLevel(activeGrade);
                 $('#section').empty().append('<option value="">Select Section</option>');
                 loadSections(null);
@@ -763,8 +872,8 @@ if (isset($user_id)) {
                 $('#fullname').val('');
                 $('#age').val('');
                 $('#gender').val('');
-                $('#grade_level').val(''); 
-                $('#section').empty(); 
+                $('#grade_level').val('');
+                $('#section').empty();
                 $('#studentModalTitle').text('Add Student');
                 $('#saveBtn').text('Save');
             });
@@ -800,7 +909,7 @@ if (isset($user_id)) {
                                 .replace(' Students', '').trim();
                             if (tables[activeGrade]) {
                                 tables[activeGrade].ajax.reload(null,
-                                false); 
+                                    false);
                             }
 
                             resetStudentModal(activeGrade);

@@ -15,18 +15,22 @@ class StudentController extends CI_Controller {
 
    
     //    start add / edit / delete student
-    public function fetch_students()
-    {
-        $grade_level = $this->input->get('grade_level');
-        $status      = $this->input->get('status');
+  public function fetch_students()
+{
+    $grade_level = $this->input->get('grade_level');
+    $section     = $this->input->get('section');   // AUTO FILTER
+    $status      = $this->input->get('status') ?: 'active';
 
-        $students = $this->StudentModel->get_all_students(
-            $grade_level,
-            null, 
-            $status
-        );
-        echo json_encode(['data' => $students]);
-    }
+    $students = $this->StudentModel->get_all_students(
+        $grade_level,
+        $section,
+        $status
+    );
+
+    echo json_encode(['data' => $students]);
+}
+
+
 
     public function get_section_by_grade()
     {
@@ -42,13 +46,17 @@ class StudentController extends CI_Controller {
         echo json_encode($data);
     }
 
-    public function edit_student($id)
+  public function edit_student($id)
     {
         $student = $this->StudentModel->get_student_by_id($id);
+
         if (!$student) {
-            echo json_encode(['error' => 'Unauthorized or student not found']);
+            // If student not found
+            echo json_encode(['error' => 'Student not found']);
             return;
         }
+
+        // Return student data for editing
         echo json_encode($student);
     }
 

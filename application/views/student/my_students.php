@@ -133,6 +133,13 @@ if (isset($user_id)) {
                                                                 <i class="ri-filter-line align-bottom me-1"></i> Filter
                                                                 Sections
                                                             </button>
+
+                                                            <div class="ms-4">
+    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3"
+        id="sectionTabs"></ul>
+</div>
+
+
                                                             <ul class="dropdown-menu p-3"
                                                                 aria-labelledby="filterDropdown_<?= $grade_id ?>">
                                                                 <?php
@@ -653,160 +660,90 @@ if (isset($user_id)) {
         <script>
         $(document).ready(function() {
 
-            let tables = {};
+             let tables = {};
+    let activeSections = {};
 
-            $('.tab-pane').each(function() {
-                let tabPane = $(this);
-                let tableEl = tabPane.find('table');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+    // INIT DATATABLE PER TAB
+    $('.tab-pane').each(function () {
 
-                tables[gradeLevel] = tableEl.DataTable({
-                    ajax: {
-                        url: "<?= site_url('StudentController/fetch_students'); ?>",
-                        type: "GET",
-                        data: function(d) {
-                            // Get selected sections
-                            let selectedSections = [];
-                            tabPane.find('.filter-check:checked').each(function() {
-                                selectedSections.push($(this).val());
-                            });
+        let tabPane = $(this);
+        let tableEl = tabPane.find('table');
+        let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-                            d.grade_level = gradeLevel;
-                            d.status = tabPane.find('#student_history').is(':checked') ?
-                                'inactive' : 'active';
-                            d.section = selectedSections.length ? selectedSections :
-                                null;
-                        }
-                    },
-                    columns: [{
-                            data: 'fullname'
-                        },
-                        {
-                            data: 'age'
-                        },
-                        {
-                            data: 'gender',
-                            render: function(data) {
-                                if (data === 'Male')
-                                    return `<span class="badge bg-primary"><i class="bi bi-person-fill me-1"></i>${data}</span>`;
-                                if (data === 'Female')
-                                    return `<span class="badge bg-danger"><i class="bi bi-person me-1"></i>${data}</span>`;
-                                return data;
-                            }
-                        },
-                        {
-                            data: 'section'
-                        },
-                        {
-                            data: 'grade_level'
-                        },
-                        {
-                            data: 'school_year',
-                            render: function(data) {
-                                if (!data) return '';
-                                return new Date(data).getFullYear();
-                            }
-                        },
-                        {
-                            data: 'status',
-                            render: function(data, type, row) {
-                                if (data === 'active') {
-                                    return '<span class="badge bg-success">Active</span>';
-                                } else if (data === 'inactive') {
-                                    return '<span class="badge bg-secondary">Inactive</span>';
-                                }
-                                return data;
-                            }
-                        },
-                       {
-    data: null,
-    render: function(data) {
-        let buttons = '';
-        let userType = "<?= $this->session->userdata('user_type'); ?>";
-        let currentUser = <?= (int) $this->session->userdata('po_user'); ?>;
+        tables[gradeLevel] = tableEl.DataTable({
+            ajax: {
+                url: "<?= site_url('StudentController/fetch_students'); ?>",
+                type: "GET",
+                data: function (d) {
+                    d.grade_level = gradeLevel;
+                    d.section = activeSections[gradeLevel] ?? null;
+                    d.status = tabPane.find('#student_history').is(':checked')
+                        ? 'inactive'
+                        : 'active';
+                }
+            },
+            columns: [
+                { data: 'fullname' },
+                { data: 'age' },
+                {
+                    data: 'gender',
+                    render: d => d === 'Male'
+                        ? `<span class="badge bg-primary">${d}</span>`
+                        : `<span class="badge bg-danger">${d}</span>`
+                },
+                { data: 'section' },
+                { data: 'grade_level' },
+                {
+                    data: 'school_year',
+                    render: d => d ? new Date(d).getFullYear() : ''
+                },
+                {
+                    data: 'status',
+                    render: d => d === 'active'
+                        ? '<span class="badge bg-success">Active</span>'
+                        : '<span class="badge bg-secondary">Inactive</span>'
+                }
+            ],
+            responsive: true,
+            paging: true,
+            searching: true,
+            processing: true,
+            language: {
+                search: '',
+                searchPlaceholder: ' Search...',
+                processing: '<div class="table-loader"></div>'
+            }
+        });
+    });
 
-        // Status button
-        let isActive = data.status === 'active';
-        let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
-        let statusText = isActive ? 'Active' : 'Inactive';
-        let statusIcon = isActive ? 'bx-check-circle' : 'bx-x-circle';
+    // SECTION TAB CLICK = AUTO FILTER
+    $(document).on('click', '#sectionTabs .nav-link', function (e) {
+        e.preventDefault();
 
-        // Teacher: only show status button
-        if (userType === 'Teacher') {
-            buttons += `
-                <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
-                    <i class="bx ${statusIcon} me-1"></i>${statusText}
-                </button>
-            `;
-        } else {
-            // Other users: show Edit, Delete, and Status buttons
-            buttons += `
-                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                    <i class="bx bx-edit me-1"></i>Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                    <i class="bx bx-trash me-1"></i>Delete
-                </button>
-                <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
-                    <i class="bx ${statusIcon} me-1"></i>${statusText}
-                </button>
-            `;
+        let section = $(this).data('section');
+
+        $('#sectionTabs .nav-link').removeClass('active');
+        $(this).addClass('active');
+
+        let tabPane = $('.tab-pane.active');
+        let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+
+        activeSections[gradeLevel] = section;
+
+        if (tables[gradeLevel]) {
+            tables[gradeLevel].ajax.reload();
         }
+    });
 
-        return buttons;
-    }
-}
+    // STATUS TOGGLE
+    $(document).on('change', '#student_history', function () {
+        let tabPane = $(this).closest('.tab-pane');
+        let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
 
-
-                    ],
-                    responsive: true,
-                    paging: true,
-                    searching: true,
-                    ordering: true,
-                    info: true,
-                    processing: true,
-                    language: {
-                        search: '',
-                        searchPlaceholder: ' Search...',
-                        processing: '<div class="table-loader"></div>'
-                    }
-                });
-            });
-
-            // Reload table on section filter change
-            $(document).on('change', '.filter-check', function() {
-                let tabPane = $(this).closest('.tab-pane');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-                if (tables[gradeLevel]) {
-                    tables[gradeLevel].ajax.reload();
-                }
-            });
-
-
-            // Reload DataTable when switch is toggled
-            $(document).on('change', '#student_history', function() {
-                let tabPane = $(this).closest('.tab-pane');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-
-                if (tables[gradeLevel]) {
-                    tables[gradeLevel].ajax.reload();
-                }
-            });
-
-            // Apply section filter
-            $(document).on('change', '.filter-check', function() {
-                let tabPane = $(this).closest('.tab-pane');
-                let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-
-                let selectedSections = [];
-                tabPane.find('.filter-check:checked').each(function() {
-                    selectedSections.push($(this).val());
-                });
-
-                if (tables[gradeLevel]) {
-                    tables[gradeLevel].column(3).search(selectedSections.join('|'), true, false).draw();
-                }
-            });
+        if (tables[gradeLevel]) {
+            tables[gradeLevel].ajax.reload();
+        }
+    });
 
             // Toggle Status Button
             $(document).on('click', '.toggleStatusBtn', function() {

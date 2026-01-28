@@ -10,45 +10,45 @@ class StudentModel extends CI_Model {
    }
 
     //    Add / edit / delete - student
-    public function get_all_students($grade_level = null, $section = null, $status = 'active')
-    {
-        $user_id   = $this->session->userdata('po_user');
-        $user_type = $this->session->userdata('user_type');
+  public function get_all_students($grade_level = null, $section = null, $status = 'active')
+{
+    $user_id   = $this->session->userdata('po_user');
+    $user_type = $this->session->userdata('user_type');
 
-        $this->db->select('a.id, a.fullname, a.age, a.gender, a.section, a.grade_level, a.user_id, a.created_at AS school_year, a.status, b.student_id, b.user_id AS teacher_id')
-                ->from('tbl_students AS a')
-                ->join('tbl_tag_students AS b', 'b.student_id = a.id', 'left');
+    $this->db->select('
+        a.id, a.fullname, a.age, a.gender, a.section,
+        a.grade_level, a.user_id, a.created_at AS school_year,
+        a.status, b.student_id, b.user_id AS teacher_id
+    ');
+    $this->db->from('tbl_students AS a');
+    $this->db->join('tbl_tag_students AS b', 'b.student_id = a.id', 'left');
 
-        // Restrict access for non-admin users
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor', 'Admin'])) {
-            if (!$user_id) return [];
-            // If Teacher, only show students tagged to them
-            if ($user_type === 'Teacher') {
-                $this->db->where('b.user_id', $user_id);
-            } else {
-                // Other roles (non-admin) see only their own created students
-                $this->db->where('a.user_id', $user_id);
-            }
+    // ROLE RESTRICTIONS
+    if (!in_array($user_type, ['Principal','Registrar','Guidance Counselor','Admin'])) {
+        if (!$user_id) return [];
+
+        if ($user_type === 'Teacher') {
+            $this->db->where('b.user_id', $user_id);
+        } else {
+            $this->db->where('a.user_id', $user_id);
         }
-
-        if ($grade_level) {
-            $this->db->where('a.grade_level', $grade_level);
-        }
-
-        if ($section) {
-            if (is_array($section)) {
-                $this->db->where_in('a.section', $section);
-            } else {
-                $this->db->where('a.section', $section);
-            }
-        }
-
-        $this->db->where('a.status', $status ?: 'active');
-        $this->db->where('b.status', 'active');
-        $this->db->group_by('a.fullname');
-
-        return $this->db->get()->result();
     }
+
+    if ($grade_level) {
+        $this->db->where('a.grade_level', $grade_level);
+    }
+
+    if ($section) {
+        $this->db->where('a.section', $section);
+    }
+
+    $this->db->where('a.status', $status);
+    $this->db->where('b.status', 'active');
+
+    $this->db->group_by('a.id');
+
+    return $this->db->get()->result();
+}
 
         
 
@@ -97,12 +97,12 @@ class StudentModel extends CI_Model {
         return $this->db->insert('tbl_students', $data);
     }
 
-    public function get_student_by_id($id)
-    {
-        $user_id = $this->session->userdata('po_user');
-        $this->db->where('user_id', $user_id); 
-        return $this->db->get_where('tbl_students', ['id' => $id])->row();
-    }
+   public function get_student_by_id($id)
+{
+    // Fetch student by ID only, no session restriction
+    return $this->db->get_where('tbl_students', ['id' => $id])->row();
+}
+
 
     public function update_student($id, $data)
     {

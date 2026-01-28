@@ -155,7 +155,7 @@
 
 
         <!-- Add/Edit Activity Modal -->
-        <div class="modal fade" id="ActivityModal" tabindex="-1">
+        <div class="modal fade" id="ActivityModal" tabindex="-1" data-bs-backdrop="static">
             <div class="modal-dialog modal-lg">
                 <form id="studentForm">
                     <div class="modal-content">
@@ -215,7 +215,7 @@
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" id="saveBtn" class="btn btn-outline-success btn-border">Save</button>
+                            <button type="submit" id="saveBtn" class="btn btn-outline-success btn-border"><i class="ri-save-line"></i>Save</button>
                             <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"><i class="ri-close-line me-1"></i>Cancel</button>
                         </div>
                     </div>

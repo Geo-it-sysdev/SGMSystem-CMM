@@ -205,18 +205,21 @@ class StudentModel extends CI_Model {
     }
 
 
-       public function get_by_grade($grade_level, $user_id = null) {
+    public function get_by_grade($grade_level, $user_id = null)
+    {
         $user_type = $this->session->userdata('user_type');
 
-        if (!$user_id) $user_id = $this->session->userdata('po_user');
+        // Use session user if no user_id is provided
+        if (!$user_id) {
+            $user_id = $this->session->userdata("po_user");
+        }
 
         $this->db->select("a.*,
             (
                 SELECT COUNT(s.id)
                 FROM tbl_students s
-                INNER JOIN tbl_tag_students t ON t.student_id = s.id
                 WHERE s.grade_level = a.grade_level
-                AND t.user_id = {$user_id}
+                AND s.user_id = {$user_id}  -- only students assigned to this user
                 AND NOT EXISTS (
                     SELECT 1
                     FROM tbl_activities_lines l
@@ -228,27 +231,13 @@ class StudentModel extends CI_Model {
         $this->db->from("tbl_activities_header a");
         $this->db->where("a.grade_level", $grade_level);
 
-        if(!in_array($user_type, ['Principal','Registrar','Guidance Councilor'])) {
+        // Filter activities header by user if not admin
+        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
             $this->db->where('a.user_id', $user_id);
         }
 
         $this->db->order_by("a.id", "DESC");
         return $this->db->get()->result();
-    }
-
-    // Get unique subjects for a grade
-    public function get_subjects_by_grade($grade_level) {
-        $this->db->select('DISTINCT subject');
-        $this->db->from('tbl_activities_header');
-        $this->db->where('grade_level', $grade_level);
-        $this->db->order_by('subject','ASC');
-
-        $query = $this->db->get();
-        $subjects = [];
-        foreach($query->result() as $row) {
-            $subjects[] = $row->subject;
-        }
-        return $subjects;
     }
 
 

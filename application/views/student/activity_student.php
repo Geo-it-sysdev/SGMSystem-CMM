@@ -215,8 +215,8 @@
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" id="saveBtn" class="btn btn-success">Save</button>
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" id="saveBtn" class="btn btn-outline-success btn-border">Save</button>
+                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"><i class="ri-close-line me-1"></i>Cancel</button>
                         </div>
                     </div>
                 </form>
@@ -242,50 +242,13 @@
                         <!-- Add Grades Button -->
                         <div class="mb-3 d-flex align-items-center">
                             <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                            <button type="button" class="btn btn-outline-success me-2 rounded-pill"
+                            <button type="button" class="btn btn-outline-success me-2 rounded-pill btn-border"
                                 id="openAddGradesBtn">
                                 <i class="bi bi-journal-check me-1"></i> Add Score
                             </button>
                             <?php endif; ?>
-                            <!-- <div class="dropdown">
-                                <button class="btn btn-outline-secondary dropdown-toggle rounded-pill" type="button"
-                                    id="filterG11Button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="ri-filter-3-line me-1"></i> Filter Section
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="filterG11Button">
-                                    <li><a class="dropdown-item" href="#" onclick="setFilter('Proverbs')">Proverbs</a>
-                                    </li>
-                                    <li><a class="dropdown-item" href="#" onclick="setFilter('Psalm')">Psalm</a></li>
-                                    <hr class="dropdown-divider">
-                                    <div class="d-flex justify-content-center mt-2 mb-2">
-                                        <button type="button" class="btn btn-outline-danger btn-sm"
-                                            onclick="clearFilter()">Clear Filter</button>
-                                    </div>
-                                </ul>
-                            </div> -->
                         </div>
-                        <!-- <ul class="nav nav-tabs nav-border-top nav-border-top-primary mb-3" role="tablist">
-                                         <li class="nav-item">
-                                             <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
-                                                Section 1
-                                             </a>
-                                         </li>
-                                         <li class="nav-item">
-                                             <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
-                                                Section 2
-                                             </a>
-                                         </li>
-                                         <li class="nav-item">
-                                             <a class="nav-link" data-bs-toggle="tab"  role="tab" aria-selected="false">
-                                                Section 3
-                                             </a>
-                                         </li>
-                                         <li class="nav-item">
-                                             <a class="nav-link active" data-bs-toggle="tab"  role="tab" aria-selected="true">
-                                                Section 4
-                                             </a>
-                                         </li>
-                                     </ul> -->
+                     
                         <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs"
                             role="tablist"></ul>
 
@@ -335,10 +298,6 @@
 
                             </div>
 
-
-
-
-
                             <!-- Grades Table -->
                             <div class="table-responsive">
                                 <table class="table table-bordered dt-responsive nowrap table-striped align-middle "
@@ -359,7 +318,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">  <i class="ri-close-line"></i>Cancel</button>
                         </div>
                     </div>
                 </div>
@@ -413,8 +372,13 @@
                         </div>
 
                         <div class="modal-footer">
-                            <button type="button" id="saveGradeBtn" class="btn btn-success">Save All</button>
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" id="saveGradeBtn" class="btn btn-outline-success btn-border">
+                                <i class="ri-save-line"></i> Save All
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
+                                <i class="ri-close-line"></i> Cancel
+                            </button>
+
                         </div>
 
                     </div>
@@ -447,8 +411,13 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Update</button>
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-outline-primary btn-border">
+                                <i class="ri-save-line"></i> Update
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
+                                <i class="ri-close-line"></i> Cancel
+                            </button>
+
                         </div>
                     </div>
                 </form>

@@ -403,247 +403,49 @@ if (isset($user_id)) {
             </div>
         </div>
 
-<div class="modal fade" id="TagstudentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Students</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+        <div class="modal fade" id="TagstudentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Students</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
 
-            <div class="ms-4">
-                <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist"></ul>
-            </div>
+                    <div class="ms-4">
+                        <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs"
+                            role="tablist"></ul>
+                    </div>
 
-            <div class="modal-body">
-                <form id="tagStudentForm">
-                    <table id="studentTable" class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
-                        <thead class="table-light">
-                            <tr>
-                                <th><input type="checkbox" id="selectAll"></th>
-                                <th>Full Name</th>
-                                <th>Section</th>
-                                <th>Grade Level</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </form>
-            </div>
+                    <div class="modal-body">
+                        <form id="tagStudentForm">
+                            <table id="studentTable"
+                                class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                                style="width:100%">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAll"></th>
+                                        <th>Full Name</th>
+                                        <th>Section</th>
+                                        <th>Grade Level</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </form>
+                    </div>
 
-            <div class="modal-footer">
-                <button type="button" id="saveStudents" class="btn btn-primary">Save</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <div class="modal-footer">
+                        <button type="button" id="saveStudents" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
 
 
-<!-- jQuery & DataTables scripts -->
-<script>
-$(document).ready(function() {
 
-    var currentGrade = '';  
-    var currentSection = ''; 
-    var allStudents = []; // cache all students of current grade
-
-    // Initialize DataTable once
-    var table = $('#studentTable').DataTable({
-        "data": [],
-        "columns": [
-            { 
-                "data": "id",
-                "render": function(data, type, row) {
-                    return '<input type="checkbox" class="student-checkbox" value="'+data+'" ' + (row.is_tagged ? 'checked' : '') + '>';
-                },
-                "orderable": false
-            },
-            { "data": "fullname" },
-            { "data": "section" },
-            { "data": "grade_level" },
-            { 
-                "data": "is_tagged",
-                "render": function(data, type, row) {
-                    if (data) {
-                        return '<span class="badge bg-success">Already Added</span>';
-                    } else {
-                        return '<span class="badge bg-danger">Not Added</span>';
-                    }
-                }
-            }
-        ],
-        "responsive": true,
-        "paging": false,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "processing": true,
-        "language": {
-            "processing": '<div class="table-loader"></div>',
-            "search": "_INPUT_",
-            "searchPlaceholder": " Search..."
-        }
-    });
-
-    // Load students of current grade
-    function loadGradeStudents(grade) {
-        $.ajax({
-            url: "<?= base_url('StudentController/fetch_active_students') ?>",
-            type: "POST",
-            data: { grade_level: grade },
-            dataType: "json",
-            success: function(response) {
-                allStudents = response.data || [];
-                generateSectionTabs(allStudents);
-                filterTableBySection();
-            }
-        });
-    }
-
-    // Generate section tabs
-    function generateSectionTabs(data) {
-        var sections = [];
-        data.forEach(function(student) {
-            if(student.section && !sections.includes(student.section)) sections.push(student.section);
-        });
-        sections.sort();
-
-        var html = '';
-        sections.forEach(function(sec, index){
-            html += `<li class="nav-item">
-                        <a class="nav-link ${index === 0 ? 'active' : ''}" data-section="${sec}" href="#">${sec}</a>
-                     </li>`;
-        });
-        $('#sectionTabs').html(html);
-
-        currentSection = sections.length > 0 ? sections[0] : '';
-    }
-
-    // Filter table by section
-    function filterTableBySection() {
-        var filtered = allStudents;
-        if(currentSection) {
-            filtered = allStudents.filter(s => s.section === currentSection);
-        }
-        table.clear().rows.add(filtered).draw();
-    }
-
-    // When modal opens
-    $('#TagstudentModal').on('shown.bs.modal', function() {
-        var activeGradeTab = $('.nav-pills .nav-link.active').attr('href');
-        currentGrade = activeGradeTab ? activeGradeTab.replace('#', '').replace('-student','') : '';
-        currentGrade = currentGrade.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
-            return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
-        });
-        loadGradeStudents(currentGrade);
-    });
-
-    // Close modal
-    $('#TagstudentModal').on('hidden.bs.modal', function() {
-        $('#sectionTabs').empty();
-        currentSection = '';
-        allStudents = [];
-        table.clear().draw();
-    });
-
-    // Grade tab change
-    $('.nav-pills .nav-link').on('shown.bs.tab', function() {
-        currentGrade = $(this).attr('href').replace('#', '').replace('-student','');
-        currentGrade = currentGrade.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
-            return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
-        });
-        loadGradeStudents(currentGrade);
-    });
-
-    // Section tab click
-    $('#sectionTabs').on('click', '.nav-link', function(e) {
-        e.preventDefault();
-        $('#sectionTabs .nav-link').removeClass('active');
-        $(this).addClass('active');
-
-        currentSection = $(this).data('section');
-        filterTableBySection();
-    });
-
-    // Select all checkboxes
-    $('#selectAll').on('click', function() {
-        var rows = table.rows({ 'search': 'applied' }).nodes();
-        $('input[type="checkbox"]', rows).prop('checked', this.checked);
-    });
-
-    // Save selected/removed students
-    $('#saveStudents').on('click', function() {
-        var add_ids = [];
-        var remove_ids = [];
-
-        table.rows().every(function() {
-            var data = this.data();
-            var $row = $(this.node());
-            var isChecked = $row.find('.student-checkbox').is(':checked');
-
-            if (isChecked && !data.is_tagged) {
-                add_ids.push(data.id);
-            } else if (!isChecked && data.is_tagged) {
-                remove_ids.push(data.id);
-            }
-        });
-
-        $.ajax({
-            url: "<?= base_url('StudentController/save_tagged_students') ?>",
-            type: "POST",
-            data: { add_ids: add_ids, remove_ids: remove_ids },
-            dataType: "json",
-   success: function(response) {
-    if(response.status === 'success') {
-        // Show SweetAlert
-        Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: 'Student tags updated successfully.',
-            timer: 2000,
-            showConfirmButton: false
-        });
-
-        // Update current table rows locally
-        table.rows().every(function() {
-            var data = this.data();
-            if(add_ids.includes(data.id)) data.is_tagged = true;
-            if(remove_ids.includes(data.id)) data.is_tagged = false;
-            this.data(data);
-        });
-        table.draw(false);
-
-        // Reload **all grade-level DataTables**
-        $('.tab-pane').each(function() {
-            let tabPane = $(this);
-            let tableEl = tabPane.find('table');
-            let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
-
-            if(tables[gradeLevel]) {
-                tables[gradeLevel].ajax.reload(null, false); // false = keep current page
-            }
-        });
-
-    } else {
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops!',
-            text: response.message
-        });
-    }
-}
-
-
-        });
-    });
-
-});
-
-
-</script>
 
 
         <script>
@@ -912,7 +714,7 @@ $(document).ready(function() {
                 $('#id').val('');
                 $('#fullname').val('');
                 $('#age').val('');
-                $('#gender').val('Male'); 
+                $('#gender').val('Male');
                 setGradeLevel(activeGrade);
                 $('#section').empty().append('<option value="">Select Section</option>');
                 loadSections(null);
@@ -1009,8 +811,8 @@ $(document).ready(function() {
                 $('#fullname').val('');
                 $('#age').val('');
                 $('#gender').val('');
-                $('#grade_level').val(''); 
-                $('#section').empty(); 
+                $('#grade_level').val('');
+                $('#section').empty();
                 $('#studentModalTitle').text('Add Student');
                 $('#saveBtn').text('Save');
             });
@@ -1046,7 +848,7 @@ $(document).ready(function() {
                                 .replace(' Students', '').trim();
                             if (tables[activeGrade]) {
                                 tables[activeGrade].ajax.reload(null,
-                                false); 
+                                    false);
                             }
 
                             resetStudentModal(activeGrade);
@@ -1097,6 +899,217 @@ $(document).ready(function() {
 
 
         });
+
+
+
+
+        // tag student script   
+
+
+        $(document).ready(function() {
+
+            var currentGrade = '';
+            var currentSection = '';
+            var allStudents = []; // cache all students of current grade
+
+            // Initialize DataTable once
+            var table = $('#studentTable').DataTable({
+                "data": [],
+                "columns": [{
+                        "data": "id",
+                        "render": function(data, type, row) {
+                            return '<input type="checkbox" class="student-checkbox" value="' +
+                                data + '" ' + (row.is_tagged ? 'checked' : '') + '>';
+                        },
+                        "orderable": false
+                    },
+                    {
+                        "data": "fullname"
+                    },
+                    {
+                        "data": "section"
+                    },
+                    {
+                        "data": "grade_level"
+                    },
+                    {
+                        "data": "is_tagged",
+                        "render": function(data, type, row) {
+                            if (data) {
+                                return '<span class="badge bg-success">Already Added</span>';
+                            } else {
+                                return '<span class="badge bg-danger">Not Added</span>';
+                            }
+                        }
+                    }
+                ],
+                "responsive": true,
+                "paging": false,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "processing": true,
+                "language": {
+                    "processing": '<div class="table-loader"></div>',
+                    "search": "_INPUT_",
+                    "searchPlaceholder": " Search..."
+                }
+            });
+
+            // Load students of current grade
+            function loadGradeStudents(grade) {
+                $.ajax({
+                    url: "<?= base_url('StudentController/fetch_active_students') ?>",
+                    type: "POST",
+                    data: {
+                        grade_level: grade
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        allStudents = response.data || [];
+                        generateSectionTabs(allStudents);
+                        filterTableBySection();
+                    }
+                });
+            }
+
+            // Generate section tabs
+            function generateSectionTabs(data) {
+                var sections = [];
+                data.forEach(function(student) {
+                    if (student.section && !sections.includes(student.section)) sections.push(student
+                        .section);
+                });
+                sections.sort();
+
+                var html = '';
+                sections.forEach(function(sec, index) {
+                    html += `<li class="nav-item">
+                        <a class="nav-link ${index === 0 ? 'active' : ''}" data-section="${sec}" href="#">${sec}</a>
+                     </li>`;
+                });
+                $('#sectionTabs').html(html);
+
+                currentSection = sections.length > 0 ? sections[0] : '';
+            }
+
+            // Filter table by section
+            function filterTableBySection() {
+                var filtered = allStudents;
+                if (currentSection) {
+                    filtered = allStudents.filter(s => s.section === currentSection);
+                }
+                table.clear().rows.add(filtered).draw();
+            }
+
+            // When modal opens
+            $('#TagstudentModal').on('shown.bs.modal', function() {
+                var activeGradeTab = $('.nav-pills .nav-link.active').attr('href');
+                currentGrade = activeGradeTab ? activeGradeTab.replace('#', '').replace('-student',
+                    '') : '';
+                currentGrade = currentGrade.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2) {
+                    return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
+                });
+                loadGradeStudents(currentGrade);
+            });
+
+            // Close modal
+            $('#TagstudentModal').on('hidden.bs.modal', function() {
+                $('#sectionTabs').empty();
+                currentSection = '';
+                allStudents = [];
+                table.clear().draw();
+            });
+
+            // Grade tab change
+            $('.nav-pills .nav-link').on('shown.bs.tab', function() {
+                currentGrade = $(this).attr('href').replace('#', '').replace('-student', '');
+                currentGrade = currentGrade.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2) {
+                    return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
+                });
+                loadGradeStudents(currentGrade);
+            });
+
+            // Section tab click
+            $('#sectionTabs').on('click', '.nav-link', function(e) {
+                e.preventDefault();
+                $('#sectionTabs .nav-link').removeClass('active');
+                $(this).addClass('active');
+
+                currentSection = $(this).data('section');
+                filterTableBySection();
+            });
+
+            // Select all checkboxes
+            $('#selectAll').on('click', function() {
+                var rows = table.rows({
+                    'search': 'applied'
+                }).nodes();
+                $('input[type="checkbox"]', rows).prop('checked', this.checked);
+            });
+
+
+
+            // Save selected/removed students
+           $('#saveStudents').on('click', function() {
+    var add_ids = [];
+    var remove_ids = [];
+
+    table.rows().every(function() {
+        var data = this.data();
+        var $row = $(this.node());
+        var isChecked = $row.find('.student-checkbox').is(':checked');
+
+        if (isChecked && !data.is_tagged) {
+            add_ids.push(data.id);
+        } else if (!isChecked && data.is_tagged) {
+            remove_ids.push(data.id);
+        }
+    });
+
+    $.ajax({
+        url: "<?= base_url('StudentController/save_tagged_students') ?>",
+        type: "POST",
+        data: {
+            add_ids: add_ids,
+            remove_ids: remove_ids
+        },
+        dataType: "json",
+        success: function(response) {
+            if (response.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Student tags updated successfully.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                // Reload the current table via AJAX
+                table.ajax.reload(null, false); // false = keep current pagination
+
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: response.message
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Something went wrong. Please try again.'
+            });
+        }
+    });
+});
+
+
+        });
+
+        // End of tag student script
         </script>
 
     </div>

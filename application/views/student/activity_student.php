@@ -580,7 +580,7 @@
 
                 $('#studentForm')[0].reset();
                 $('#id').val('');
-                $('#saveBtn').text('Save');
+                $('#saveBtn').html('<i class="ri-save-line"></i> Save');
                 $('.modal-title').text('Add Activity');
 
                 // Detect active tab grade

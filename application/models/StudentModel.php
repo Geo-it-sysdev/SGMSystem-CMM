@@ -205,12 +205,10 @@ class StudentModel extends CI_Model {
     }
 
 
-    public function get_by_grade($grade_level, $user_id = null) {
+       public function get_by_grade($grade_level, $user_id = null) {
         $user_type = $this->session->userdata('user_type');
 
-        if (!$user_id) {
-            $user_id = $this->session->userdata('po_user');
-        }
+        if (!$user_id) $user_id = $this->session->userdata('po_user');
 
         $this->db->select("a.*,
             (
@@ -230,8 +228,7 @@ class StudentModel extends CI_Model {
         $this->db->from("tbl_activities_header a");
         $this->db->where("a.grade_level", $grade_level);
 
-        // Non-admin users see only their activities
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
+        if(!in_array($user_type, ['Principal','Registrar','Guidance Councilor'])) {
             $this->db->where('a.user_id', $user_id);
         }
 
@@ -239,18 +236,16 @@ class StudentModel extends CI_Model {
         return $this->db->get()->result();
     }
 
-    /**
-     * Get unique subjects for a grade
-     */
+    // Get unique subjects for a grade
     public function get_subjects_by_grade($grade_level) {
         $this->db->select('DISTINCT subject');
         $this->db->from('tbl_activities_header');
         $this->db->where('grade_level', $grade_level);
-        $this->db->order_by('subject', 'ASC');
+        $this->db->order_by('subject','ASC');
 
         $query = $this->db->get();
         $subjects = [];
-        foreach($query->result() as $row){
+        foreach($query->result() as $row) {
             $subjects[] = $row->subject;
         }
         return $subjects;

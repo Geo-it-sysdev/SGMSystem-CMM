@@ -471,22 +471,21 @@ public function update_student()
 
   
 
-     public function fetch_activitie() {
+     // Fetch activities for a specific grade
+    public function fetch_activitie() {
         $grade_level = $this->input->post('grade_level');
-        $user_id = $this->session->userdata('po_user'); // current user id
+        $user_id = $this->session->userdata('po_user');
 
         $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
 
-        // Return JSON in DataTables format
         echo json_encode(['data' => $data]);
     }
 
-     public function fetch_subjects() {
+    // Fetch unique subjects for a specific grade (for tabs)
+    public function fetch_subjects() {
         $grade_level = $this->input->post('grade_level');
-
         $subjects = $this->StudentModel->get_subjects_by_grade($grade_level);
-
-        echo json_encode($subjects); // simple array of subjects
+        echo json_encode($subjects);
     }
 
 

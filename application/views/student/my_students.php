@@ -118,12 +118,13 @@ if (isset($user_id)) {
                                                         </button>
                                                         <?php endif; ?>
 
-                                                      <button type="button"
-                                                            class="btn btn-outline-success add-btn rounded-pill"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#TagstudentModal">
-                                                            <i class="ri-add-line align-bottom me-1"></i> Add Student
-                                                        </button>
+                                                    <!-- Add Student Button -->
+<button type="button" class="btn btn-outline-success add-btn rounded-pill"
+        data-bs-toggle="modal"
+        data-bs-target="#TagstudentModal">
+    <i class="ri-add-line align-bottom me-1"></i> Add Student
+</button>
+
 
                                                         <div class="dropdown">
                                                             <button
@@ -407,7 +408,8 @@ if (isset($user_id)) {
 
 
 
-    <!-- Modal -->
+
+<!-- Modal -->
 <div class="modal fade" id="TagstudentModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -440,6 +442,84 @@ if (isset($user_id)) {
         </div>
     </div>
 </div>
+
+<script>
+let tagstudentTable;
+
+// Initialize DataTable on modal show
+$('#TagstudentModal').on('shown.bs.modal', function () {
+    if (!$.fn.DataTable.isDataTable('#tagstudentTable')) {
+        tagstudentTable = $('#tagstudentTable').DataTable({
+            ajax: {
+                url: "<?= base_url('StudentController/get_students') ?>",
+                type: "POST",
+                data: {
+                    user_id: "<?= $this->session->userdata('po_user'); ?>"
+                }
+            },
+            columns: [
+                {
+                    data: "id",
+                    orderable: false,
+                    render: function (data) {
+                        return `<input type="checkbox" class="student-check" value="${data}">`;
+                    }
+                },
+                { data: "fullname" },
+                { data: "section" },
+                { data: "grade_level" },
+                { data: "status" }
+            ],
+            pageLength: 10,
+            lengthChange: false,
+            info: true,
+            language: {
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                infoFiltered: ""
+            }
+        });
+    } else {
+        tagstudentTable.ajax.reload();
+    }
+});
+
+// Check All using event delegation
+$(document).on('click', '#checkAll', function () {
+    $('.student-check').prop('checked', this.checked);
+});
+
+// Save selected students
+$(document).on('click', '#saveStudents', function () {
+    let students = [];
+    $('.student-check:checked').each(function () {
+        students.push($(this).val());
+    });
+
+    if (students.length === 0) {
+        alert('Please select at least one student');
+        return;
+    }
+
+    $.ajax({
+        url: "<?= base_url('StudentController/save_tag_students') ?>",
+        type: "POST",
+        data: {
+            student_ids: students,
+            user_id: "<?= $this->session->userdata('po_user'); ?>"
+        },
+        success: function (res) {
+            let data = JSON.parse(res);
+            if (data.status) {
+                alert(data.message);
+                $('#TagstudentModal').modal('hide');
+                tagstudentTable.ajax.reload();
+            } else {
+                alert(data.message);
+            }
+        }
+    });
+});
+</script>
 
        
        
@@ -898,73 +978,6 @@ if (isset($user_id)) {
         </script>
 
 
-<script>
-let tagstudentTable;
-
-$('#TagstudentModal').on('shown.bs.modal', function () {
-    if (!$.fn.DataTable.isDataTable('#tagstudentTable')) {
-        tagstudentTable = $('#tagstudentTable').DataTable({
-            ajax: {
-                url: "<?= base_url('StudentController/get_students') ?>",
-                type: "POST",
-                data: {
-                    user_id: "<?= $this->session->userdata('po_user'); ?>"
-                }
-            },
-            columns: [
-                {
-                    data: "id",
-                    render: function (data) {
-                        return `<input type="checkbox" class="student-check" value="${data}">`;
-                    }
-                },
-                { data: "fullname" },
-                { data: "section" },
-                { data: "grade_level" },
-                { data: "status" }
-            ]
-        });
-    }
-});
-
-/* Check all checkbox */
-$('#checkAll').on('click', function () {
-    $('.student-check').prop('checked', this.checked);
-});
-
-/* Save selected students */
-$('#saveStudents').on('click', function () {
-    let students = [];
-
-    $('.student-check:checked').each(function () {
-        students.push($(this).val());
-    });
-
-    if (students.length === 0) {
-        alert('Please select at least one student');
-        return;
-    }
-
-    $.ajax({
-        url: "<?= base_url('StudentController/save_tag_students') ?>",
-        type: "POST",
-        data: {
-            student_ids: students,
-            user_id: "<?= $this->session->userdata('po_user'); ?>"
-        },
-        success: function (res) {
-            let data = JSON.parse(res);
-            if (data.status) {
-                alert(data.message);
-                $('#TagstudentModal').modal('hide');
-                tagstudentTable.ajax.reload();
-            } else {
-                alert(data.message);
-            }
-        }
-    });
-});
-</script>
 
 
     </div>

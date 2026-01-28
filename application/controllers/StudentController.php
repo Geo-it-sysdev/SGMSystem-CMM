@@ -790,7 +790,11 @@ if($final_grade >= 90) {
         $user_id     = $this->session->userdata('po_user');
         $user_type   = $this->session->userdata('user_type'); 
 
-        $this->db->select('a.grade_level, b.section, c.full_name');
+        $this->db->select('
+            a.grade_level, 
+            GROUP_CONCAT(DISTINCT b.section SEPARATOR " | ") AS section,
+            c.full_name 
+        ');
         $this->db->from('tbl_activities_header AS a');
         $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
         $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
@@ -804,41 +808,50 @@ if($final_grade >= 90) {
             $this->db->where('a.grade_level', $grade_level);
         }
 
-        $this->db->group_by('b.section');
+        $this->db->group_by('a.grade_level, a.user_id');
 
-        echo json_encode(['data' => $this->db->get()->result()]);
+        $result = $this->db->get()->result();
+
+        echo json_encode(['data' => $result]);
     }
+
 
 
     // Fetch students by section
-public function fetch_students_by_section() {
-    $section   = $this->input->post('section');
-    $user_id   = $this->session->userdata('po_user');     
-    $user_type = $this->session->userdata('user_type');   
+    public function fetch_students_by_section() {
+        $section   = $this->input->post('section'); 
+        $user_id   = $this->session->userdata('po_user');     
+        $user_type = $this->session->userdata('user_type');   
 
-    $this->db->select('b.student_name, b.section, a.grade_level, c.full_name AS teacher');
-    $this->db->from('tbl_activities_header AS a');
-    $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
-    $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
-    $this->db->join('tbl_students AS d', 'd.id = b.student_id', 'left');
-    $this->db->where('d.status', 'active'); 
+        $this->db->select('b.student_name, b.section, a.grade_level, c.full_name AS teacher');
+        $this->db->from('tbl_activities_header AS a');
+        $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
+        $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
+        $this->db->join('tbl_students AS d', 'd.id = b.student_id', 'left');
+        $this->db->where('d.status', 'active'); 
 
-    // Only restrict for non-privileged users
-    $privileged_roles = ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'];
-    if (!in_array($user_type, $privileged_roles)) {
-        $this->db->where('a.user_id', $user_id);
+        // Only restrict for non-privileged users
+        $privileged_roles = ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'];
+        if (!in_array($user_type, $privileged_roles)) {
+            $this->db->where('a.user_id', $user_id);
+        }
+
+        // Filter by section(s)
+        if (!empty($section)) {
+            $sections = explode(' | ', $section); // split the concatenated sections
+            $this->db->group_start();
+            foreach ($sections as $sec) {
+                $this->db->or_where('b.section', trim($sec));
+            }
+            $this->db->group_end();
+        }
+
+        $this->db->group_by('b.student_name');
+
+        $query = $this->db->get();
+        echo json_encode(['data' => $query->result()]);
     }
 
-    // Filter by section if provided
-    if (!empty($section)) {
-        $this->db->where('b.section', $section);
-    }
-
-    $this->db->group_by('b.student_name');
-
-    $query = $this->db->get();
-    echo json_encode(['data' => $query->result()]);
-}
 
 
 

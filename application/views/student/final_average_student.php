@@ -133,6 +133,15 @@
                     <div class="modal-header">
                         <h5 class="modal-title">Final Average Details</h5>
                     </div>
+                    <br>
+                    <div class="ms-4">
+                        <!-- Adds left margin -->
+                        <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs"
+                            role="tablist"></ul>
+                    </div>
+
+
+
                     <div class="modal-body">
                         <div class="row mb-3 equal-width">
                             <div class="col">
@@ -322,8 +331,30 @@
                     },
                     dataType: 'json',
                     success: function(res) {
-                        $('#finalGradesTable').DataTable({
-                            destroy: true,
+                        // Destroy table if it exists
+                        if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
+                            $('#finalGradesTable').DataTable().clear().destroy();
+                        }
+
+                        // Get unique sections
+                        let sections = [...new Set(res.data.map(s => s.section))];
+
+                        // Generate tabs dynamically
+                        let tabsHtml = '';
+                        sections.forEach((section, index) => {
+                            tabsHtml += `
+                    <li class="nav-item">
+                        <a class="nav-link ${index === 0 ? 'active' : ''}" 
+                           data-section="${section}" 
+                           href="#" role="tab">
+                           ${section}
+                        </a>
+                    </li>`;
+                        });
+                        $('#sectionTabs').html(tabsHtml);
+
+                        // Initialize DataTable with all data
+                        let dataTable = $('#finalGradesTable').DataTable({
                             data: res.data,
                             columns: [{
                                     data: 'student_name'
@@ -335,21 +366,38 @@
                                     data: null,
                                     render: function(row) {
                                         return `<button class="btn btn-sm btn-outline-primary view-final-average"
-                                data-student-name="${row.student_name}"
-                                data-grade-level="${row.grade_level}"
-                                data-section="${row.section}"
-                                data-teacher-name="${row.teacher}">
-                                <i class='ri-eye-line'></i> View Average
-                            </button>`;
+                                        data-student-name="${row.student_name}"
+                                        data-grade-level="${row.grade_level}"
+                                        data-section="${row.section}"
+                                        data-teacher-name="${row.teacher}">
+                                        <i class='ri-eye-line'></i> View Average
+                                    </button>`;
                                     }
                                 }
                             ]
                         });
+
+                        // Tab click filter
+                        $('#sectionTabs a').off('click').on('click', function(e) {
+                            e.preventDefault();
+                            $('#sectionTabs a').removeClass('active');
+                            $(this).addClass('active');
+
+                            let selectedSection = $(this).data('section');
+                            dataTable.column(1).search(selectedSection)
+                        .draw(); // Filter by section
+                        });
+
+                        // ✅ Auto filter by first section
+                        if (sections.length > 0) {
+                            dataTable.column(1).search(sections[0]).draw();
+                        }
                     }
                 });
 
                 $('#finalAverageModal').modal('show');
             });
+
 
             $(document).on('click', '.view-final-average', function() {
                 let studentName = $(this).data('student-name');
@@ -471,17 +519,17 @@
 
             $(document).on("click", "#btnPrintFinalAverage", function() {
 
-let gradeLevel = $('#student_grade_level').val().trim();
-let studentName = $('#student_name').val();
-let teacherName = $('#teacher_name').val();
-let generalAverage = $('#final_average').val();
-let schoolYear = "2024–2025"; // Change if needed
+                let gradeLevel = $('#student_grade_level').val().trim();
+                let studentName = $('#student_name').val();
+                let teacherName = $('#teacher_name').val();
+                let generalAverage = $('#final_average').val();
+                let schoolYear = "2024–2025"; // Change if needed
 
-let printContent = "";
+                let printContent = "";
 
-if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(gradeLevel)) {
+                if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(gradeLevel)) {
 
-    printContent = `
+                    printContent = `
 <h2 style="text-align:center; margin-bottom:20px;">Student Report Card</h2>
 
 <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
@@ -513,12 +561,12 @@ if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(gradeLevel)) {
 </table>
 `;
 
-} else {
+                } else {
 
-    let firstSemGA = $('#general_average_first_sem').val();
-    let secondSemGA = $('#general_average_second_sem').val();
+                    let firstSemGA = $('#general_average_first_sem').val();
+                    let secondSemGA = $('#general_average_second_sem').val();
 
-    printContent = `
+                    printContent = `
 <h2 style="text-align:center; margin-bottom:20px;">Student Report Card</h2>
 
 <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
@@ -565,10 +613,10 @@ if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(gradeLevel)) {
 </table>
 <p><strong>General Average (2nd Semester):</strong> ${secondSemGA}</p>
 `;
-}
+                }
 
-let printWindow = window.open('', '', 'width=1000,height=900');
-printWindow.document.write(`
+                let printWindow = window.open('', '', 'width=1000,height=900');
+                printWindow.document.write(`
 <html>
 <head>
 <title>Student Report Card</title>
@@ -589,9 +637,9 @@ ${printContent}
 </html>
 `);
 
-printWindow.document.close();
-printWindow.print();
-});
+                printWindow.document.close();
+                printWindow.print();
+            });
 
 
 

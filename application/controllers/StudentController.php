@@ -474,20 +474,10 @@ public function update_student()
     public function fetch_activitie()
     {
         $grade_level = $this->input->post('grade_level');
-        $subject     = $this->input->post('subject');
-        $user_id     = $this->session->userdata('po_user');
+        $user_id = $this->session->userdata('po_user');
 
-        $data = $this->StudentModel->get_by_grade_subject($grade_level, $subject, $user_id);
+        $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
         echo json_encode(['data' => $data]);
-    }
-
-    // Fetch unique subjects for a specific grade
-    public function fetch_subjects_by_grade()
-    {
-        $grade_level = $this->input->post('grade_level');
-
-        $subjects = $this->StudentModel->get_subjects_by_grade($grade_level);
-        echo json_encode(['subjects' => $subjects]);
     }
 
 

@@ -119,7 +119,11 @@
 
                                                 </div>
                                                 <?php endif; ?>
-                                                  <ul class="nav nav-pills arrow-navtabs nav-primary bg-light mb-3 flex-wrap" id="subjectTabs_<?= $grade_id ?>"></ul>
+
+                                                <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3 text-dark"
+                                                    id="subjectTabs_<?= $grade_id ?>" role="tablist"></ul>
+
+
                                                 <table id="activityTable_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle activityTable"
                                                     style="width:100%">
@@ -210,14 +214,17 @@
 
                                 <div class="col-md-6 mb-2">
                                     <label>Score Overall</label>
-                                    <input type="number" name="overall" id="overall" class="form-control" required placeholder="Enter Score Overall">
+                                    <input type="number" name="overall" id="overall" class="form-control" required
+                                        placeholder="Enter Score Overall">
                                 </div>
                             </div>
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" id="saveBtn" class="btn btn-outline-success btn-border"><i class="ri-save-line"></i>Save</button>
-                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"><i class="ri-close-line me-1"></i>Cancel</button>
+                            <button type="submit" id="saveBtn" class="btn btn-outline-success btn-border"><i
+                                    class="ri-save-line"></i>Save</button>
+                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"><i
+                                    class="ri-close-line me-1"></i>Cancel</button>
                         </div>
                     </div>
                 </form>
@@ -249,7 +256,7 @@
                             </button>
                             <?php endif; ?>
                         </div>
-                     
+
                         <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs"
                             role="tablist"></ul>
 
@@ -319,7 +326,8 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">  <i class="ri-close-line"></i>Cancel</button>
+                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"> <i
+                                    class="ri-close-line"></i>Cancel</button>
                         </div>
                     </div>
                 </div>
@@ -427,145 +435,143 @@
         <script>
         $(document).ready(function() {
 
-              // Map grade_id to grade name
-    function grade_idToName(id) {
-        const map = {
-            grade7: 'Grade 7',
-            grade8: 'Grade 8',
-            grade9: 'Grade 9',
-            grade10: 'Grade 10',
-            grade11: 'Grade 11',
-            grade12: 'Grade 12'
-        };
-        return map[id] || '';
-    }
+            const grade_map = {
+                'grade7': 'Grade 7',
+                'grade8': 'Grade 8',
+                'grade9': 'Grade 9',
+                'grade10': 'Grade 10',
+                'grade11': 'Grade 11',
+                'grade12': 'Grade 12'
+            };
 
-    // Initialize all grade tables
-    $('.activityTable').each(function() {
-        let table = $(this).DataTable({
-            responsive: true,
-            processing: true,
-            language: {
-                search: '',
-                searchPlaceholder: 'Search...',
-                processing: '<div class="table-loader"></div>'
-            },
-            ajax: {
-                url: "<?= site_url('StudentController/fetch_activitie'); ?>",
-                type: 'POST',
-                data: function(d) {
-                    let grade_id = $(this).attr('id').replace('activityTable_', '');
-                    d.grade_level = grade_idToName(grade_id);
-                    d.subject = currentSubject[grade_id] || ''; // per table current subject
-                }.bind(this),
-                dataSrc: 'data'
-            },
-            columns: [
-                { data: 'grade_level' },
-                { data: 'subject' },
-                { data: 'activity_type' },
-                { data: 'quarter' },
-                { data: 'overall' },
-                { data: 'activity_date' },
-                { data: 'description',
-                  render: function(data, type, row) {
-                      let bgClass = '';
-                      let gradeNum = parseInt(row.grade_level.replace("Grade ", ""));
-                      let written = '30%', performance = '50%', quarterly = '20%';
-                      if (gradeNum >= 11) { written='25%'; performance='50%'; quarterly='25%'; }
+            $('.activityTable').each(function() {
+                let grade_id = $(this).attr('id').replace('activityTable_', '');
+                let grade_level = grade_map[grade_id];
 
-                      if(data === 'Written Works') { bgClass='bg-primary text-white'; data=`${data} (${written})`; }
-                      else if(data === 'Performance Task') { bgClass='bg-success text-white'; data=`${data} (${performance})`; }
-                      else if(data === 'Quarterly Assessment') { bgClass='bg-warning text-dark'; data=`${data} (${quarterly})`; }
+                let table = $(this).DataTable({
+                    responsive: true,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    processing: true,
+                    language: {
+                        search: '',
+                        searchPlaceholder: 'Search...',
+                        processing: '<div class="table-loader"></div>',
+                        infoFiltered: ""
+                    },
+                    ajax: {
+                        url: "<?= site_url('StudentController/fetch_activitie'); ?>",
+                        type: 'POST',
+                        data: {
+                            grade_level: grade_level
+                        },
+                        dataSrc: 'data'
+                    },
+                    columns: [{
+                            data: 'grade_level'
+                        },
+                        {
+                            data: 'subject'
+                        },
+                        {
+                            data: 'activity_type'
+                        },
+                        {
+                            data: 'quarter'
+                        },
+                        {
+                            data: 'overall'
+                        },
+                        {
+                            data: 'activity_date'
+                        },
+                        {
+                            data: 'description',
+                            render: function(data, type, row) {
+                                let percentage = '';
+                                let bgClass = '';
+                                let gradeNum = parseInt(row.grade_level.replace(
+                                    "Grade ", ""));
+                                let written = '30%',
+                                    performance = '50%',
+                                    quarterly = '20%';
+                                if (gradeNum >= 11) {
+                                    written = '25%';
+                                    performance = '50%';
+                                    quarterly = '25%';
+                                }
+                                if (data === 'Written Works') {
+                                    bgClass = 'bg-primary text-white';
+                                    percentage = `(${written})`;
+                                } else if (data === 'Performance Task') {
+                                    bgClass = 'bg-success text-white';
+                                    percentage = `(${performance})`;
+                                } else if (data === 'Quarterly Assessment') {
+                                    bgClass = 'bg-warning text-dark';
+                                    percentage = `(${quarterly})`;
+                                }
+                                return `<span class="badge ${bgClass}">${data} ${percentage}</span>`;
+                            }
+                        },
+                        <?php if ($is_admin || $grade_levels): ?> {
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row) {
+                                let buttonHtml = `<button class="btn btn-sm btn-outline-success tagBtn position-relative me-1 btn-border"
+                            data-id = "${row.id}" data-grade_level = "${row.grade_level}" data-subject = "${row.subject}"
+                            data-activity_type = "${row.activity_type}" data-description = "${row.description}"
+                            data-activity_date = "${row.activity_date}" data-overall = "${row.overall}"
+                            data-bs-toggle = "modal" data-bs-target = "#tagModal" >
+                            <i class="bi bi-tag-fill"></i> Add Grade
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill ${row.pending_count == 0 ? 'bg-success' : 'bg-danger'} pendingCount">
+                                ${row.pending_count}
+                            </span>
+                        </button>`;
 
-                      return `<span class="badge ${bgClass}">${data}</span>`;
-                  }
-                },
-                <?php if($is_admin || $grade_levels): ?>
-                { data: null, orderable: false, searchable: false,
-                  render: function(data, type, row) {
-                      let buttonHtml = `<button class="btn btn-sm btn-outline-success tagBtn position-relative me-1 btn-border"
-                        data-id="${row.id}"
-                        data-grade_level="${row.grade_level}"
-                        data-subject="${row.subject}"
-                        data-activity_type="${row.activity_type}"
-                        data-description="${row.description}"
-                        data-activity_date="${row.activity_date}"
-                        data-overall="${row.overall}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#tagModal">
-                        <i class="bi bi-tag-fill"></i> Add Grade
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill ${
-                          row.pending_count == 0 ? 'bg-success' : 'bg-danger'
-                        } pendingCount">
-                          ${row.pending_count}
-                        </span>
-                      </button>`;
+                                let teacherButtons = `<?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+                            <button class="btn btn-sm btn-outline-primary editBtn me-1 btn-border" data-id="${row.id}"><i class="ri-edit-line"></i> Edit</button>
+                            <button class="btn btn-sm btn-outline-danger deleteBtn btn-border" data-id="${row.id}"><i class="ri-delete-bin-line"></i> Delete</button>
+                        <?php endif; ?>`;
 
-                      let teacherButtons = `<?php if($this->session->userdata('user_type')==='Teacher'): ?>
-                        <button class="btn btn-sm btn-outline-primary editBtn me-1 btn-border" data-id="${row.id}">
-                            <i class="ri-edit-line"></i> Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger deleteBtn btn-border" data-id="${row.id}">
-                            <i class="ri-delete-bin-line"></i> Delete
-                        </button>
-                      <?php endif; ?>`;
-
-                      return buttonHtml + teacherButtons;
-                  }
-                }
-                <?php endif; ?>
-            ]
-        });
-
-        // Store table instance
-        $(this).data('tableInstance', table);
-
-        // Initialize subject tabs for this grade
-        let grade_id = $(this).attr('id').replace('activityTable_', '');
-        initSubjectTabs(grade_id, table);
-    });
-
-    // Keep track of current subject per table
-    let currentSubject = {};
-
-    // Function to load subjects and create tabs
-    function initSubjectTabs(grade_id, table) {
-        $.ajax({
-            url: "<?= site_url('StudentController/fetch_subjects_by_grade'); ?>",
-            type: 'POST',
-            data: { grade_level: grade_idToName(grade_id) },
-            dataType: 'json',
-            success: function(res) {
-                let tabsContainer = $(`#subjectTabs_${grade_id}`);
-                let tabHtml = '';
-                res.subjects.forEach((subj, i) => {
-                    let active = i === 0 ? 'active' : '';
-                    tabHtml += `<li class="nav-item">
-                        <a class="nav-link ${active}" href="#" data-subject="${subj.subject}" data-grade="${grade_id}">${subj.subject}</a>
-                    </li>`;
-                    if(i===0) currentSubject[grade_id] = subj.subject;
+                                return buttonHtml + teacherButtons;
+                            }
+                        }
+                        <?php endif; ?>
+                    ]
                 });
-                tabsContainer.html(tabHtml);
-                table.ajax.reload(); // load first subject
-            }
-        });
-    }
 
-    // Handle subject tab click
-    $(document).on('click', 'ul.nav li a[data-subject]', function(e){
-        e.preventDefault();
-        let grade_id = $(this).data('grade');
-        let table = $(`#activityTable_${grade_id}`).data('tableInstance');
+                $(this).data('tableInstance', table);
 
-        $(this).closest('ul').find('a').removeClass('active');
-        $(this).addClass('active');
+                table.on('xhr', function() {
+                    let data = table.ajax.json().data;
+                    let subjects = [...new Set(data.map(d => d.subject))]
+                        .sort();
+                    let tabsContainer = $(`#subjectTabs_${grade_id}`);
+                    tabsContainer.empty();
 
-        currentSubject[grade_id] = $(this).data('subject');
-        table.ajax.reload();
-    });
+                    subjects.forEach((subject, index) => {
+                        let activeClass = index === 0 ? 'active' : '';
+                        tabsContainer.append(`
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link ${activeClass}" data-subject="${subject}" type="button">${subject}</button>
+                    </li>
+                `);
+                    });
 
+                    // Filter table when tab is clicked
+                    tabsContainer.find('button').click(function() {
+                        let subject = $(this).data('subject');
+                        tabsContainer.find('button').removeClass('active');
+                        $(this).addClass('active');
+                        table.column(1).search(subject).draw();
+                    });
 
+                    tabsContainer.find('button.active').click();
+                });
+            });
 
 
 

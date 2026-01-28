@@ -209,7 +209,7 @@
 
                                 <div class="col-md-6 mb-2">
                                     <label>Score Overall</label>
-                                    <input type="number" name="overall" id="overall" class="form-control" required>
+                                    <input type="number" name="overall" id="overall" class="form-control" required placeholder="Enter Score Overall">
                                 </div>
                             </div>
                         </div>

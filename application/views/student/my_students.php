@@ -447,62 +447,56 @@ if (isset($user_id)) {
 <!-- jQuery & DataTables scripts -->
 <script>
 $(document).ready(function() {
-    var table;
 
-    // Function to initialize DataTable
-    function initTable(grade_level, section) {
-        if ($.fn.DataTable.isDataTable('#studentTable')) {
-            table.destroy();
-            $('#studentTable tbody').empty();
-        }
+    var currentGrade = '';  // currently selected grade
+    var currentSection = ''; // currently selected section
 
-        table = $('#studentTable').DataTable({
-            "ajax": {
-                "url": "<?= base_url('StudentController/fetch_active_students') ?>",
-                "type": "POST",
-                "data": {
-                    grade_level: grade_level,
-                    section: section
-                }
-            },
-            "columns": [
-                { 
-                    "data": "id",
-                    "render": function(data) {
-                        return '<input type="checkbox" class="student-checkbox" value="'+data+'">';
-                    },
-                    "orderable": false
-                },
-                { "data": "fullname" },
-                { "data": "section" },
-                { "data": "grade_level" }
-            ],
-            "responsive": true,
-            "paging": false,
-            "searching": true,
-            "ordering": true,
-            "info": true,
-            "processing": true,
-            "language": {
-                "search": '',
-                "searchPlaceholder": ' Search...',
-                "processing": '<div class="table-loader"></div>'
-            },
-            "initComplete": function(settings, json) {
-                generateSectionTabs(json.data, grade_level);
+    // Initialize DataTable once
+    var table = $('#studentTable').DataTable({
+        "ajax": {
+            "url": "<?= base_url('StudentController/fetch_active_students') ?>",
+            "type": "POST",
+            "data": function(d) {
+                d.grade_level = currentGrade;
+                d.section = currentSection;
             }
-        });
-    }
+        },
+        "columns": [
+            { 
+                "data": "id",
+                "render": function(data) {
+                    return '<input type="checkbox" class="student-checkbox" value="'+data+'">';
+                },
+                "orderable": false
+            },
+            { "data": "fullname" },
+            { "data": "section" },
+            { "data": "grade_level" }
+        ],
+        "responsive": true,
+        "paging": false,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "processing": true,
+        "language": {
+            "search": '',
+            "searchPlaceholder": ' Search...',
+            "processing": '<div class="table-loader"></div>'
+        },
+        "initComplete": function(settings, json) {
+            generateSectionTabs(json.data); // generate section tabs initially
+        }
+    });
 
-    // Generate section tabs dynamically for a given grade
-    function generateSectionTabs(data, grade_level) {
+    // Generate section tabs
+    function generateSectionTabs(data) {
         var sections = [];
         data.forEach(function(student) {
             if(student.section && !sections.includes(student.section)) {
                 sections.push(student.section);
             }
         });
-
         sections.sort();
 
         var html = '';
@@ -514,57 +508,46 @@ $(document).ready(function() {
 
         $('#sectionTabs').html(html);
 
-        // Auto-load first section
-        if(sections.length > 0) {
-            var firstSection = sections[0];
-            reloadTable(grade_level, firstSection);
-        }
+        // Auto-select first section
+        currentSection = sections.length > 0 ? sections[0] : '';
+        table.ajax.reload();
     }
 
-    // Reload DataTable for a specific grade and section
-    function reloadTable(grade_level, section) {
-        if(table) {
-            table.ajax.url("<?= base_url('StudentController/fetch_active_students') ?>").load({
-                grade_level: grade_level,
-                section: section
-            });
-        }
-    }
-
-    // Modal open: get active grade tab and init table
+    // Open modal: load current grade
     $('#TagstudentModal').on('shown.bs.modal', function() {
         var activeGradeTab = $('.nav-pills .nav-link.active').attr('href');
-        var grade_level = activeGradeTab ? activeGradeTab.replace('#', '').replace('-student','') : '';
-        grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
+        currentGrade = activeGradeTab ? activeGradeTab.replace('#', '').replace('-student','') : '';
+        currentGrade = currentGrade.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
             return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
         });
-
-        initTable(grade_level, '');
+        currentSection = ''; // reset section
+        table.ajax.reload();
     });
 
-    // When grade tab changes
+    // Close modal: reset section tabs
+    $('#TagstudentModal').on('hidden.bs.modal', function() {
+        $('#sectionTabs').empty();
+        currentSection = '';
+    });
+
+    // Grade tab change
     $('.nav-pills .nav-link').on('shown.bs.tab', function() {
-        var grade_level = $(this).attr('href').replace('#', '').replace('-student','');
-        grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
+        currentGrade = $(this).attr('href').replace('#', '').replace('-student','');
+        currentGrade = currentGrade.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
             return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
         });
-        initTable(grade_level, '');
+        currentSection = ''; // reset section when grade changes
+        table.ajax.reload();
     });
 
-    // When section tab clicked
+    // Section tab click
     $('#sectionTabs').on('click', '.nav-link', function(e) {
         e.preventDefault();
         $('#sectionTabs .nav-link').removeClass('active');
         $(this).addClass('active');
 
-        var section = $(this).data('section');
-        var activeGradeTab = $('.nav-pills .nav-link.active').attr('href');
-        var grade_level = activeGradeTab ? activeGradeTab.replace('#', '').replace('-student','') : '';
-        grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
-            return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
-        });
-
-        reloadTable(grade_level, section);
+        currentSection = $(this).data('section');
+        table.ajax.reload();
     });
 
     // Select all checkboxes
@@ -598,7 +581,6 @@ $(document).ready(function() {
     });
 
 });
-
 </script>
 
 

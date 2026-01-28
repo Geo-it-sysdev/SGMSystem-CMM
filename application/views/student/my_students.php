@@ -725,16 +725,16 @@ if (isset($user_id)) {
 
                             // Determine status button
                             let isActive = data.status === 'active';
-                            let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
+                            let statusClass = isActive ? 'btn-outline-success btn-border' : 'btn-outline-secondary btn-border';
                             let statusText = isActive ? 'Active' : 'Inactive';
                             let statusIcon = isActive ? 'bx-check-circle' : 'bx-x-circle';
 
                             // Show all buttons for all users
                             buttons += `
-                                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                                <button class="btn btn-sm btn-outline-primary editBtn btn-border" data-id="${data.id}">
                                     <i class="bx bx-edit me-1"></i>Edit
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                                <button class="btn btn-sm btn-outline-danger deleteBtn btn-border" data-id="${data.id}">
                                     <i class="bx bx-trash me-1"></i>Delete
                                 </button>
                                 <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">

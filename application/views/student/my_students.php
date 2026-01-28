@@ -118,13 +118,11 @@ if (isset($user_id)) {
                                                         </button>
                                                         <?php endif; ?>
 
-                                                    <!-- Add Student Button -->
-<button type="button" class="btn btn-outline-success add-btn rounded-pill"
-        data-bs-toggle="modal"
-        data-bs-target="#TagstudentModal">
-    <i class="ri-add-line align-bottom me-1"></i> Add Student
-</button>
-
+                                                        <button type="button"
+                                                            class="btn btn-outline-success add-btn rounded-pill"
+                                                            data-bs-toggle="modal" data-bs-target="#TagstudentModal">
+                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
+                                                        </button>
 
                                                         <div class="dropdown">
                                                             <button
@@ -405,124 +403,89 @@ if (isset($user_id)) {
             </div>
         </div>
 
-
-
-
-
 <!-- Modal -->
-<div class="modal fade" id="TagstudentModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
+<div class="modal fade" id="TagstudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-
             <div class="modal-header">
-                <h5 class="modal-title">Select Students</h5>
+                <h5 class="modal-title">Add Students</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
             <div class="modal-body">
-                <table class="table table-bordered" id="tagstudentTable" width="100%">
-                    <thead>
-                        <tr>
-                            <th width="5%">
-                                <input type="checkbox" id="checkAll">
-                            </th>
-                            <th>Student Name</th>
-                            <th>Section</th>
-                            <th>Grade Level</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                </table>
+                <form id="tagStudentForm">
+                    <table id="studentTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>Full Name</th>
+                                <th>Section</th>
+                                <th>Grade Level</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </form>
             </div>
-
             <div class="modal-footer">
-                <button class="btn btn-success" id="saveStudents">Save Selected</button>
+                <button type="button" id="saveStudents" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
-
         </div>
     </div>
 </div>
 
+<!-- jQuery & DataTables scripts -->
 <script>
-let tagstudentTable;
+$(document).ready(function() {
 
-// Initialize DataTable on modal show
-$('#TagstudentModal').on('shown.bs.modal', function () {
-    if (!$.fn.DataTable.isDataTable('#tagstudentTable')) {
-        tagstudentTable = $('#tagstudentTable').DataTable({
-            ajax: {
-                url: "<?= base_url('StudentController/get_students') ?>",
-                type: "POST",
-                data: {
-                    user_id: "<?= $this->session->userdata('po_user'); ?>"
-                }
+    // Initialize DataTable
+    var table = $('#studentTable').DataTable({
+        "ajax": "<?= base_url('Admin_ctrl/fetch_active_students') ?>",
+        "columns": [
+            { "data": "id",
+              "render": function(data) {
+                  return '<input type="checkbox" class="student-checkbox" value="'+data+'">';
+              },
+              "orderable": false
             },
-            columns: [
-                {
-                    data: "id",
-                    orderable: false,
-                    render: function (data) {
-                        return `<input type="checkbox" class="student-check" value="${data}">`;
-                    }
-                },
-                { data: "fullname" },
-                { data: "section" },
-                { data: "grade_level" },
-                { data: "status" }
-            ],
-            pageLength: 10,
-            lengthChange: false,
-            info: true,
-            language: {
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoFiltered: ""
-            }
-        });
-    } else {
-        tagstudentTable.ajax.reload();
-    }
-});
-
-// Check All using event delegation
-$(document).on('click', '#checkAll', function () {
-    $('.student-check').prop('checked', this.checked);
-});
-
-// Save selected students
-$(document).on('click', '#saveStudents', function () {
-    let students = [];
-    $('.student-check:checked').each(function () {
-        students.push($(this).val());
+            { "data": "fullname" },
+            { "data": "section" },
+            { "data": "grade_level" }
+        ]
     });
 
-    if (students.length === 0) {
-        alert('Please select at least one student');
-        return;
-    }
+    // Select all checkboxes
+    $('#selectAll').on('click', function() {
+        var rows = table.rows({ 'search': 'applied' }).nodes();
+        $('input[type="checkbox"]', rows).prop('checked', this.checked);
+    });
 
-    $.ajax({
-        url: "<?= base_url('StudentController/save_tag_students') ?>",
-        type: "POST",
-        data: {
-            student_ids: students,
-            user_id: "<?= $this->session->userdata('po_user'); ?>"
-        },
-        success: function (res) {
-            let data = JSON.parse(res);
-            if (data.status) {
-                alert(data.message);
-                $('#TagstudentModal').modal('hide');
-                tagstudentTable.ajax.reload();
-            } else {
-                alert(data.message);
+    // Save selected students
+    $('#saveStudents').on('click', function() {
+        var student_ids = [];
+        $('.student-checkbox:checked').each(function() {
+            student_ids.push($(this).val());
+        });
+
+        $.ajax({
+            url: "<?= base_url('Admin_ctrl/save_tagged_students') ?>",
+            type: "POST",
+            data: { student_ids: student_ids },
+            dataType: "json",
+            success: function(response) {
+                if(response.status === 'success') {
+                    alert(response.message);
+                    table.ajax.reload(); // refresh table
+                    $('#TagstudentModal').modal('hide');
+                } else {
+                    alert(response.message);
+                }
             }
-        }
+        });
     });
 });
 </script>
 
-       
-       
 
         <script>
         $(document).ready(function() {
@@ -790,7 +753,7 @@ $(document).on('click', '#saveStudents', function () {
                 $('#id').val('');
                 $('#fullname').val('');
                 $('#age').val('');
-                $('#gender').val('Male');
+                $('#gender').val('Male'); 
                 setGradeLevel(activeGrade);
                 $('#section').empty().append('<option value="">Select Section</option>');
                 loadSections(null);
@@ -887,8 +850,8 @@ $(document).on('click', '#saveStudents', function () {
                 $('#fullname').val('');
                 $('#age').val('');
                 $('#gender').val('');
-                $('#grade_level').val('');
-                $('#section').empty();
+                $('#grade_level').val(''); 
+                $('#section').empty(); 
                 $('#studentModalTitle').text('Add Student');
                 $('#saveBtn').text('Save');
             });
@@ -924,7 +887,7 @@ $(document).on('click', '#saveStudents', function () {
                                 .replace(' Students', '').trim();
                             if (tables[activeGrade]) {
                                 tables[activeGrade].ajax.reload(null,
-                                    false);
+                                false); 
                             }
 
                             resetStudentModal(activeGrade);
@@ -976,9 +939,6 @@ $(document).on('click', '#saveStudents', function () {
 
         });
         </script>
-
-
-
 
     </div>
     </div>

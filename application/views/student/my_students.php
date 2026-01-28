@@ -448,8 +448,8 @@ if (isset($user_id)) {
 <script>
 $(document).ready(function() {
 
-    var currentGrade = '';  // currently selected grade
-    var currentSection = ''; // currently selected section
+    var currentGrade = '';  
+    var currentSection = ''; 
 
     // Initialize DataTable once
     var table = $('#studentTable').DataTable({
@@ -485,11 +485,12 @@ $(document).ready(function() {
             "processing": '<div class="table-loader"></div>'
         },
         "initComplete": function(settings, json) {
-            generateSectionTabs(json.data); // generate section tabs initially
+            // Generate sections based ONLY on the filtered grade
+            generateSectionTabs(json.data);
         }
     });
 
-    // Generate section tabs
+    // Generate section tabs based ONLY on students of the current grade
     function generateSectionTabs(data) {
         var sections = [];
         data.forEach(function(student) {
@@ -497,6 +498,7 @@ $(document).ready(function() {
                 sections.push(student.section);
             }
         });
+
         sections.sort();
 
         var html = '';
@@ -508,12 +510,12 @@ $(document).ready(function() {
 
         $('#sectionTabs').html(html);
 
-        // Auto-select first section
+        // Auto-select first section of the grade
         currentSection = sections.length > 0 ? sections[0] : '';
         table.ajax.reload();
     }
 
-    // Open modal: load current grade
+    // When modal opens, load current active grade
     $('#TagstudentModal').on('shown.bs.modal', function() {
         var activeGradeTab = $('.nav-pills .nav-link.active').attr('href');
         currentGrade = activeGradeTab ? activeGradeTab.replace('#', '').replace('-student','') : '';
@@ -524,7 +526,7 @@ $(document).ready(function() {
         table.ajax.reload();
     });
 
-    // Close modal: reset section tabs
+    // Close modal: clear sections
     $('#TagstudentModal').on('hidden.bs.modal', function() {
         $('#sectionTabs').empty();
         currentSection = '';
@@ -537,7 +539,7 @@ $(document).ready(function() {
             return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
         });
         currentSection = ''; // reset section when grade changes
-        table.ajax.reload();
+        table.ajax.reload(); // table reload triggers section generation
     });
 
     // Section tab click
@@ -547,7 +549,7 @@ $(document).ready(function() {
         $(this).addClass('active');
 
         currentSection = $(this).data('section');
-        table.ajax.reload();
+        table.ajax.reload(); // reload table for that section (of the current grade)
     });
 
     // Select all checkboxes
@@ -581,6 +583,7 @@ $(document).ready(function() {
     });
 
 });
+
 </script>
 
 

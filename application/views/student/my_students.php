@@ -454,6 +454,7 @@ $(document).ready(function() {
                 // Get active grade tab
                 var activeGrade = $('.nav-pills .nav-link.active').attr('href'); 
                 var grade_level = activeGrade ? activeGrade.replace('#', '').replace('-student','') : '';
+                // Convert to proper format: e.g., grade7 → Grade 7
                 grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
                     return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
                 });
@@ -478,7 +479,7 @@ $(document).ready(function() {
             { "data": "grade_level" }
         ],
         "responsive": true,
-        "paging": true,
+        "paging": false,
         "searching": true,
         "ordering": true,
         "info": true,
@@ -490,11 +491,11 @@ $(document).ready(function() {
         },
         "initComplete": function(settings, json) {
             generateSectionTabs(json.data); // Generate section tabs dynamically
-            filterByFirstSection(); // Automatically filter by first section
+            filterByFirstSection(); // Filter first section by default
         }
     });
 
-    // Generate section tabs dynamically
+    // Generate section tabs dynamically based on current table data
     function generateSectionTabs(data) {
         var sections = [];
         data.forEach(function(student) {
@@ -503,7 +504,7 @@ $(document).ready(function() {
             }
         });
 
-        sections.sort(); // Alphabetical sort
+        sections.sort(); // Alphabetical order
 
         var html = '';
         sections.forEach(function(sec, index){
@@ -515,7 +516,7 @@ $(document).ready(function() {
         $('#sectionTabs').html(html);
     }
 
-    // Automatically filter by first section
+    // Automatically filter table by the first section
     function filterByFirstSection() {
         var firstSection = $('#sectionTabs .nav-link').first();
         if(firstSection.length) {
@@ -528,10 +529,10 @@ $(document).ready(function() {
     // Reload table when grade tab changes
     $('.nav-pills .nav-link').on('shown.bs.tab', function() {
         table.ajax.reload();
-        filterByFirstSection(); // Automatically filter first section of the new grade
+        filterByFirstSection(); // Reset to first section for new grade
     });
 
-    // Reload table when section tab changes
+    // Reload table when section tab is clicked
     $('#sectionTabs').on('click', '.nav-link', function(e) {
         e.preventDefault();
         $('#sectionTabs .nav-link').removeClass('active');
@@ -572,6 +573,7 @@ $(document).ready(function() {
 });
 
 
+                                            
 
 
 </script>

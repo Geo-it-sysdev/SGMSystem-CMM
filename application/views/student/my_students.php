@@ -458,7 +458,7 @@ $(document).ready(function() {
     "paging": true,
     "searching": true,
     "ordering": true,
-    "info": true,
+    "info": false,
     "processing": true,
     "language": {
         "search": '',

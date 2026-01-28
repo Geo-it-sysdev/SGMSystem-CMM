@@ -110,7 +110,7 @@
                                                 <div class="d-flex align-items-center gap-2 mb-3">
                                                     <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
                                                     <button type="button"
-                                                        class="btn btn-outline-success addActivityBtn rounded-pill"
+                                                        class="btn btn-outline-success addActivityBtn rounded-pill btn-border"
                                                         data-bs-toggle="modal" data-bs-target="#ActivityModal"
                                                         data-grade="<?= $grade ?>">
                                                         <i class="ri-add-line align-bottom "></i> Add Activity
@@ -547,7 +547,7 @@
                             searchable: false,
                             render: function(data, type, row) {
                                 let buttonHtml = `
-                                <button class="btn btn-sm btn-outline-success tagBtn position-relative me-1"
+                                <button class="btn btn-sm btn-outline-success tagBtn position-relative me-1 btn-border"
                                     data-id = "${row.id}"
                                     data-grade_level = "${row.grade_level}"
                                     data-subject = "${row.subject}"
@@ -570,10 +570,10 @@
 
                                 let teacherButtons = `
                                 <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
-                                    <button class="btn btn-sm btn-outline-primary editBtn me-1" data-id="${row.id}">
+                                    <button class="btn btn-sm btn-outline-primary editBtn me-1 btn-border" data-id="${row.id}">
                                         <i class="ri-edit-line"></i> Edit
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${row.id}">
+                                    <button class="btn btn-sm btn-outline-danger deleteBtn btn-border" data-id="${row.id}">
                                         <i class="ri-delete-bin-line"></i> Delete
                                     </button>
                                 <?php endif; ?>

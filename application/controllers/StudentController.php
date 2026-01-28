@@ -10,6 +10,7 @@ class StudentController extends CI_Controller {
         $this->load->database();
         $this->load->model('StudentModel');
         $this->load->helper(['url', 'form']);
+         $this->load->library('session');
     }
 
    
@@ -130,14 +131,17 @@ public function update_student()
 
     //tag student
 
-     public function get_students()
+     /* ==============================
+       FETCH STUDENTS FOR MODAL
+    =============================== */
+    public function get_students()
     {
         $user_id = $this->input->post('user_id');
 
+        // Fetch all active students
         $this->db->select('id, fullname, section, grade_level, status');
         $this->db->from('tbl_students');
         $this->db->where('status', 'active');
-
         $students = $this->db->get()->result();
 
         echo json_encode([
@@ -160,7 +164,7 @@ public function update_student()
 
         foreach ($student_ids as $student_id) {
 
-            // prevent duplicate entry
+            // Prevent duplicate entry
             $exists = $this->db->where([
                 'student_id' => $student_id,
                 'user_id'    => $user_id
@@ -175,7 +179,7 @@ public function update_student()
             }
         }
 
-        echo json_encode(['status' => true]);
+        echo json_encode(['status' => true, 'message' => 'Students tagged successfully']);
     }
     // end tag student
  

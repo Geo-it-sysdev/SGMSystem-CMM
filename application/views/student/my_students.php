@@ -440,7 +440,7 @@ $(document).ready(function() {
 
     // Initialize DataTable
     var table = $('#studentTable').DataTable({
-        "ajax": "<?= base_url('Admin_ctrl/fetch_active_students') ?>",
+        "ajax": "<?= base_url('StudentController/fetch_active_students') ?>",
         "columns": [
             { "data": "id",
               "render": function(data) {
@@ -468,7 +468,7 @@ $(document).ready(function() {
         });
 
         $.ajax({
-            url: "<?= base_url('Admin_ctrl/save_tagged_students') ?>",
+            url: "<?= base_url('StudentController/save_tagged_students') ?>",
             type: "POST",
             data: { student_ids: student_ids },
             dataType: "json",

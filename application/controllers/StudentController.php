@@ -131,11 +131,9 @@ public function update_student()
 
     //tag student
 
-     // Fetch active students for modal
 public function fetch_active_students() {
     $grade_level = $this->input->post('grade_level'); 
-    $section     = $this->input->post('section');     
-    $user_id     = $this->session->userdata('po_user'); // current user
+    $user_id = $this->session->userdata('po_user');
 
     $this->db->select('id, fullname, section, grade_level, status');
     $this->db->from('tbl_students');
@@ -145,15 +143,10 @@ public function fetch_active_students() {
         $this->db->where('grade_level', $grade_level);
     }
 
-    if(!empty($section)) {
-        $this->db->where('section', $section);
-    }
-
     $query = $this->db->get();
 
     $data = [];
     foreach ($query->result() as $row) {
-        // Check if this student is already tagged by this user
         $exists = $this->db->get_where('tbl_tag_students', [
             'student_id' => $row->id,
             'user_id'    => $user_id,
@@ -165,41 +158,47 @@ public function fetch_active_students() {
             'fullname'   => $row->fullname,
             'section'    => $row->section,
             'grade_level'=> $row->grade_level,
-            'is_tagged'  => $exists ? true : false // new field
+            'is_tagged'  => $exists ? true : false
         ];
     }
 
     echo json_encode(['data' => $data]);
 }
 
+public function save_tagged_students() {
+    $add_ids = $this->input->post('add_ids');       
+    $remove_ids = $this->input->post('remove_ids'); 
+    $user_id = $this->session->userdata('po_user');
 
+    if (!empty($add_ids)) {
+        foreach ($add_ids as $student_id) {
+            $exists = $this->db->get_where('tbl_tag_students', [
+                'student_id' => $student_id,
+                'user_id'    => $user_id
+            ])->row();
 
-    // Save selected students
-    public function save_tagged_students() {
-        $student_ids = $this->input->post('student_ids'); // array of selected students
-        $user_id = $this->session->userdata('po_user');
-
-        if (!empty($student_ids)) {
-            foreach ($student_ids as $student_id) {
-                // Avoid duplicate entries
-                $exists = $this->db->get_where('tbl_tag_students', [
+            if (!$exists) {
+                $this->db->insert('tbl_tag_students', [
                     'student_id' => $student_id,
-                    'user_id' => $user_id
-                ])->row();
-
-                if (!$exists) {
-                    $this->db->insert('tbl_tag_students', [
-                        'student_id' => $student_id,
-                        'user_id' => $user_id,
-                        'status' => 'active'
-                    ]);
-                }
+                    'user_id'    => $user_id,
+                    'status'     => 'active'
+                ]);
+            } else {
+                $this->db->where('id', $exists->id)
+                         ->update('tbl_tag_students', ['status' => 'active']);
             }
-            echo json_encode(['status' => 'success', 'message' => 'Students tagged successfully.']);
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'No student selected.']);
         }
     }
+
+    if (!empty($remove_ids)) {
+        $this->db->where_in('student_id', $remove_ids)
+                 ->where('user_id', $user_id)
+                 ->update('tbl_tag_students', ['status' => 'inactive']);
+    }
+
+    echo json_encode(['status' => 'success', 'message' => 'Student tags updated successfully.']);
+}
+
 
     // end tag student
  

@@ -180,9 +180,7 @@ if (isset($user_id)) {
                                                             <th>Grade Level</th>
                                                             <th>School Year</th>
                                                             <th>Status</th>
-                                                            <?php if ($user_type === 'Teacher'): ?>
                                                             <th>Action</th>
-                                                            <?php endif; ?>
                                                         </tr>
                                                     </thead>
                                                     <tbody></tbody>
@@ -720,49 +718,45 @@ if (isset($user_id)) {
                                 return data;
                             }
                         },
-                        <?php if ($user_type === 'Teacher'): ?> {
-                            data: null,
-                            render: function(data) {
-                                let buttons = '';
-                                let userType =
-                                    "<?= $this->session->userdata('user_type'); ?>";
-                                let currentUser =
-                                    <?= (int) $this->session->userdata('po_user'); ?>;
+                       {
+    data: null,
+    render: function(data) {
+        let buttons = '';
+        let userType = "<?= $this->session->userdata('user_type'); ?>";
+        let currentUser = <?= (int) $this->session->userdata('po_user'); ?>;
 
-                                // Edit / Delete buttons
-                                if (['Principal', 'Guidance Counselor', 'Registrar',
-                                        'Admin'
-                                    ]
-                                    .includes(userType) || data.user_id == currentUser
-                                ) {
-                                    buttons += `
-                                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
-                                    <i class="bx bx-edit me-1"></i>Edit
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
-                                    <i class="bx bx-trash me-1"></i>Delete
-                                </button>
-                            `;
-                                }
+        // Status button
+        let isActive = data.status === 'active';
+        let statusClass = isActive ? 'btn-outline-success' : 'btn-outline-secondary';
+        let statusText = isActive ? 'Active' : 'Inactive';
+        let statusIcon = isActive ? 'bx-check-circle' : 'bx-x-circle';
 
-                                // Status button
-                                let isActive = data.status === 'active';
-                                let statusClass = isActive ? 'btn-outline-success' :
-                                    'btn-outline-secondary';
-                                let statusText = isActive ? 'Active' : 'Inactive';
-                                let statusIcon = isActive ? 'bx-check-circle' :
-                                    'bx-x-circle';
+        // Teacher: only show status button
+        if (userType === 'Teacher') {
+            buttons += `
+                <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
+                    <i class="bx ${statusIcon} me-1"></i>${statusText}
+                </button>
+            `;
+        } else {
+            // Other users: show Edit, Delete, and Status buttons
+            buttons += `
+                <button class="btn btn-sm btn-outline-primary editBtn" data-id="${data.id}">
+                    <i class="bx bx-edit me-1"></i>Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="${data.id}">
+                    <i class="bx bx-trash me-1"></i>Delete
+                </button>
+                <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
+                    <i class="bx ${statusIcon} me-1"></i>${statusText}
+                </button>
+            `;
+        }
 
-                                buttons += `
-                            <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
-                                <i class="bx ${statusIcon} me-1"></i>${statusText}
-                            </button>
-                        `;
+        return buttons;
+    }
+}
 
-                                return buttons;
-                            }
-                        }
-                        <?php endif; ?>
 
                     ],
                     responsive: true,

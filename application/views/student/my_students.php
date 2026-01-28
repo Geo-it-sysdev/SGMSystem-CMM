@@ -408,7 +408,7 @@ if (isset($user_id)) {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Add Students</h5>
+                        <h5 class="modal-title">Tag Students</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 
@@ -437,7 +437,7 @@ if (isset($user_id)) {
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" id="saveStudents" class="btn btn-primary">Add Students</button>
+                        <button type="button" id="saveStudents" class="btn btn-primary">Tag Students</button>
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>

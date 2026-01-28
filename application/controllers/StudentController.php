@@ -52,29 +52,28 @@ class StudentController extends CI_Controller {
         echo json_encode($student);
     }
 
-    public function add_student()
-{
-    $user_id = $this->session->userdata('po_user');
-    $fullname = $this->input->post('fullname');
+   public function add_student()
+    {
+        $fullname = $this->input->post('fullname');
 
-    if ($this->StudentModel->check_duplicate($user_id, $fullname)) {
-        echo json_encode(['status' => 'duplicate']);
-        return;
+        if ($this->StudentModel->check_duplicate($fullname)) {
+            echo json_encode(['status' => 'duplicate']);
+            return;
+        }
+
+        $data = [
+            'fullname'    => $fullname,
+            'age'         => $this->input->post('age'),
+            'gender'      => $this->input->post('gender'),
+            'section'     => $this->input->post('section'),
+            'grade_level' => $this->input->post('grade_level'),
+            'created_at'  => date('Y-m-d')
+        ];
+
+        $this->StudentModel->insert_student($data);
+        echo json_encode(['status' => 'success']);
     }
 
-    $data = [
-        'user_id'     => $user_id,
-        'fullname'    => $fullname,
-        'age'         => $this->input->post('age'),
-        'gender'      => $this->input->post('gender'),
-        'section'     => $this->input->post('section'),
-        'grade_level' => $this->input->post('grade_level'),
-         'created_at' => date('Y-m-d')
-    ];
-
-    $this->StudentModel->insert_student($data);
-    echo json_encode(['status' => 'success']);
-}
 
 public function update_student()
 {

@@ -597,33 +597,38 @@ $(document).ready(function() {
             data: { add_ids: add_ids, remove_ids: remove_ids },
             dataType: "json",
            success: function(response) {
-            if(response.status === 'success') {
-                // Show SweetAlert instead of alert
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Student tags updated successfully.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+    if(response.status === 'success') {
+        // Show SweetAlert
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Student tags updated successfully.',
+            timer: 2000,
+            showConfirmButton: false
+        });
 
-                // Update table badges and is_tagged
-                table.rows().every(function() {
-                    var data = this.data();
-                    if(add_ids.includes(data.id)) data.is_tagged = true;
-                    if(remove_ids.includes(data.id)) data.is_tagged = false;
-                    this.data(data);
-                });
-                table.draw(false);
-            } else {
-                // You can also use Swal for errors if you like
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops!',
-                    text: response.message
-                });
-            }
+        // Update table badges and is_tagged
+        table.rows().every(function() {
+            var data = this.data();
+            if(add_ids.includes(data.id)) data.is_tagged = true;
+            if(remove_ids.includes(data.id)) data.is_tagged = false;
+            this.data(data);
+        });
+        table.draw(false);
+
+        // Reload the specific grade level table
+        if(tables[gradeLevel]) {
+            tables[gradeLevel].ajax.reload(null, false); // false = keep current page
         }
+
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            text: response.message
+        });
+    }
+}
 
         });
     });

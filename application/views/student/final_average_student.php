@@ -331,15 +331,12 @@
                     },
                     dataType: 'json',
                     success: function(res) {
-                        // Destroy table if it exists
                         if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
                             $('#finalGradesTable').DataTable().clear().destroy();
                         }
 
-                        // Get unique sections
                         let sections = [...new Set(res.data.map(s => s.section))];
 
-                        // Generate tabs dynamically
                         let tabsHtml = '';
                         sections.forEach((section, index) => {
                             tabsHtml += `
@@ -353,31 +350,30 @@
                         });
                         $('#sectionTabs').html(tabsHtml);
 
-                        // Initialize DataTable with all data
-                        let dataTable = $('#finalGradesTable').DataTable({
-                            data: res.data,
-                            columns: [{
-                                    data: 'student_name'
-                                },
-                                {
-                                    data: 'section'
-                                },
-                                {
-                                    data: null,
-                                    render: function(row) {
-                                        return `<button class="btn btn-sm btn-outline-primary view-final-average"
+                       let dataTable = $('#finalGradesTable').DataTable({
+                        data: res.data,
+                        columns: [
+                            { data: 'student_name' },
+                            { data: 'section' },
+                            { 
+                                data: null,
+                                render: function(row) {
+                                    return `<button class="btn btn-sm btn-outline-primary view-final-average"
                                         data-student-name="${row.student_name}"
                                         data-grade-level="${row.grade_level}"
                                         data-section="${row.section}"
                                         data-teacher-name="${row.teacher}">
                                         <i class='ri-eye-line'></i> View Average
                                     </button>`;
-                                    }
                                 }
-                            ]
-                        });
+                            }
+                        ],
+                        infoCallback: function(settings, start, end, max, total, pre) {
+                            return `Showing ${start} to ${end} of ${total} entries`;
+                        }
+                    });
 
-                        // Tab click filter
+
                         $('#sectionTabs a').off('click').on('click', function(e) {
                             e.preventDefault();
                             $('#sectionTabs a').removeClass('active');
@@ -385,10 +381,9 @@
 
                             let selectedSection = $(this).data('section');
                             dataTable.column(1).search(selectedSection)
-                        .draw(); // Filter by section
+                        .draw(); 
                         });
 
-                        // ✅ Auto filter by first section
                         if (sections.length > 0) {
                             dataTable.column(1).search(sections[0]).draw();
                         }
@@ -397,6 +392,7 @@
 
                 $('#finalAverageModal').modal('show');
             });
+
 
 
             $(document).on('click', '.view-final-average', function() {

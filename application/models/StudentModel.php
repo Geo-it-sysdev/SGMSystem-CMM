@@ -44,6 +44,7 @@ class StudentModel extends CI_Model {
     }
 
     $this->db->where('a.status', $status ?: 'active');
+    $this->db->where('b.status', 'active');
     $this->db->group_by('a.fullname');
 
     return $this->db->get()->result();

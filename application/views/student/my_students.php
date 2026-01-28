@@ -596,7 +596,7 @@ $(document).ready(function() {
             type: "POST",
             data: { add_ids: add_ids, remove_ids: remove_ids },
             dataType: "json",
-           success: function(response) {
+   success: function(response) {
     if(response.status === 'success') {
         // Show SweetAlert
         Swal.fire({
@@ -607,7 +607,7 @@ $(document).ready(function() {
             showConfirmButton: false
         });
 
-        // Update table badges and is_tagged
+        // Update current table rows locally
         table.rows().every(function() {
             var data = this.data();
             if(add_ids.includes(data.id)) data.is_tagged = true;
@@ -616,10 +616,16 @@ $(document).ready(function() {
         });
         table.draw(false);
 
-        // Reload the specific grade level table
-        if(tables[gradeLevel]) {
-            tables[gradeLevel].ajax.reload(null, false); // false = keep current page
-        }
+        // Reload **all grade-level DataTables**
+        $('.tab-pane').each(function() {
+            let tabPane = $(this);
+            let tableEl = tabPane.find('table');
+            let gradeLevel = tabPane.find('h5').text().replace(' Students', '').trim();
+
+            if(tables[gradeLevel]) {
+                tables[gradeLevel].ajax.reload(null, false); // false = keep current page
+            }
+        });
 
     } else {
         Swal.fire({
@@ -629,6 +635,7 @@ $(document).ready(function() {
         });
     }
 }
+
 
         });
     });

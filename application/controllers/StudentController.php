@@ -133,8 +133,8 @@ public function update_student()
 
      // Fetch active students for modal
 public function fetch_active_students() {
-    $grade_level = $this->input->post('grade_level'); // from AJAX
-    $section     = $this->input->post('section');     // from AJAX
+    $grade_level = $this->input->post('grade_level'); 
+    $section     = $this->input->post('section');     
 
     $this->db->select('id, fullname, section, grade_level, status');
     $this->db->from('tbl_students');

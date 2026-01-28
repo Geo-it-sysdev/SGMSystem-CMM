@@ -411,17 +411,18 @@ if (isset($user_id)) {
                 <h5 class="modal-title">Add Students</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-                  <div class="ms-4"> 
-    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
-        <!-- Section tabs will be generated dynamically -->
-    </ul>
-</div>
+
+            <!-- Section Tabs -->
+            <div class="ms-4">
+                <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
+                    <!-- Sections dynamically generated -->
+                </ul>
+            </div>
 
             <div class="modal-body">
                 <form id="tagStudentForm">
-                    <table id="studentTable" class="table table-bordered dt-responsive nowrap table-striped align-middle"
-                                                    style="width:100%">
-                                                    <thead class="table-light">
+                    <table id="studentTable" class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
+                        <thead class="table-light">
                             <tr>
                                 <th><input type="checkbox" id="selectAll"></th>
                                 <th>Full Name</th>
@@ -433,6 +434,7 @@ if (isset($user_id)) {
                     </table>
                 </form>
             </div>
+
             <div class="modal-footer">
                 <button type="button" id="saveStudents" class="btn btn-primary">Save</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -441,62 +443,59 @@ if (isset($user_id)) {
     </div>
 </div>
 
+
 <!-- jQuery & DataTables scripts -->
 <script>
 $(document).ready(function() {
+    var table;
 
-    // Initialize DataTable
-    var table = $('#studentTable').DataTable({
-        "ajax": {
-            "url": "<?= base_url('StudentController/fetch_active_students') ?>",
-            "type": "POST",
-            "data": function(d) {
-                // Get active grade tab
-                var activeGrade = $('.nav-pills .nav-link.active').attr('href'); 
-                var grade_level = activeGrade ? activeGrade.replace('#', '').replace('-student','') : '';
-                // Convert to proper format: e.g., grade7 → Grade 7
-                grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
-                    return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
-                });
-
-                // Get active section tab
-                var activeSection = $('#sectionTabs .nav-link.active').data('section') || '';
-                
-                d.grade_level = grade_level; 
-                d.section = activeSection;  
-            }
-        },
-        "columns": [
-            { 
-                "data": "id",
-                "render": function(data) {
-                    return '<input type="checkbox" class="student-checkbox" value="'+data+'">';
-                },
-                "orderable": false
-            },
-            { "data": "fullname" },
-            { "data": "section" },
-            { "data": "grade_level" }
-        ],
-        "responsive": true,
-        "paging": false,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "processing": true,
-        "language": {
-            "search": '',
-            "searchPlaceholder": ' Search...',
-            "processing": '<div class="table-loader"></div>'
-        },
-        "initComplete": function(settings, json) {
-            generateSectionTabs(json.data); // Generate section tabs dynamically
-            filterByFirstSection(); // Filter first section by default
+    // Function to initialize DataTable
+    function initTable(grade_level, section) {
+        if ($.fn.DataTable.isDataTable('#studentTable')) {
+            table.destroy();
+            $('#studentTable tbody').empty();
         }
-    });
 
-    // Generate section tabs dynamically based on current table data
-    function generateSectionTabs(data) {
+        table = $('#studentTable').DataTable({
+            "ajax": {
+                "url": "<?= base_url('StudentController/fetch_active_students') ?>",
+                "type": "POST",
+                "data": {
+                    grade_level: grade_level,
+                    section: section
+                }
+            },
+            "columns": [
+                { 
+                    "data": "id",
+                    "render": function(data) {
+                        return '<input type="checkbox" class="student-checkbox" value="'+data+'">';
+                    },
+                    "orderable": false
+                },
+                { "data": "fullname" },
+                { "data": "section" },
+                { "data": "grade_level" }
+            ],
+            "responsive": true,
+            "paging": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "processing": true,
+            "language": {
+                "search": '',
+                "searchPlaceholder": ' Search...',
+                "processing": '<div class="table-loader"></div>'
+            },
+            "initComplete": function(settings, json) {
+                generateSectionTabs(json.data, grade_level);
+            }
+        });
+    }
+
+    // Generate section tabs dynamically for a given grade
+    function generateSectionTabs(data, grade_level) {
         var sections = [];
         data.forEach(function(student) {
             if(student.section && !sections.includes(student.section)) {
@@ -504,7 +503,7 @@ $(document).ready(function() {
             }
         });
 
-        sections.sort(); // Alphabetical order
+        sections.sort();
 
         var html = '';
         sections.forEach(function(sec, index){
@@ -514,30 +513,58 @@ $(document).ready(function() {
         });
 
         $('#sectionTabs').html(html);
-    }
 
-    // Automatically filter table by the first section
-    function filterByFirstSection() {
-        var firstSection = $('#sectionTabs .nav-link').first();
-        if(firstSection.length) {
-            $('#sectionTabs .nav-link').removeClass('active');
-            firstSection.addClass('active');
-            table.ajax.reload();
+        // Auto-load first section
+        if(sections.length > 0) {
+            var firstSection = sections[0];
+            reloadTable(grade_level, firstSection);
         }
     }
 
-    // Reload table when grade tab changes
-    $('.nav-pills .nav-link').on('shown.bs.tab', function() {
-        table.ajax.reload();
-        filterByFirstSection(); // Reset to first section for new grade
+    // Reload DataTable for a specific grade and section
+    function reloadTable(grade_level, section) {
+        if(table) {
+            table.ajax.url("<?= base_url('StudentController/fetch_active_students') ?>").load({
+                grade_level: grade_level,
+                section: section
+            });
+        }
+    }
+
+    // Modal open: get active grade tab and init table
+    $('#TagstudentModal').on('shown.bs.modal', function() {
+        var activeGradeTab = $('.nav-pills .nav-link.active').attr('href');
+        var grade_level = activeGradeTab ? activeGradeTab.replace('#', '').replace('-student','') : '';
+        grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
+            return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
+        });
+
+        initTable(grade_level, '');
     });
 
-    // Reload table when section tab is clicked
+    // When grade tab changes
+    $('.nav-pills .nav-link').on('shown.bs.tab', function() {
+        var grade_level = $(this).attr('href').replace('#', '').replace('-student','');
+        grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
+            return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
+        });
+        initTable(grade_level, '');
+    });
+
+    // When section tab clicked
     $('#sectionTabs').on('click', '.nav-link', function(e) {
         e.preventDefault();
         $('#sectionTabs .nav-link').removeClass('active');
         $(this).addClass('active');
-        table.ajax.reload();
+
+        var section = $(this).data('section');
+        var activeGradeTab = $('.nav-pills .nav-link.active').attr('href');
+        var grade_level = activeGradeTab ? activeGradeTab.replace('#', '').replace('-student','') : '';
+        grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
+            return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
+        });
+
+        reloadTable(grade_level, section);
     });
 
     // Select all checkboxes
@@ -571,10 +598,6 @@ $(document).ready(function() {
     });
 
 });
-
-
-                                            
-
 
 </script>
 

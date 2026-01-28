@@ -413,8 +413,9 @@ if (isset($user_id)) {
             </div>
             <div class="modal-body">
                 <form id="tagStudentForm">
-                    <table id="studentTable" class="table table-bordered table-striped">
-                        <thead>
+                    <table id="studentTable" class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                                                    style="width:100%">
+                                                    <thead class="table-light">
                             <tr>
                                 <th><input type="checkbox" id="selectAll"></th>
                                 <th>Full Name</th>
@@ -439,20 +440,33 @@ if (isset($user_id)) {
 $(document).ready(function() {
 
     // Initialize DataTable
-    var table = $('#studentTable').DataTable({
-        "ajax": "<?= base_url('StudentController/fetch_active_students') ?>",
-        "columns": [
-            { "data": "id",
-              "render": function(data) {
-                  return '<input type="checkbox" class="student-checkbox" value="'+data+'">';
-              },
-              "orderable": false
+   var table = $('#studentTable').DataTable({
+    "ajax": "<?= base_url('StudentController/fetch_active_students') ?>",
+    "columns": [
+        { 
+            "data": "id",
+            "render": function(data) {
+                return '<input type="checkbox" class="student-checkbox" value="'+data+'">';
             },
-            { "data": "fullname" },
-            { "data": "section" },
-            { "data": "grade_level" }
-        ]
-    });
+            "orderable": false
+        },
+        { "data": "fullname" },
+        { "data": "section" },
+        { "data": "grade_level" }
+    ],
+    "responsive": true,
+    "paging": true,
+    "searching": true,
+    "ordering": true,
+    "info": true,
+    "processing": true,
+    "language": {
+        "search": '',
+        "searchPlaceholder": ' Search...',
+        "processing": '<div class="table-loader"></div>'
+    }
+});
+
 
     // Select all checkboxes
     $('#selectAll').on('click', function() {

@@ -180,7 +180,9 @@ if (isset($user_id)) {
                                                             <th>Grade Level</th>
                                                             <th>School Year</th>
                                                             <th>Status</th>
+                                                        <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                                                             <th>Action</th>
+                                                        <?php endif; ?> 
                                                         </tr>
                                                     </thead>
                                                     <tbody></tbody>
@@ -263,8 +265,14 @@ if (isset($user_id)) {
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-outline-primary btn-border" id="saveBtn">Save Student</button>
-                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-outline-primary btn-border" id="saveBtn">
+                            <i class="ri-save-line me-1"></i> Save Student
+                        </button>
+
+                        <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
+                            <i class="ri-close-circle-line me-1"></i> Cancel
+                        </button>
+
                         </div>
 
                     </div>
@@ -435,8 +443,14 @@ if (isset($user_id)) {
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" id="saveStudents" class="btn btn-outline-primary btn-border">Tag Students</button>
-                        <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">Close</button>
+                      <button type="button" id="saveStudents" class="btn btn-outline-primary btn-border">
+                            <i class="ri-user-add-line me-1"></i> Tag Students
+                        </button>
+
+                        <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
+                            <i class="ri-close-line me-1"></i> Close
+                        </button>
+
                     </div>
                 </div>
             </div>
@@ -718,6 +732,7 @@ if (isset($user_id)) {
                                 return data;
                             }
                         },
+                        <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                         {
                         data: null,
                         render: function(data) {
@@ -731,6 +746,7 @@ if (isset($user_id)) {
 
                             // Show all buttons for all users
                             buttons += `
+
                                 <button class="btn btn-sm btn-outline-primary editBtn btn-border" data-id="${data.id}">
                                     <i class="bx bx-edit me-1"></i>Edit
                                 </button>
@@ -740,11 +756,13 @@ if (isset($user_id)) {
                                 <button class="btn btn-sm ${statusClass} toggleStatusBtn" data-id="${data.id}" data-status="${data.status}">
                                     <i class="bx ${statusIcon} me-1"></i>${statusText}
                                 </button>
+
                             `;
 
                             return buttons;
                         }
                     }
+                    <?php endif; ?>
 
 
 
@@ -988,7 +1006,7 @@ if (isset($user_id)) {
                     });
 
                     $('#studentModalTitle').text('Edit Student');
-                    $('#saveBtn').text('Update');
+                    $('#saveBtn').html('<i class="ri-edit-line me-1"></i> Update');
                     $('#studentModal').modal('show');
                 });
             });

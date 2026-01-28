@@ -237,22 +237,24 @@ public function save_tagged_students() {
     // GET SECTIONS BY GRADE LEVEL
     // ---------------------------
     public function get_sections()
-    {
-        $grade_level = $this->input->get('grade_level');
-        $user_id = $this->session->userdata('po_user'); 
+{
+    $grade_level = $this->input->get('grade_level');
+    $user_id = $this->session->userdata('po_user'); 
 
-        $this->db->where('user_id', $user_id);
-        if (!empty($grade_level)) {
-            $this->db->where('grade_level', $grade_level);
-        }
+    $this->db->distinct();
+    $this->db->select('s.section');
+    $this->db->from('tbl_students s');
+    $this->db->join('tbl_tag_students t', 't.student_id = s.id', 'inner');
+    $this->db->where('t.user_id', $user_id); // only students tagged to this user
 
-        $sections = $this->db->select('section')
-                             ->distinct()
-                             ->get('tbl_students')
-                             ->result_array();
-
-        echo json_encode(array_column($sections, 'section'));
+    if (!empty($grade_level)) {
+        $this->db->where('s.grade_level', $grade_level);
     }
+
+    $sections = $this->db->get()->result_array();
+
+    echo json_encode(array_column($sections, 'section'));
+}
 
     // ---------------------------
     // GET STUDENTS BY SECTION

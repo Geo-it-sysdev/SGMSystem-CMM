@@ -110,7 +110,7 @@ if (isset($user_id)) {
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
 
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <?php if ($user_type === 'Teacher'): ?>
+                                                      <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill"
                                                             data-bs-toggle="modal" data-bs-target="#studentModal">
@@ -118,12 +118,13 @@ if (isset($user_id)) {
                                                         </button>
                                                         <?php endif; ?>
 
+                                                        <?php if ($user_type === 'Teacher'): ?>
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill"
                                                             data-bs-toggle="modal" data-bs-target="#TagstudentModal">
-                                                            <i class="ri-add-line align-bottom me-1"></i>Add Student
+                                                            <i class="ri-add-line align-bottom me-1"></i>Tag Student
                                                         </button>
-
+                                                        <?php endif; ?>
                                                         <div class="dropdown">
                                                             <button
                                                                 class="btn btn-outline-primary dropdown-toggle rounded-pill"
@@ -264,8 +265,8 @@ if (isset($user_id)) {
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-success" id="saveBtn">Save</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="saveBtn">Save Student</button>
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                         </div>
 
                     </div>
@@ -436,8 +437,8 @@ if (isset($user_id)) {
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" id="saveStudents" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="saveStudents" class="btn btn-primary">Add Students</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -629,7 +630,7 @@ if (isset($user_id)) {
                             table.rows().every(function() {
                                 var data = this.data();
                                 if (add_ids.includes(data.id)) data.is_tagged =
-                                true;
+                                    true;
                                 if (remove_ids.includes(data.id)) data.is_tagged =
                                     false;
                                 this.data(data);

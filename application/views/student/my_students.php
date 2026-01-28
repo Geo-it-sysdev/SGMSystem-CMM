@@ -478,7 +478,7 @@ $(document).ready(function() {
             { "data": "grade_level" }
         ],
         "responsive": true,
-        "paging": false,
+        "paging": true,
         "searching": true,
         "ordering": true,
         "info": true,
@@ -571,7 +571,7 @@ $(document).ready(function() {
 
 });
 
-                                            
+
 
 
 </script>

@@ -460,7 +460,7 @@ $(document).ready(function() {
 
                 // Get active section tab
                 var activeSection = $('#sectionTabs .nav-link.active').data('section') || '';
-
+                
                 d.grade_level = grade_level; 
                 d.section = activeSection;  
             }
@@ -489,11 +489,12 @@ $(document).ready(function() {
             "processing": '<div class="table-loader"></div>'
         },
         "initComplete": function(settings, json) {
-            generateSectionTabs(json.data); // Generate section tabs after table loads
+            generateSectionTabs(json.data); // Generate section tabs dynamically
+            filterByFirstSection(); // Automatically filter by first section
         }
     });
 
-    // Function to generate section tabs dynamically
+    // Generate section tabs dynamically
     function generateSectionTabs(data) {
         var sections = [];
         data.forEach(function(student) {
@@ -514,11 +515,20 @@ $(document).ready(function() {
         $('#sectionTabs').html(html);
     }
 
+    // Automatically filter by first section
+    function filterByFirstSection() {
+        var firstSection = $('#sectionTabs .nav-link').first();
+        if(firstSection.length) {
+            $('#sectionTabs .nav-link').removeClass('active');
+            firstSection.addClass('active');
+            table.ajax.reload();
+        }
+    }
+
     // Reload table when grade tab changes
     $('.nav-pills .nav-link').on('shown.bs.tab', function() {
         table.ajax.reload();
-        // Reset section tab to first
-        $('#sectionTabs .nav-link').removeClass('active').first().addClass('active');
+        filterByFirstSection(); // Automatically filter first section of the new grade
     });
 
     // Reload table when section tab changes
@@ -561,6 +571,7 @@ $(document).ready(function() {
 
 });
 
+                                            
 
 
 </script>

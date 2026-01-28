@@ -263,8 +263,8 @@ if (isset($user_id)) {
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary" id="saveBtn">Save Student</button>
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-outline-primary btn-border" id="saveBtn">Save Student</button>
+                            <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">Cancel</button>
                         </div>
 
                     </div>
@@ -435,8 +435,8 @@ if (isset($user_id)) {
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" id="saveStudents" class="btn btn-primary">Tag Students</button>
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="saveStudents" class="btn btn-outline-primary btn-border">Tag Students</button>
+                        <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>

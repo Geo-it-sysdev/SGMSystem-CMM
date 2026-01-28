@@ -116,7 +116,8 @@ if (isset($user_id)) {
                 </li>
                 <?php endif; ?>
 
-                <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'|| $user_type === 'Teacher'): ?>
+                <?php if ($user_type === 'Teacher'): ?>
+
                 <li class="nav-item">
                     <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/activity_student') ? 'active' : ''; ?>"
                         href="<?php echo site_url('GradingSystem/activity_student'); ?>">
@@ -127,7 +128,9 @@ if (isset($user_id)) {
                         <span>Students’ Activity</span>
                     </a>
                 </li>
+                <?php endif; ?>
 
+                <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'|| $user_type === 'Teacher'): ?>
                 <li class="nav-item">
                     <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/final_grades_student') ? 'active' : ''; ?>"
                         href="<?php echo site_url('GradingSystem/final_grades_student'); ?>">

@@ -218,8 +218,9 @@ class StudentModel extends CI_Model {
             (
                 SELECT COUNT(s.id)
                 FROM tbl_students s
+                INNER JOIN tbl_tag_students t ON t.student_id = s.id
                 WHERE s.grade_level = a.grade_level
-                AND s.user_id = {$user_id}  -- only students assigned to this user
+                AND t.user_id = {$user_id}  -- only students tagged to this user
                 AND NOT EXISTS (
                     SELECT 1
                     FROM tbl_activities_lines l
@@ -231,7 +232,6 @@ class StudentModel extends CI_Model {
         $this->db->from("tbl_activities_header a");
         $this->db->where("a.grade_level", $grade_level);
 
-        // Filter activities header by user if not admin
         if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
             $this->db->where('a.user_id', $user_id);
         }

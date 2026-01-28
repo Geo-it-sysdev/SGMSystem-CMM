@@ -139,10 +139,9 @@ public function update_student()
     $this->db->from('tbl_students');
     $this->db->where('status', 'active');
 
-    if (!empty($grade_level)) {
-        $this->db->where('grade_level', $grade_level); // filter by grade_level
+   if(!empty($grade_level)) {
+        $this->db->where('grade_level', $grade_level);
     }
-
     $query = $this->db->get();
 
     $data = [];

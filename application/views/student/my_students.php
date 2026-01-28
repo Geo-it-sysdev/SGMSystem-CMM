@@ -415,7 +415,7 @@ if (isset($user_id)) {
                     <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
                     </ul>
                 </div>
-                
+
             <div class="modal-body">
                 <form id="tagStudentForm">
                     <table id="studentTable" class="table table-bordered dt-responsive nowrap table-striped align-middle"
@@ -443,35 +443,53 @@ if (isset($user_id)) {
 <!-- jQuery & DataTables scripts -->
 <script>
 $(document).ready(function() {
-
-    // Initialize DataTable
-   var table = $('#studentTable').DataTable({
-    "ajax": "<?= base_url('StudentController/fetch_active_students') ?>",
-    "columns": [
-        { 
-            "data": "id",
-            "render": function(data) {
-                return '<input type="checkbox" class="student-checkbox" value="'+data+'">';
-            },
-            "orderable": false
+    // Initialize DataTable without ajax yet
+    var table = $('#studentTable').DataTable({
+        "ajax": {
+            "url": "<?= base_url('StudentController/fetch_active_students') ?>",
+            "type": "POST",
+            "data": function(d) {
+                // Get active tab grade
+                var activeTab = $('.nav-pills .nav-link.active').attr('href'); // e.g., "#grade7-student"
+                var grade_level = activeTab ? activeTab.replace('#', '').replace('-student','') : '';
+                
+                // Convert id back to readable grade
+                grade_level = grade_level.replace(/([a-z]+)([0-9]+)/i, function(match, p1, p2){
+                    return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
+                });
+                
+                d.grade_level = grade_level; // send to server
+            }
         },
-        { "data": "fullname" },
-        { "data": "section" },
-        { "data": "grade_level" }
-    ],
-    "responsive": true,
-    "paging": false,
-    "searching": true,
-    "ordering": true,
-    "info": true,
-    "processing": true,
-    "language": {
-        "search": '',
-        "searchPlaceholder": ' Search...',
-        "processing": '<div class="table-loader"></div>'
-    }
-});
+        "columns": [
+            { 
+                "data": "id",
+                "render": function(data) {
+                    return '<input type="checkbox" class="student-checkbox" value="'+data+'">';
+                },
+                "orderable": false
+            },
+            { "data": "fullname" },
+            { "data": "section" },
+            { "data": "grade_level" }
+        ],
+        "responsive": true,
+        "paging": false,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "processing": true,
+        "language": {
+            "search": '',
+            "searchPlaceholder": ' Search...',
+            "processing": '<div class="table-loader"></div>'
+        }
+    });
 
+    // Reload table when tab changes
+    $('.nav-pills .nav-link').on('shown.bs.tab', function(e) {
+        table.ajax.reload();
+    });
 
     // Select all checkboxes
     $('#selectAll').on('click', function() {
@@ -503,6 +521,7 @@ $(document).ready(function() {
         });
     });
 });
+
 </script>
 
 

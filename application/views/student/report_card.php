@@ -80,12 +80,21 @@
                                         <h5 class="mb-3"><?= $grade ?> Activity</h5>
                                         <?php if($is_admin || $grade_levels): ?>
                                         <div class="d-flex align-items-center gap-2 mb-3">
-                                           
+                                            <?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
+                                            <button type="button"
+                                                class="btn btn-outline-success addActivityBtn rounded-pill btn-border"
+                                                data-bs-toggle="modal" data-bs-target="#ActivityModal"
+                                                data-grade="<?= $grade ?>">
+                                                <i class="ri-add-line align-bottom "></i> Add Activity
+                                            </button>
+                                            <?php endif; ?>
                                         </div>
                                         <?php endif; ?>
 
-                                          <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3 text-dark"
-                                                    id="subjectTabs_<?= $grade_id ?>" role="tablist"></ul>
+                                      <!-- Section Tabs -->
+<ul class="nav nav-tabs nav-border-top nav-border-top-info mb-3 text-dark"
+    id="sectionTabs_<?= $grade_id ?>" role="tablist"></ul>
+
 
                                         <table id="activityTable_<?= $grade_id ?>" class="table table-bordered dt-responsive nowrap table-striped align-middle activityTable" style="width:100%">
                                             <thead>
@@ -116,81 +125,79 @@
 
 <script>
 $(document).ready(function() {
+    let tables = {};
 
-    let tables = {}; // store DataTables per grade
-
-    function initTable(grade_id, grade_name, section_name = '') {
-        tables[grade_id] = $('#activityTable_' + grade_id).DataTable({
+    function initTable(grade_id, grade_name) {
+        let table = $('#activityTable_' + grade_id).DataTable({
             "processing": true,
             "serverSide": false,
             "destroy": true,
             "ajax": {
                 "url": "<?= base_url('StudentController/fetch_students_report_card') ?>",
                 "type": "GET",
-                "data": function(d) {
-                    d.grade = grade_name;
-                    d.section = section_name; // <-- send section filter
-                }
+                "data": { grade: grade_name }
             },
             "columns": [
                 { "data": "student_name" },
-                { "data": "grade_level" },
+                { "data": "subject" },
                 { "data": "section" },
                 { "data": "created_at" },
                 { "data": "action", "orderable": false, "searchable": false }
             ]
         });
+
+        // Store instance
+        tables[grade_id] = table;
+
+        // On AJAX load, create Section filter
+        table.on('xhr', function() {
+            let data = table.ajax.json().data;
+
+            let sections = [...new Set(data.map(d => d.section))].sort();
+            let sectionTabs = $(`#sectionTabs_${grade_id}`);
+            sectionTabs.empty();
+
+            sections.forEach((section, index) => {
+                let activeClass = index === 0 ? 'active' : '';
+                sectionTabs.append(`
+                    <li class="nav-item">
+                        <button class="nav-link ${activeClass}" data-section="${section}" type="button">${section}</button>
+                    </li>
+                `);
+            });
+
+            // Filter table by section
+            sectionTabs.find('button').click(function() {
+                let section = $(this).data('section');
+                sectionTabs.find('button').removeClass('active');
+                $(this).addClass('active');
+                table.column(2).search(section).draw(); // column index 2 = Section
+            });
+
+            // Trigger first section
+            sectionTabs.find('button.active').click();
+        });
     }
 
-    // Initialize first active tab table
+    // Initialize first active tab
     let firstPane = $('.tab-pane.show.active');
     let firstGradeId = firstPane.attr('id').replace('-student','');
     let firstGradeName = firstPane.data('grade');
-    let firstSection = firstPane.find('#subjectTabs_' + firstGradeId + ' .nav-link.active').data('subject') || '';
-    initTable(firstGradeId, firstGradeName, firstSection);
+    initTable(firstGradeId, firstGradeName);
 
-    // When switching grade tabs
+    // Tab switch
     $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
-        let target = $(e.target).attr("href"); // e.g., "#grade7-student"
+        let target = $(e.target).attr("href");
         let grade_id = target.replace('#','').replace('-student','');
         let grade_name = $('#' + grade_id + '-student').data('grade');
-        let section = $('#' + grade_id + '-student').find('#subjectTabs_' + grade_id + ' .nav-link.active').data('subject') || '';
 
         if (!tables[grade_id]) {
-            initTable(grade_id, grade_name, section);
+            initTable(grade_id, grade_name);
         } else {
-            // reload table with active section
-            tables[grade_id].settings()[0].ajax.data = function(d){
-                d.grade = grade_name;
-                d.section = section;
-            };
             tables[grade_id].ajax.reload();
         }
     });
-
-    // When clicking a section tab inside a grade
-    $('ul[id^="subjectTabs_"]').on('click', '.nav-link', function(e) {
-        e.preventDefault();
-        let section = $(this).data('subject');
-        let gradePane = $(this).closest('.tab-pane');
-        let grade_id = gradePane.attr('id').replace('-student','');
-
-        // make the clicked tab active
-        $(this).closest('ul').find('.nav-link').removeClass('active');
-        $(this).addClass('active');
-
-        if (tables[grade_id]) {
-            // reload table with new section filter
-            tables[grade_id].settings()[0].ajax.data = function(d){
-                d.grade = gradePane.data('grade');
-                d.section = section;
-            };
-            tables[grade_id].ajax.reload();
-        }
-    });
-
 });
-
 
 </script>
 

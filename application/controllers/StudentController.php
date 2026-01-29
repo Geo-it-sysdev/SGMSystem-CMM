@@ -959,26 +959,30 @@ public function save_activity()
     }
 
 
-    public function fetch_students_report_card() {
-        $grade = $this->input->get('grade'); // automatically get grade from tab
+public function fetch_students_report_card() {
+    $grade = $this->input->get('grade');
 
-        $this->db->select('fullname AS student_name, grade_level, section, created_at');
-        $this->db->from('tbl_students');
+    $this->db->select('fullname AS student_name, subject, section, created_at');
+    $this->db->from('tbl_students');
 
-        if (!empty($grade)) {
-            $this->db->where('grade_level', $grade); // automatically filter by tab's grade
-        }
-
-        $query = $this->db->get();
-        $students = $query->result_array();
-
-        // Add action button
-        foreach ($students as &$student) {
-            $student['action'] = '<button class="btn btn-sm btn-primary viewStudentBtn" data-name="'.htmlspecialchars($student['student_name']).'"><i class="ri-eye-line"></i> View</button>';
-        }
-
-        echo json_encode(['data' => $students]);
+    if (!empty($grade)) {
+        $this->db->where('grade_level', $grade);
     }
+
+    $query = $this->db->get();
+    $students = $query->result_array();
+
+    // Add action button
+    foreach ($students as &$student) {
+        $student['action'] = '<button class="btn btn-sm btn-primary viewStudentBtn" data-name="' 
+                                . htmlspecialchars($student['student_name']) . '">
+                                <i class="ri-eye-line"></i> View
+                               </button>';
+    }
+
+    echo json_encode(['data' => $students]);
+}
+
 
 
 

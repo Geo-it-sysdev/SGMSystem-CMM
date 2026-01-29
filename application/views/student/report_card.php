@@ -116,6 +116,7 @@ $(document).ready(function() {
 
     let tables = {}; // store DataTables per grade
 
+    // Initialize DataTable for a grade + section
     function initTable(grade_id, grade_name, section_name = '') {
         tables[grade_id] = $('#activityTable_' + grade_id).DataTable({
             "processing": true,
@@ -139,23 +140,28 @@ $(document).ready(function() {
         });
     }
 
-    // Load sections dynamically per grade
+    // Load sections dynamically for a grade
     function loadSections(grade_id, grade_name) {
         $.get("<?= base_url('StudentController/fetch_sections') ?>", {grade: grade_name}, function(res){
             let sections = JSON.parse(res);
             let tabs = $('#subjectTabs_' + grade_id);
             tabs.empty();
+
+            if(sections.length === 0) {
+                sections = ['All']; // default if no section found
+            }
+
             sections.forEach((sec, index) => {
                 let active_class = index === 0 ? 'active' : '';
                 tabs.append(`
                     <li class="nav-item">
-                        <a class="nav-link ${active_class}" data-subject="${sec}" href="#">${sec}</a>
+                        <a class="nav-link ${active_class}" href="#" data-section="${sec}">${sec}</a>
                     </li>
                 `);
             });
 
-            // Init table with first section
-            let firstSection = sections[0] || '';
+            // Initialize table with first section
+            let firstSection = sections[0];
             initTable(grade_id, grade_name, firstSection);
 
             // Section click event
@@ -164,41 +170,46 @@ $(document).ready(function() {
                 $('#subjectTabs_' + grade_id + ' .nav-link').removeClass('active');
                 $(this).addClass('active');
 
-                let section = $(this).data('subject');
-                if (tables[grade_id]) {
-                    tables[grade_id].ajax.url("<?= base_url('StudentController/fetch_students_report_card') ?>").load(function(){
-                        tables[grade_id].ajax.params = {grade: grade_name, section: section};
-                        tables[grade_id].ajax.reload();
-                    });
+                let section = $(this).data('section');
+                if(tables[grade_id]) {
+                    tables[grade_id].ajax.reload(null, false); // reload table
+                    tables[grade_id].settings()[0].ajax.data = function(d){
+                        d.grade = grade_name;
+                        d.section = section;
+                    };
+                    tables[grade_id].ajax.reload();
                 }
             });
         });
     }
 
-    // Initialize first active tab
+    // Initialize first active grade tab
     let firstPane = $('.tab-pane.show.active');
     let firstGradeId = firstPane.attr('id').replace('-student','');
     let firstGradeName = firstPane.data('grade');
     loadSections(firstGradeId, firstGradeName);
 
-    // When switching grade tabs
-    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+    // Grade tab switch
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e){
         let target = $(e.target).attr("href");
         let grade_id = target.replace('#','').replace('-student','');
         let grade_name = $('#' + grade_id + '-student').data('grade');
 
-        if (!tables[grade_id]) {
+        if(!tables[grade_id]) {
             loadSections(grade_id, grade_name);
         } else {
-            // Reload current section
-            let section = $('#' + grade_id + '-student').find('#subjectTabs_' + grade_id + ' .nav-link.active').data('subject') || '';
-            tables[grade_id].ajax.url("<?= base_url('StudentController/fetch_students_report_card') ?>").load(function(){
-                tables[grade_id].ajax.params = {grade: grade_name, section: section};
-                tables[grade_id].ajax.reload();
-            });
+            // reload current section
+            let section = $('#' + grade_id + '-student').find('#subjectTabs_' + grade_id + ' .nav-link.active').data('section') || '';
+            tables[grade_id].settings()[0].ajax.data = function(d){
+                d.grade = grade_name;
+                d.section = section;
+            };
+            tables[grade_id].ajax.reload();
         }
     });
+
 });
+
 
 </script>
 

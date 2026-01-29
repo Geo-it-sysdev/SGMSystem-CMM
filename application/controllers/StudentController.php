@@ -959,45 +959,46 @@ public function save_activity()
     }
 
 
-    public function fetch_students_report_card() {
-        $grade = $this->input->get('grade');
-        $section = $this->input->get('section');
+// Fetch students with optional grade + section filter
+public function fetch_students_report_card() {
+    $grade = $this->input->get('grade');
+    $section = $this->input->get('section');
 
-        $this->db->select('fullname AS student_name, grade_level, section, created_at');
-        $this->db->from('tbl_students');
+    $this->db->select('fullname AS student_name, grade_level, section, created_at');
+    $this->db->from('tbl_students');
 
-        if (!empty($grade)) {
-            $this->db->where('grade_level', $grade);
-        }
-        if (!empty($section)) {
-            $this->db->where('section', $section);
-        }
-
-        $query = $this->db->get();
-        $students = $query->result_array();
-
-        foreach ($students as &$student) {
-            $student['action'] = '<button class="btn btn-sm btn-primary viewStudentBtn" data-name="'.htmlspecialchars($student['student_name']).'"><i class="ri-eye-line"></i> View</button>';
-        }
-
-        echo json_encode(['data' => $students]);
+    if (!empty($grade) && $grade != 'All') {
+        $this->db->where('grade_level', $grade);
+    }
+    if (!empty($section) && $section != 'All') {
+        $this->db->where('section', $section);
     }
 
-    // Fetch unique sections per grade
-    public function fetch_sections() {
-        $grade = $this->input->get('grade');
+    $query = $this->db->get();
+    $students = $query->result_array();
 
-        $this->db->select('DISTINCT section');
-        $this->db->from('tbl_students');
-        if (!empty($grade)) {
-            $this->db->where('grade_level', $grade);
-        }
-
-        $query = $this->db->get();
-        $sections = array_column($query->result_array(), 'section');
-
-        echo json_encode($sections);
+    foreach ($students as &$student) {
+        $student['action'] = '<button class="btn btn-sm btn-primary viewStudentBtn" data-name="'.htmlspecialchars($student['student_name']).'"><i class="ri-eye-line"></i> View</button>';
     }
+
+    echo json_encode(['data' => $students]);
+}
+
+// Fetch unique sections for a grade
+public function fetch_sections() {
+    $grade = $this->input->get('grade');
+
+    $this->db->select('DISTINCT section');
+    $this->db->from('tbl_students');
+    if (!empty($grade) && $grade != 'All') {
+        $this->db->where('grade_level', $grade);
+    }
+
+    $query = $this->db->get();
+    $sections = array_column($query->result_array(), 'section');
+
+    echo json_encode($sections);
+}
 
 
 

@@ -99,12 +99,21 @@ public function search_students()
     $term = $this->input->get('term');
     $limit = $this->input->get('limit') ?? 10;
 
+    if(!$term) {
+        echo json_encode([]);
+        return;
+    }
+
+    $this->db->select('id, full_name');
     $this->db->like('full_name', $term);
     $this->db->limit($limit);
-    $students = $this->db->get('tbl_students')->result();
+    $query = $this->db->get('tbl_students');
+
+    $students = $query->result_array(); // return as array
 
     echo json_encode($students);
 }
+
 
 // Save/Add or Edit SSG member
 public function save_ssg_member() 

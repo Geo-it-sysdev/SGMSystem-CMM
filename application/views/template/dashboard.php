@@ -881,29 +881,38 @@ $(document).ready(function() {
     $("#student_name").autocomplete({
         source: function(request, response) {
             if(request.term.length < 3) return; // require at least 3 letters
+
             $.ajax({
                 url: '<?= base_url("EventsController/search_students") ?>',
                 type: 'GET',
                 dataType: 'json',
                 data: { term: request.term, limit: 10 },
                 success: function(data) {
+                    // Check if data is received
+                    if(!data || data.length === 0) {
+                        response([]);
+                        return;
+                    }
+
+                    // Map data to autocomplete format
                     response($.map(data, function(item) {
                         return {
-                            label: item.full_name,
-                            value: item.full_name,
-                            id: item.id
+                            label: item.full_name, // shown in dropdown
+                            value: item.full_name, // filled in input
+                            id: item.id            // store ID
                         };
                     }));
                 },
                 error: function(xhr) {
-                    console.log('Autocomplete error:', xhr.responseText);
+                    console.error('Autocomplete error:', xhr.responseText);
+                    response([]);
                 }
             });
         },
         minLength: 3,
         select: function(event, ui) {
-            $('#student_name').val(ui.item.value); // display name
-            $('#student_id').val(ui.item.id);     // store ID
+            $("#student_name").val(ui.item.value);
+            $("#student_id").val(ui.item.id); // store student ID
             return false;
         }
     });

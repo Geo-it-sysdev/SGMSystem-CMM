@@ -280,8 +280,8 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" id="deleteEventBtn"
                         style="display:none;">Delete</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Event</button>
+                    <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-primary btn-border">Save Event</button>
                 </div>
             </div>
         </form>

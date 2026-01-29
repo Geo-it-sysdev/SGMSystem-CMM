@@ -246,8 +246,8 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-outline-primary btn-border" id="saveMemberBtn"><i class="ri-save-line"></i>Save Member</button>
-                    <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"><i class="ri-close-line"></i>Close</button>
+                    <button type="submit" class="btn btn-outline-primary btn-border" id="saveMemberBtn"><i class="ri-save-line"></i> Save Member</button>
+                    <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"><i class="ri-close-line"></i> Close</button>
                 </form>
             </div>
         </div>

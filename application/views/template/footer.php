@@ -4,7 +4,7 @@
             <div class="col-sm-6">
                 <script>
                 document.write(new Date().getFullYear())
-                </script> © Student Grading Management System. @CMM
+                </script> © Student Grading Management System. @Colegio de la Medalla Milagrosa
             </div>
             <div class="col-sm-6">
                 <div class="d-none d-sm-flex justify-content-end align-items-center">

@@ -131,14 +131,15 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Final Grades</h5>
-                         
+
                     </div>
                     <br>
 
-                  <div class="ms-4"> 
-                    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs" role="tablist">
-                    </ul>
-                </div>
+                    <div class="ms-4">
+                        <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs"
+                            role="tablist">
+                        </ul>
+                    </div>
 
 
                     <div class="modal-body">
@@ -173,8 +174,10 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-success" id="btnPrintFinalStudentGrades">Print</button>
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-outline-success btn-border"
+                            id="btnPrintFinalStudentGrades"> <i class="ri-printer-fill me-1"></i> Print</button>
+                        <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"> <i
+                                class="ri-close-fill me-1"></i> Close</button>
                     </div>
                 </div>
             </div>
@@ -246,8 +249,10 @@
                         </div> <!-- Grades Table -->
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-success" id="btnPrintFinalGrades">Print</button>
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-outline-success btn-border" id="btnPrintFinalGrades"> <i
+                                class="ri-printer-fill me-1"></i>Print</button>
+                        <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"> <i
+                                class="ri-close-fill me-1"></i> Close</button>
                     </div>
                 </div>
             </div>
@@ -260,7 +265,7 @@
         <script>
         $(document).ready(function() {
             let isSwitchingModal = false;
-let finalGradesTableInstance = null;
+            let finalGradesTableInstance = null;
 
             // Initialize all activity tables
             $('.activityTable').each(function() {
@@ -304,7 +309,7 @@ let finalGradesTableInstance = null;
                         <?php if($is_admin || $grade_levels): ?> {
                             data: 'id',
                             render: function(data, type, row) {
-                                return `<button class="btn btn-sm btn-outline-info viewBtn" 
+                                return `<button class="btn btn-sm btn-outline-info viewBtn btn-border" 
                         data-id="${data}" 
                         data-section="${row.section}" 
                         data-subject="${row.subject}" 
@@ -321,7 +326,7 @@ let finalGradesTableInstance = null;
                     ],
                     order: [
                         [5, 'desc']
-                    ], 
+                    ],
                     destroy: true
                 });
             });
@@ -336,68 +341,77 @@ let finalGradesTableInstance = null;
                 }
             });
 
-           $(document).on('click', '.viewBtn', function () {
-            let section = $(this).data('section'); 
-            let subject = $(this).data('subject');
-            let quarter = $(this).data('quarter');
-            let grade_level = $(this).data('grade_level');
-            let full_name = $(this).data('full_name');
+            $(document).on('click', '.viewBtn', function() {
+                let section = $(this).data('section');
+                let subject = $(this).data('subject');
+                let quarter = $(this).data('quarter');
+                let grade_level = $(this).data('grade_level');
+                let full_name = $(this).data('full_name');
 
-            $('#grade_level').val(grade_level);
-            $('#quarter').val(quarter);
-            $('#subjects').val(subject);
-            $('#full_name').val(full_name);
+                $('#grade_level').val(grade_level);
+                $('#quarter').val(quarter);
+                $('#subjects').val(subject);
+                $('#full_name').val(full_name);
 
-            if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
-                $('#finalGradesTable').DataTable().destroy();
-            }
-            $('#finalGradesTable tbody').empty();
+                if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
+                    $('#finalGradesTable').DataTable().destroy();
+                }
+                $('#finalGradesTable tbody').empty();
 
-            let sectionsArr = section.split(' | ').sort();
-            let tabsHtml = '';
-            sectionsArr.forEach((sec, index) => {
-                tabsHtml += `
+                let sectionsArr = section.split(' | ').sort();
+                let tabsHtml = '';
+                sectionsArr.forEach((sec, index) => {
+                    tabsHtml += `
                     <li class="nav-item">
                         <a class="nav-link ${index === 0 ? 'active' : ''}" data-section="${sec}" href="#" role="tab">${sec}</a>
                     </li>
                 `;
-            });
-            $('#sectionTabs').html(tabsHtml);
+                });
+                $('#sectionTabs').html(tabsHtml);
 
-            // Initialize DataTable
-            let finalGradesTableInstance = $('#finalGradesTable').DataTable({
-                ajax: {
-                    url: "<?= site_url('StudentController/fetch_final_grades'); ?>",
-                    type: 'POST',
-                    data: {
-                        section: sectionsArr.join(' | '), 
-                        subject,
-                        quarter,
-                        grade_level
+                // Initialize DataTable
+                let finalGradesTableInstance = $('#finalGradesTable').DataTable({
+                    ajax: {
+                        url: "<?= site_url('StudentController/fetch_final_grades'); ?>",
+                        type: 'POST',
+                        data: {
+                            section: sectionsArr.join(' | '),
+                            subject,
+                            quarter,
+                            grade_level
+                        },
+                        dataSrc: 'data'
                     },
-                    dataSrc: 'data'
-                },
-                columns: [
-                    { data: 'student_name' },
-                    { data: 'section' },
-                    { data: 'final_grade' },
-                    {
-                        data: 'remarks',
-                        render: function (data) {
-                            let badgeClass = 'bg-secondary';
-                            if (data === "Outstanding") badgeClass = "bg-success";
-                            else if (data === "Very Satisfactory") badgeClass = "bg-primary";
-                            else if (data === "Satisfactory") badgeClass = "bg-info";
-                            else if (data === "Fair") badgeClass = "bg-warning text-dark";
-                            else if (data === "Did Not Meet Expectations") badgeClass = "bg-danger";
-                            else if (data === "Failure") badgeClass = "bg-dark";
-                            return `<span class="badge ${badgeClass}">${data}</span>`;
-                        }
-                    },
-                    {
-                        data: null,
-                        render: function (d) {
-                            return `<button class="btn btn-sm btn-outline-primary viewDetailsBtn"
+                    columns: [{
+                            data: 'student_name'
+                        },
+                        {
+                            data: 'section'
+                        },
+                        {
+                            data: 'final_grade'
+                        },
+                        {
+                            data: 'remarks',
+                            render: function(data) {
+                                let badgeClass = 'bg-secondary';
+                                if (data === "Outstanding") badgeClass = "bg-success";
+                                else if (data === "Very Satisfactory") badgeClass =
+                                    "bg-primary";
+                                else if (data === "Satisfactory") badgeClass =
+                                    "bg-info";
+                                else if (data === "Fair") badgeClass =
+                                    "bg-warning text-dark";
+                                else if (data === "Did Not Meet Expectations")
+                                    badgeClass = "bg-danger";
+                                else if (data === "Failure") badgeClass = "bg-dark";
+                                return `<span class="badge ${badgeClass}">${data}</span>`;
+                            }
+                        },
+                        {
+                            data: null,
+                            render: function(d) {
+                                return `<button class="btn btn-sm btn-outline-primary viewDetailsBtn btn-border"
                                 data-student_name="${d.student_name}"
                                 data-section="${d.section}"
                                 data-subject="${subject}"
@@ -407,35 +421,39 @@ let finalGradesTableInstance = null;
                                 data-final_grade="${d.final_grade}">
                                 <i class="bi bi-journal-text"></i> View Details
                             </button>`;
-                        },
-                        orderable: false,
-                        searchable: false
+                            },
+                            orderable: false,
+                            searchable: false
+                        }
+                    ],
+                    responsive: true,
+                    paging: true,
+                    searching: true,
+                    language: {
+                        infoFiltered: ""
+                    },
+                    initComplete: function() {
+                        let activeSection = $('#sectionTabs .nav-link.active').data(
+                            'section');
+                        finalGradesTableInstance.column(1).search('^' + activeSection + '$',
+                            true, false).draw();
                     }
-                ],
-                responsive: true,
-                paging: true,
-                searching: true,
-                language: {
-                    infoFiltered: "" 
-                },
-                initComplete: function() {
-                    let activeSection = $('#sectionTabs .nav-link.active').data('section');
-                    finalGradesTableInstance.column(1).search('^' + activeSection + '$', true, false).draw();
-                }
+                });
+
+                $(document).off('click', '#sectionTabs .nav-link').on('click', '#sectionTabs .nav-link',
+                    function(e) {
+                        e.preventDefault();
+                        $('#sectionTabs .nav-link').removeClass('active');
+                        $(this).addClass('active');
+
+                        let selectedSection = $(this).data('section');
+                        finalGradesTableInstance.column(1).search('^' + selectedSection + '$', true,
+                            false).draw();
+                    });
+
+                // Show modal
+                $('#finalGradesModal').modal('show');
             });
-
-            $(document).off('click', '#sectionTabs .nav-link').on('click', '#sectionTabs .nav-link', function(e) {
-                e.preventDefault();
-                $('#sectionTabs .nav-link').removeClass('active');
-                $(this).addClass('active');
-
-                let selectedSection = $(this).data('section');
-                finalGradesTableInstance.column(1).search('^' + selectedSection + '$', true, false).draw();
-            });
-
-            // Show modal
-            $('#finalGradesModal').modal('show');
-        });
 
 
 
@@ -663,7 +681,7 @@ let finalGradesTableInstance = null;
 
                 });
 
-               isSwitchingModal = true;
+                isSwitchingModal = true;
                 $('#finalGradesModal').modal('hide');
                 $('#studentDetailsModal').modal('show');
 
@@ -759,8 +777,8 @@ let finalGradesTableInstance = null;
             });
 
 
-            $('#finalGradesModal').on('hidden.bs.modal', function () {
-                if (isSwitchingModal) return; 
+            $('#finalGradesModal').on('hidden.bs.modal', function() {
+                if (isSwitchingModal) return;
 
                 // Real close → clean up
                 if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
@@ -770,7 +788,7 @@ let finalGradesTableInstance = null;
             });
 
 
-            $('#studentDetailsModal').on('hidden.bs.modal', function () {
+            $('#studentDetailsModal').on('hidden.bs.modal', function() {
                 isSwitchingModal = false;
 
                 $('#finalGradesModal').modal('show');

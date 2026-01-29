@@ -172,7 +172,9 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                      <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
+                        <i class="ri-close-fill me-1"></i> Close
+                    </button>
                     </div>
                 </div>
             </div>
@@ -286,8 +288,13 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-success" id="btnPrintFinalAverage">Print</button>
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                       <button type="button" class="btn btn-outline-success btn-border" id="btnPrintFinalAverage">
+                            <i class="ri-printer-fill me-1"></i> Print
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
+                            <i class="ri-close-fill me-1"></i> Close
+                        </button>
+
                     </div>
                 </div>
             </div>
@@ -358,7 +365,7 @@
                             { 
                                 data: null,
                                 render: function(row) {
-                                    return `<button class="btn btn-sm btn-outline-primary view-final-average"
+                                    return `<button class="btn btn-sm btn-outline-primary btn-border view-final-average"
                                         data-student-name="${row.student_name}"
                                         data-grade-level="${row.grade_level}"
                                         data-section="${row.section}"
@@ -405,7 +412,6 @@
                 $('#student_grade_level').val(gradeLevel);
                 $('#teacher_name').val(teacherName);
 
-                // Hide all tables first
                 $('#grades7to10TableDiv, #grades11to12TableDiv').hide();
                 $('#grades7to10Table tbody, #firstSemesterTable tbody, #secondSemesterTable tbody')
                     .empty();
@@ -423,7 +429,6 @@
 
                         if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(
                                 gradeLevel)) {
-                            // Grades 7–10: Single table
                             $('#grades7to10TableDiv').show();
                             let totalGeneral = 0;
                             res.data.forEach(item => {
@@ -446,7 +451,6 @@
                                 .data.length).toFixed(2) : 0);
 
                         } else if (['Grade 11', 'Grade 12'].includes(gradeLevel)) {
-                            // Grades 11–12: Separate semester tables
                             $('#grades11to12TableDiv').show();
                             let totalFirstSem = 0,
                                 totalSecondSem = 0,
@@ -454,7 +458,6 @@
                                 secondCount = 0;
 
                             res.data.forEach(item => {
-                                // First Semester: Q1/Q2 only if exists
                                 if (item.q1 > 0 || item.q2 > 0) {
                                     let q1 = item.q1 || 0;
                                     let q2 = item.q2 || 0;
@@ -474,7 +477,6 @@
                                     firstCount++;
                                 }
 
-                                // Second Semester: Q3/Q4 only if exists
                                 if (item.q3 > 0 || item.q4 > 0) {
                                     let q3 = item.q3 || 0;
                                     let q4 = item.q4 || 0;
@@ -670,7 +672,7 @@ ${printContent}
                     {
                         data: null,
                         render: function(row) {
-                            return `<button class="btn btn-sm btn-outline-info view-btn">
+                            return `<button class="btn btn-sm btn-outline-info view-btn btn-border">
                       <i class='ri-eye-line'></i> View Student
                   </button>`;
                         }

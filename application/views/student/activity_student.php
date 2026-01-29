@@ -836,7 +836,7 @@
                     }
 
                     var actions = `
-            <button class="btn btn-sm btn-outline-primary editGradeBtn"
+            <button class="btn btn-sm btn-outline-primary btn-border editGradeBtn"
                 data-id="${g.line_id}"
                 data-name="${g.student_name}"
                 data-section="${g.sections}"
@@ -844,7 +844,7 @@
                 <i class="bi bi-pencil-square me-1"></i>Edit
             </button>
 
-            <button class="btn btn-sm btn-outline-danger deleteGradeBtn"
+            <button class="btn btn-sm btn-outline-danger btn-border deleteGradeBtn"
                 data-id="${g.line_id}">
                 <i class="bi bi-trash me-1"></i>Delete
             </button>

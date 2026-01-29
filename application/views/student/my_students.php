@@ -240,26 +240,30 @@ if (isset($user_id)) {
                                     </select>
                                 </div>
 
-                                <!-- Section Dropdown -->
-                                <div class="col-md-6 mb-2">
-                                    <label>Section</label>
-                                    <select name="section" id="section" class="form-control" required>
-                                        <option value="">Select Section</option>
-                                    </select>
-                                </div>
+                               <!-- Grade Level Dropdown (user can select freely) -->
+<div class="col-md-6 mb-2">
+    <label>Grade Level</label>
+    <select id="grade_level_display" class="form-select">
+        <option value="">Select Grade Level</option>
+        <?php if(!empty($allowed_grades)): ?>
+            <?php foreach($allowed_grades as $grade): ?>
+                <option value="<?= $grade ?>"><?= $grade ?></option>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </select>
+    <input type="hidden" name="grade_level" id="grade_level">
+</div>
 
-                                <div class="col-md-6 mb-2">
-                                    <label>Grade Level</label>
-                                    <select id="grade_level_display" class="form-control" disabled>
-                                        <option value="">Select Grade Level</option>
-                                        <?php if(!empty($allowed_grades)): ?>
-                                        <?php foreach($allowed_grades as $grade): ?>
-                                        <option value="<?= $grade ?>"><?= $grade ?></option>
-                                        <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </select>
-                                    <input type="hidden" name="grade_level" id="grade_level">
-                                </div>
+<!-- Section Dropdown -->
+<div class="col-md-6 mb-2">
+    <label>Section</label>
+    <select name="section" id="section" class="form-select" required>
+        <option value="">Select Section</option>
+    </select>
+</div>
+
+
+                               
 
                             </div>
                         </div>
@@ -903,87 +907,94 @@ if (isset($user_id)) {
 
 
             // ================== HELPER: SET GRADE LEVEL ===================
-            function setGradeLevel(value) {
-                $('#grade_level_display').val(value);
-                $('#grade_level').val(value);
-            }
+function setGradeLevel(value) {
+    $('#grade_level').val(value);
+    $('#grade_level_display').val(value); // sync dropdown
+}
 
-            // ================== INITIAL TAB SETUP ===================
-            let $firstActiveTab = $('.nav-pills .nav-link.active');
-            if ($firstActiveTab.length) {
-                let initialGrade = $firstActiveTab.find('span').text().replace(' Students', '').trim();
-                setGradeLevel(initialGrade);
-                loadSections(null);
-            }
-            // ================== RESET MODAL ===================
-            function resetStudentModal(activeGrade) {
-                $('#id').val('');
-                $('#fullname').val('');
-                $('#age').val('');
-                $('#gender').val('Male');
-                setGradeLevel(activeGrade);
-                $('#section').empty().append('<option value="">Select Section</option>');
-                loadSections(null);
-                $('#studentModalTitle').text('Add Student');
-                $('#saveBtn').text('Save');
-            }
+// ================== LOAD SECTIONS ===================
+function loadSections(selectedSection = null, callback = null) {
+    let gradeLevel = $('#grade_level').val();
+    if (!gradeLevel) return;
 
-            // ================== LOAD SECTIONS ===================
-            function loadSections(selectedSection, callback) {
-                let gradeLevel = $('#grade_level').val();
-                if (!gradeLevel) return;
+    $.ajax({
+        url: "<?= site_url('StudentController/get_section_by_grade'); ?>",
+        type: "GET",
+        data: { grade_level: gradeLevel },
+        dataType: "json",
+        success: function(res) {
+            let $section = $('#section');
+            $section.empty().append('<option value="">Select Section</option>');
+            $.each(res, function(i, item) {
+                $section.append('<option value="' + item.classrooms_name + '">' + item.classrooms_name + '</option>');
+            });
+            if (selectedSection) $section.val(selectedSection);
+            if (callback) callback();
+        }
+    });
+}
 
-                $.ajax({
-                    url: "<?= site_url('StudentController/get_section_by_grade'); ?>",
-                    type: "GET",
-                    data: {
-                        grade_level: gradeLevel
-                    },
-                    dataType: "json",
-                    success: function(res) {
-                        let $section = $('#section');
-                        $section.empty().append('<option value="">Select Section</option>');
-                        $.each(res, function(i, item) {
-                            $section.append('<option value="' + item.classrooms_name +
-                                '">' + item.classrooms_name + '</option>');
-                        });
-                        if (selectedSection) $section.val(selectedSection);
-                        if (callback) callback();
-                    }
-                });
-            }
+// ================== RESET MODAL ===================
+function resetStudentModal(activeGrade) {
+    $('#id').val('');
+    $('#fullname').val('');
+    $('#age').val('');
+    $('#gender').val('Male');
+    setGradeLevel(activeGrade);
+    $('#section').empty().append('<option value="">Select Section</option>');
+    loadSections(null);
+    $('#studentModalTitle').text('Add Student');
+    $('#saveBtn').text('Save');
+}
 
-            // ================== TAB SWITCH ===================
-            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
-                let activeGrade = $(e.target).text().replace(' Students', '').trim();
-                setGradeLevel(activeGrade);
-                loadSections(null);
+// ================== INITIAL TAB SETUP ===================
+$(document).ready(function() {
+    // Load grade from first active tab
+    let $firstActiveTab = $('.nav-pills .nav-link.active');
+    if ($firstActiveTab.length) {
+        let initialGrade = $firstActiveTab.find('span').text().replace(' Students', '').trim();
+        setGradeLevel(initialGrade);
+        loadSections(null);
+    }
 
-                if (tables[activeGrade]) {
-                    tables[activeGrade].ajax.reload();
+    // ================== TAB SWITCH ===================
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+        let activeGrade = $(e.target).text().replace(' Students', '').trim();
+        setGradeLevel(activeGrade);
+        loadSections(null);
+
+        if (tables && tables[activeGrade]) {
+            tables[activeGrade].ajax.reload();
+        }
+    });
+
+    // ================== ADD STUDENT BUTTON ===================
+    $('#addBtn').on('click', function() {
+        let activeGrade = $('.nav-pills .nav-link.active span').text().replace(' Students', '').trim();
+        resetStudentModal(activeGrade);
+    });
+
+    // ================== GRADE DROPDOWN CHANGE ===================
+    $('#grade_level_display').on('change', function() {
+        let grade = $(this).val();
+        setGradeLevel(grade);
+        loadSections(null);
+    });
+
+    // ================== SECTION CHANGE ===================
+    $('#section').on('change', function() {
+        let section = $(this).val();
+        if (section) {
+            $.getJSON("<?= site_url('StudentController/get_grade_level_by_section'); ?>", { section }, function(data) {
+                if (data.grade_level) {
+                    setGradeLevel(data.grade_level);
+                    loadSections(section); // reload sections if grade changed
                 }
             });
+        }
+    });
+});
 
-            // ================== ADD STUDENT BUTTON ===================
-            $('#addBtn').on('click', function() {
-                let activeGrade = $('.nav-pills .nav-link.active span').text().replace(' Students', '')
-                    .trim();
-                resetStudentModal(activeGrade);
-                $('#studentModalTitle').text('Add Student');
-                $('#saveBtn').text('Save');
-            });
-
-            // ================== SECTION CHANGE ===================
-            $('#section').on('change', function() {
-                let section = $(this).val();
-                if (section) {
-                    $.getJSON("<?= site_url('StudentController/get_grade_level_by_section'); ?>", {
-                        section
-                    }, function(data) {
-                        setGradeLevel(data.grade_level || '');
-                    });
-                }
-            });
 
             // ================== EDIT STUDENT ===================
             // Edit button click

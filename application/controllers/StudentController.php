@@ -315,43 +315,47 @@ public function update_student()
 
         $overall = (int)$activity->overall;
 
-        foreach ($scores as $student_id => $score) {
-            $score = trim($score);
-            if ($score === "" || $score === null) continue;
+       foreach ($scores as $student_id => $score) {
+    $score = trim($score);
+    if ($score === "" || $score === null) continue;
 
-            $score = (int)$score;
-            if ($score > $overall) {
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => "Score for a student exceeds the maximum allowed ({$overall})."
-                ]);
-                return;
-            }
+    $score = (int)$score;
+    if ($score > $overall) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => "Score for a student exceeds the maximum allowed ({$overall})."
+        ]);
+        return;
+    }
 
-            $exist = $this->db->where([
-                'activities_id_header' => $activity_type_id,
-                'student_id' => $student_id
-            ])->get('tbl_activities_lines')->row();
+    $exist = $this->db->where([
+        'activities_id_header' => $activity_type_id,
+        'student_id' => $student_id
+    ])->get('tbl_activities_lines')->row();
 
-            if ($exist) continue;
+    if ($exist) continue;
 
-            $student = $this->db->where('id', $student_id)
-                                ->get('tbl_students')
-                                ->row();
-            if (!$student) continue;
+    $student = $this->db->where('id', $student_id)
+                        ->get('tbl_students')
+                        ->row();
+    if (!$student) continue;
 
-            $data = [
-                'activities_id_header' => $activity_type_id,
-                'student_id' => $student_id,
-                'student_name' => $student->fullname,
-                'section' => $student->section,
-                'score' => $score,
-                'remarks' => null,
-                'date_created' => date('Y-m-d') // match DATE type
-            ];
+    $percentage = ($score / $overall) * 100;
+    $remarks = $percentage >= 75 ? "Passed" : "Failed"; 
 
-            $this->db->insert('tbl_activities_lines', $data);
-        }
+    $data = [
+        'activities_id_header' => $activity_type_id,
+        'student_id' => $student_id,
+        'student_name' => $student->fullname,
+        'section' => $student->section,
+        'score' => $score,
+        'remarks' => number_format($percentage, 2) . "% - " . $remarks,
+        'date_created' => date('Y-m-d') 
+    ];
+
+    $this->db->insert('tbl_activities_lines', $data);
+}
+
 
         echo json_encode(['status' => 'success', 'message' => 'Scores saved successfully.']);
     }
@@ -586,9 +590,9 @@ public function save_activity()
 
 
 
-  public function fetch_final_grades() {
-    $sections     = $this->input->post('section'); // e.g. "A | B | C"
-    $sections_arr = explode(' | ', $sections);     // ["A", "B", "C"]
+ public function fetch_final_grades() {
+    $sections     = $this->input->post('section'); 
+    $sections_arr = explode(' | ', $sections);     
     $subject      = $this->input->post('subject');
     $quarter      = $this->input->post('quarter');
     $grade_level  = $this->input->post('grade_level');
@@ -607,14 +611,19 @@ public function save_activity()
     $this->db->join('tbl_activities_lines AS b','b.activities_id_header = a.id','left');
     $this->db->join('tbl_users AS c','c.id = a.user_id','left');
     $this->db->join('tbl_students AS d','d.id = b.student_id','left');
+    $this->db->join('tbl_tag_students AS t','t.student_id = d.id','inner'); // join tags
+
+    // Filters
     $this->db->where('a.subject', $subject);
     $this->db->where('a.quarter', $quarter);
     $this->db->where('a.grade_level', $grade_level);
     $this->db->where_in('b.section', $sections_arr); // fetch all sections
-    $this->db->where('d.status','active');
+    $this->db->where('d.status','active');           // student active
+    $this->db->where('t.status','active');          // tag active
 
+    // Only show students tagged to this user (except admins)
     if (!in_array($user_type,['Principal','Registrar','Guidance Councilor','Admin'])) {
-        $this->db->where('a.user_id',$user_id);
+        $this->db->where('t.user_id', $user_id);
     }
 
     $query = $this->db->get()->result();
@@ -655,39 +664,16 @@ public function save_activity()
         $final_grade = ($ww*$weight_WW)+($pt*$weight_PT)+($qa*$weight_QA);
 
         // Ratings
-       // Ratings
-if($final_grade >= 90) {
-    $rating = '1.00';
-    $remarks = 'Outstanding';
-} elseif($final_grade >= 85) {
-    $rating = '1.25';
-    $remarks = 'Very Satisfactory';
-} elseif($final_grade >= 80) {
-    $rating = '1.50';
-    $remarks = 'Very Satisfactory';
-} elseif($final_grade >= 75) {
-    $rating = '1.75';
-    $remarks = 'Satisfactory';
-} elseif($final_grade >= 70) {
-    $rating = '2.00';
-    $remarks = 'Satisfactory';
-} elseif($final_grade >= 65) {
-    $rating = '2.25';
-    $remarks = 'Fair';
-} elseif($final_grade >= 60) {
-    $rating = '2.50';
-    $remarks = 'Fair';
-} elseif($final_grade >= 55) {
-    $rating = '2.75';
-    $remarks = 'Did Not Meet Expectations';
-} elseif($final_grade >= 50) {
-    $rating = '3.00';
-    $remarks = 'Did Not Meet Expectations';
-} else {
-    $rating = '5.00';
-    $remarks = 'Failure';
-}
-
+        if($final_grade >= 90) { $rating='1.00'; $remarks='Outstanding'; }
+        elseif($final_grade >= 85) { $rating='1.25'; $remarks='Very Satisfactory'; }
+        elseif($final_grade >= 80) { $rating='1.50'; $remarks='Very Satisfactory'; }
+        elseif($final_grade >= 75) { $rating='1.75'; $remarks='Satisfactory'; }
+        elseif($final_grade >= 70) { $rating='2.00'; $remarks='Satisfactory'; }
+        elseif($final_grade >= 65) { $rating='2.25'; $remarks='Fair'; }
+        elseif($final_grade >= 60) { $rating='2.50'; $remarks='Fair'; }
+        elseif($final_grade >= 55) { $rating='2.75'; $remarks='Did Not Meet Expectations'; }
+        elseif($final_grade >= 50) { $rating='3.00'; $remarks='Did Not Meet Expectations'; }
+        else { $rating='5.00'; $remarks='Failure'; }
 
         $data[] = [
             'student_name' => $student_name,

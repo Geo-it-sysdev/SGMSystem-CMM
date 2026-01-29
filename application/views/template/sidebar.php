@@ -138,7 +138,7 @@ if (isset($user_id)) {
                             class="bx bx-list-check bx-sm
                         <?php echo (uri_string() === 'GradingSystem/final_grades_student') ? 'animate__animated animate__heartBeat animate__infinite' : ''; ?>">
                         </i>
-                        <span>Students’ Final Grades</span>
+                        <span>Students’ Quarter Grades</span>
                     </a>
                 </li>
 
@@ -149,7 +149,7 @@ if (isset($user_id)) {
                             class="bx bx-bar-chart-alt-2 bx-sm
                         <?php echo (uri_string() === 'GradingSystem/final_average_student') ? 'animate__animated animate__heartBeat animate__infinite' : ''; ?>">
                         </i>
-                        <span>Students’ Final Average</span>
+                        <span>Students’ Final Grades/Average</span>
                     </a>
                 </li>
                 <?php endif; ?>

@@ -580,7 +580,7 @@
                 <form id="ssgForm">
                     <!-- Hidden ID for SSG Member -->
                     <input type="hidden" name="id" id="member_id">
-                    <!-- Hidden student_id from tbl_students -->
+                    <!-- Hidden student_id -->
                     <input type="hidden" name="student_id" id="student_id">
 
                     <div class="mb-3">
@@ -647,6 +647,9 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
 
 <script>
 $(document).ready(function() {
@@ -874,9 +877,10 @@ $(document).ready(function() {
         $('#ssgModal').modal('show');
     });
 
-    // Autocomplete for student_name
+    // Autocomplete for Student Name
     $("#student_name").autocomplete({
         source: function(request, response) {
+            if(request.term.length < 3) return; // require at least 3 letters
             $.ajax({
                 url: '<?= base_url("EventsController/search_students") ?>',
                 type: 'GET',
@@ -890,10 +894,13 @@ $(document).ready(function() {
                             id: item.id
                         };
                     }));
+                },
+                error: function(xhr) {
+                    console.log('Autocomplete error:', xhr.responseText);
                 }
             });
         },
-        minLength: 2,
+        minLength: 3,
         select: function(event, ui) {
             $('#student_name').val(ui.item.value); // display name
             $('#student_id').val(ui.item.id);     // store ID
@@ -936,7 +943,7 @@ $(document).ready(function() {
                 if (res.status === 'success') {
                     $('#member_id').val(res.data.id);
                     $('#student_name').val(res.data.student_name);
-                    $('#student_id').val(res.data.student_id || ''); // if stored
+                    $('#student_id').val(res.data.student_id || '');
                     $('#profession').val(res.data.profession);
                     $('#ssgModalTitle').text('Edit SSG Member');
                     $('#ssgModal').modal('show');

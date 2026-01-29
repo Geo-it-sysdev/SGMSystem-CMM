@@ -93,7 +93,20 @@ class EventsController extends CI_Controller {
 
 
     // Save (Add or Edit)
-    // Save/Add or Edit SSG member
+// Search students for autocomplete
+public function search_students()
+{
+    $term = $this->input->get('term');
+    $limit = $this->input->get('limit') ?? 10;
+
+    $this->db->like('full_name', $term);
+    $this->db->limit($limit);
+    $students = $this->db->get('tbl_students')->result();
+
+    echo json_encode($students);
+}
+
+// Save/Add or Edit SSG member
 public function save_ssg_member() 
 {
     $id = $this->input->post('id');
@@ -107,11 +120,11 @@ public function save_ssg_member()
         'status'       => 'active'
     ];
 
-    if($id){ // edit
+    if($id){
         $this->db->where('id', $id)->update('tbl_ssg_members', $data);
         $data['id'] = $id;
         $data['is_edit'] = true;
-    } else { // add
+    } else {
         $this->db->insert('tbl_ssg_members', $data);
         $data['id'] = $this->db->insert_id();
         $data['is_edit'] = false;
@@ -128,10 +141,7 @@ public function save_ssg_member()
 public function get_ssg_member($id)
 {
     $member = $this->db->get_where('tbl_ssg_members', ['id' => $id])->row();
-    echo json_encode([
-        'status' => 'success',
-        'data'   => $member
-    ]);
+    echo json_encode(['status' => 'success', 'data' => $member]);
 }
 
 // Delete member
@@ -146,19 +156,6 @@ public function all_ssg_members()
 {
     $members = $this->db->get_where('tbl_ssg_members', ['status' => 'active'])->result();
     echo json_encode($members);
-}
-
-// Search students for autocomplete
-public function search_students()
-{
-    $term = $this->input->get('term');
-    $limit = $this->input->get('limit') ?? 10;
-
-    $this->db->like('full_name', $term);
-    $this->db->limit($limit);
-    $students = $this->db->get('tbl_students')->result();
-
-    echo json_encode($students);
 }
 
 

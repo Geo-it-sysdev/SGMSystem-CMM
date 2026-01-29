@@ -531,8 +531,8 @@ $(document).ready(function() {
                     let rowNode = ssgTable.row.add([
                         member.student_name,
                         member.profession,
-                        `<button class="btn btn-sm btn-outline-success editMember"><i class="ri-edit-line"></i></button>
-                         <button class="btn btn-sm btn-outline-danger deleteMember"><i class="ri-delete-bin-line"></i></button>`
+                        `<button class="btn btn-sm btn-outline-success editMember btn-border"><i class="ri-edit-line"></i></button>
+                         <button class="btn btn-sm btn-outline-danger deleteMember btn-border"><i class="ri-delete-bin-line"></i></button>`
                     ]).draw().node();
                     $(rowNode).data('id', member.id);
                 });

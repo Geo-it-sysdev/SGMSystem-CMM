@@ -96,23 +96,27 @@ class EventsController extends CI_Controller {
 // Search students for autocomplete
 public function search_students()
 {
-    $term = $this->input->get('term');
-    $limit = $this->input->get('limit') ?? 10;
+    $term = $this->input->get('term'); // term typed in input
+    $limit = $this->input->get('limit') ?? 20;
 
     if(!$term) {
         echo json_encode([]);
         return;
     }
 
-    $this->db->select('id, full_name');
-    $this->db->like('full_name', $term);
+    // Only active students
+    $this->db->select('id, fullname');
+    $this->db->from('tbl_students');
+    $this->db->like('fullname', $term);
+    $this->db->where('status', 'active');
     $this->db->limit($limit);
-    $query = $this->db->get('tbl_students');
+    $query = $this->db->get();
 
-    $students = $query->result_array(); // return as array
+    $students = $query->result_array(); // return array for JS
 
     echo json_encode($students);
 }
+
 
 
 // Save/Add or Edit SSG member
@@ -121,6 +125,23 @@ public function save_ssg_member()
     $id = $this->input->post('id');
     $student_id = $this->input->post('student_id');
     $student_name = $this->input->post('student_name');
+
+    // Check for duplicate student_name
+    $this->db->where('student_name', $student_name);
+    if ($id) {
+        // Exclude current record if editing
+        $this->db->where('id !=', $id);
+    }
+    $exists = $this->db->get('tbl_ssg_members')->num_rows();
+
+    if ($exists > 0) {
+        // Duplicate found
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Student name already exists.'
+        ]);
+        return;
+    }
 
     $data = [
         'student_id'   => $student_id,

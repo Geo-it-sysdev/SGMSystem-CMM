@@ -1,7 +1,8 @@
 <style>
-    .table-responsive.table-card {
+.table-responsive.table-card {
     overflow-x: auto;
-    max-height: 400px; /* adjust as needed */
+    max-height: 400px;
+    /* adjust as needed */
 }
 
 #ssg_table {
@@ -15,9 +16,9 @@
 }
 
 .table-card {
-    flex: 1; /* takes remaining space */
+    flex: 1;
+    /* takes remaining space */
 }
-
 </style>
 
 <div class="page-content">
@@ -584,8 +585,12 @@
                     <input type="hidden" name="student_id" id="student_id">
 
                     <div class="mb-3">
-                        <label for="student_name" class="form-label">Student Name</label>
-                        <input type="text" class="form-control" id="student_name" name="student_name" required>
+                        <div class="mb-3 position-relative">
+                            <label for="student_name" class="form-label">Student Name</label>
+                            <input type="text" class="form-control" id="student_name" name="student_name"
+                                autocomplete="off" required placeholder="Search Student Name">
+                            <!-- autocomplete dropdown will appear here -->
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -647,8 +652,6 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
 
 <script>
@@ -832,9 +835,37 @@ $(document).ready(function() {
 $(document).ready(function() {
 
     // Initialize DataTable
+   // Custom profession order
+    let professionOrder = [
+        'President',
+        'Vice President',
+        'Secretary',
+        'Treasurer',
+        'Auditor',
+        'PIO',
+        'Sgt. at Arms'
+    ];
+
+    // Register custom sort plugin
+    $.fn.dataTable.ext.order['profession-custom'] = function(settings, col) {
+        return this.api().column(col, {order:'index'}).nodes().map(function(td, i) {
+            let profession = $(td).text().trim();
+            let index = professionOrder.indexOf(profession);
+            return index === -1 ? professionOrder.length : index; // put unknowns at end
+        });
+    };
+
+    // Initialize DataTable
     let ssgTable = $('#ssg_table').DataTable({
         columnDefs: [
-            { orderable: false, targets: 2 } 
+            {
+                targets: 1, // Assuming Profession is column index 1
+                orderDataType: 'profession-custom'
+            },
+            {
+                orderable: false,
+                targets: 2
+            }
         ],
         scrollY: 'calc(100vh - 300px)',
         scrollCollapse: true,
@@ -842,10 +873,11 @@ $(document).ready(function() {
         info: false,
         searching: false,
         autoWidth: false,
-        responsive: true
+        responsive: true,
+        order: [[1, 'asc']] // default sort by profession
     });
 
-    // Load all SSG members
+    // Load SSG members
     function loadMembers() {
         $.ajax({
             url: '<?= base_url("EventsController/all_ssg_members") ?>',
@@ -868,7 +900,7 @@ $(document).ready(function() {
 
     loadMembers();
 
-    // Open Add modal
+    // Open Add Modal
     $('#addSsgBtn').click(function() {
         $('#ssgForm')[0].reset();
         $('#member_id').val('');
@@ -877,73 +909,97 @@ $(document).ready(function() {
         $('#ssgModal').modal('show');
     });
 
-    // Autocomplete for Student Name
-    $("#student_name").autocomplete({
-        source: function(request, response) {
-            if(request.term.length < 3) return; // require at least 3 letters
-
-            $.ajax({
-                url: '<?= base_url("EventsController/search_students") ?>',
-                type: 'GET',
-                dataType: 'json',
-                data: { term: request.term, limit: 10 },
-                success: function(data) {
-                    // Check if data is received
-                    if(!data || data.length === 0) {
-                        response([]);
-                        return;
-                    }
-
-                    // Map data to autocomplete format
-                    response($.map(data, function(item) {
-                        return {
-                            label: item.full_name, // shown in dropdown
-                            value: item.full_name, // filled in input
-                            id: item.id            // store ID
-                        };
-                    }));
-                },
-                error: function(xhr) {
-                    console.error('Autocomplete error:', xhr.responseText);
-                    response([]);
-                }
-            });
-        },
-        minLength: 3,
-        select: function(event, ui) {
-            $("#student_name").val(ui.item.value);
-            $("#student_id").val(ui.item.id); // store student ID
-            return false;
+    // Live Search for Student Name
+    $("#student_name").on('input', function() {
+        let term = $(this).val();
+        if (term.length < 3) {
+            $("#autocomplete-list").remove();
+            return;
         }
-    });
 
-    // Save/Add or Update member
-    $('#ssgForm').submit(function(e) {
-        e.preventDefault();
         $.ajax({
-            url: '<?= base_url("EventsController/save_ssg_member") ?>',
-            type: 'POST',
-            data: $(this).serialize(),
+            url: '<?= base_url("EventsController/search_students") ?>',
+            type: 'GET',
             dataType: 'json',
-            success: function(res) {
-                if (res.status === 'success') {
-                    $('#ssgModal').modal('hide');
-                    loadMembers();
-                    Swal.fire('Success', 'Member saved successfully', 'success');
-                } else {
-                    Swal.fire('Error', 'Something went wrong', 'error');
-                }
+            data: {
+                term: term,
+                limit: 10
             },
-            error: function() {
-                Swal.fire('Error', 'Something went wrong', 'error');
+            success: function(data) {
+                $("#autocomplete-list").remove();
+
+                if (!data || data.length === 0) return;
+
+                let list = $(
+                    '<div id="autocomplete-list" class="list-group position-absolute"></div>'
+                );
+                list.css({
+                    width: $("#student_name").outerWidth(),
+                    zIndex: 1000
+                });
+
+                data.forEach(function(item) {
+                    let option = $(
+                        '<a href="#" class="list-group-item list-group-item-action"></a>'
+                    );
+                    option.text(item.fullname);
+                    option.data('id', item.id);
+                    option.click(function(e) {
+                        e.preventDefault();
+                        $("#student_name").val(item.fullname);
+                        $("#student_id").val(item.id);
+                        $("#autocomplete-list").remove();
+                    });
+                    list.append(option);
+                });
+
+                $("#student_name").after(list);
+            },
+            error: function(xhr) {
+                console.log('Live search error:', xhr.responseText);
             }
         });
     });
 
-    // Edit member
+    // Remove dropdown if clicked outside
+    $(document).click(function(e) {
+        if (!$(e.target).is('#student_name')) {
+            $("#autocomplete-list").remove();
+        }
+    });
+
+    // Save/Add Member via AJAX
+    $('#ssgForm').submit(function(e) {
+    e.preventDefault();
+    $.ajax({
+        url: '<?= base_url("EventsController/save_ssg_member") ?>',
+        type: 'POST',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(res) {
+            if (res.status === 'success') {
+                $('#ssgModal').modal('hide');
+                loadMembers(); // reload your members table/list
+                Swal.fire('Success', 'Member saved successfully', 'success');
+            } else if(res.status === 'error') {
+                // Show duplicate name or other errors from backend
+                Swal.fire('Error', res.message, 'error');
+            } else {
+                Swal.fire('Error', 'Something went wrong', 'error');
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'Something went wrong', 'error');
+        }
+    });
+});
+
+
+    // Edit Member
     $(document).on('click', '.editMember', function() {
         let row = $(this).closest('tr');
         let id = row.data('id');
+
         $.ajax({
             url: '<?= base_url("EventsController/get_ssg_member") ?>/' + id,
             type: 'GET',
@@ -961,10 +1017,11 @@ $(document).ready(function() {
         });
     });
 
-    // Delete member
+    // Delete Member
     $(document).on('click', '.deleteMember', function() {
         let row = $(this).closest('tr');
         let id = row.data('id');
+
         Swal.fire({
             title: 'Are you sure?',
             text: "This will delete the member!",
@@ -980,7 +1037,8 @@ $(document).ready(function() {
                     success: function(res) {
                         if (res.status === 'success') {
                             ssgTable.row(row).remove().draw();
-                            Swal.fire('Deleted!', 'Member has been deleted.', 'success');
+                            Swal.fire('Deleted!', 'Member has been deleted.',
+                                'success');
                         }
                     }
                 });
@@ -989,5 +1047,4 @@ $(document).ready(function() {
     });
 
 });
-
 </script>

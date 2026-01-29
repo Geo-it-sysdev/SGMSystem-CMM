@@ -196,7 +196,7 @@
                         </div>
 
                         <h6 class="text-uppercase fw-semibold mt-4 mb-3 text-muted">Upcoming Schedules:</h6>
-                        <div id="event-list">
+                       <div id="event-list" style="max-height: 300px; overflow-y: auto;">
                             <!-- Events will be loaded here -->
                         </div>
                     </div>

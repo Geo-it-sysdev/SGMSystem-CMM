@@ -773,7 +773,7 @@ function loadMessages() {
                     <div class="user-chat-content">
                         <div class="ctext-wrap">
                             <div class="ctext-wrap-content">
-                                <p class="mb-0 ctext-content"><strong>${msg.full_name}:</strong> ${msg.message}</p>
+                                <p class="mb-0 ctext-content">${msg.message}</p>
                             </div>
                         </div>
 

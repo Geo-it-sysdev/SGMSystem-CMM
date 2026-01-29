@@ -267,7 +267,7 @@ class StudentModel extends CI_Model {
 
 
     public function count_activity_type($grade_level, $subject, $quarter, $activity_type){
-        $this->db->like('activity_type', $activity_type, 'after'); // Match Quiz, Assignment, etc.
+        $this->db->like('activity_type', $activity_type, 'after'); 
         $this->db->where('grade_level', $grade_level);
         $this->db->where('subject', $subject);
         $this->db->where('quarter', $quarter);

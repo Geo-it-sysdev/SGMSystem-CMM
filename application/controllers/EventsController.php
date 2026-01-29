@@ -93,56 +93,72 @@ class EventsController extends CI_Controller {
 
 
     // Save (Add or Edit)
-// Search students for autocomplete
-public function search_students() {
-    $term = $this->input->get('term');
-    $this->db->like('fullname', $term);
-    $query = $this->db->select('fullname')->from('tbl_students')->get();
-    
-    $result = [];
-    foreach ($query->result() as $row) {
-        $result[] = $row->fullname;
-    }
-
-    echo json_encode($result);
-}
-
-// Save member
-public function save_ssg_member() {
+    // Save/Add or Edit SSG member
+public function save_ssg_member() 
+{
     $id = $this->input->post('id');
+    $student_id = $this->input->post('student_id');
+    $student_name = $this->input->post('student_name');
+
     $data = [
-        'student_name' => $this->input->post('student_name'),
+        'student_id'   => $student_id,
+        'student_name' => $student_name,
         'profession'   => $this->input->post('profession'),
         'status'       => 'active'
     ];
 
-    if($id){
+    if($id){ // edit
         $this->db->where('id', $id)->update('tbl_ssg_members', $data);
         $data['id'] = $id;
-    } else {
+        $data['is_edit'] = true;
+    } else { // add
         $this->db->insert('tbl_ssg_members', $data);
         $data['id'] = $this->db->insert_id();
+        $data['is_edit'] = false;
     }
 
-    echo json_encode(['status'=>'success','data'=>$data]);
+    echo json_encode([
+        'status' => 'success',
+        'data'   => $data,
+        'is_edit'=> $data['is_edit']
+    ]);
 }
 
 // Get single member
-public function get_ssg_member($id) {
-    $member = $this->db->get_where('tbl_ssg_members', ['id'=>$id])->row();
-    echo json_encode(['status'=>'success','data'=>$member]);
+public function get_ssg_member($id)
+{
+    $member = $this->db->get_where('tbl_ssg_members', ['id' => $id])->row();
+    echo json_encode([
+        'status' => 'success',
+        'data'   => $member
+    ]);
 }
 
 // Delete member
-public function delete_ssg_member($id) {
-    $this->db->where('id',$id)->delete('tbl_ssg_members');
+public function delete_ssg_member($id)
+{
+    $this->db->where('id', $id)->delete('tbl_ssg_members');
     echo json_encode(['status'=>'success']);
 }
 
-// Get all members
-public function all_ssg_members() {
-    $members = $this->db->get_where('tbl_ssg_members', ['status'=>'active'])->result();
+// Get all active members
+public function all_ssg_members()
+{
+    $members = $this->db->get_where('tbl_ssg_members', ['status' => 'active'])->result();
     echo json_encode($members);
+}
+
+// Search students for autocomplete
+public function search_students()
+{
+    $term = $this->input->get('term');
+    $limit = $this->input->get('limit') ?? 10;
+
+    $this->db->like('full_name', $term);
+    $this->db->limit($limit);
+    $students = $this->db->get('tbl_students')->result();
+
+    echo json_encode($students);
 }
 
 

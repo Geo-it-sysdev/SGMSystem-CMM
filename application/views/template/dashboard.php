@@ -125,9 +125,9 @@
                         <div class="card card-height-100">
                             <div class="card-header align-items-center d-flex">
                                 <h4 class="card-title mb-0 flex-grow-1">Supreme Student Government (SSG)</h4>
-                              <button class="btn btn-outline-primary btn-sm btn-border" id="addSsgBtn">
-    <i class="ri-add-line"></i> Add SSG Member
-</button>
+                                <button class="btn btn-outline-primary btn-sm btn-border" id="addSsgBtn">
+                                    <i class="ri-add-line"></i> Add SSG Member
+                                </button>
 
 
                             </div><!-- end card header -->
@@ -567,26 +567,30 @@
 <!-- End Page-content -->
 
 
-<!-- Add/Edit SSG Modal -->
-<div class="modal fade" id="ssgModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+
+<!-- Add/Edit SSG Member Modal -->
+<div class="modal fade" id="ssgModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="ssgModalTitle">Add SSG Member</h5>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="ssgForm">
-                    <input type="hidden" id="member_id" name="id">
+                    <!-- Hidden ID for SSG Member -->
+                    <input type="hidden" name="id" id="member_id">
+                    <!-- Hidden student_id from tbl_students -->
+                    <input type="hidden" name="student_id" id="student_id">
 
-                    <div class="form-group">
-                        <label for="student_name">Student Name</label>
+                    <div class="mb-3">
+                        <label for="student_name" class="form-label">Student Name</label>
                         <input type="text" class="form-control" id="student_name" name="student_name" required>
                     </div>
 
-                    <div class="form-group">
-                        <label for="profession">Position</label>
-                        <select class="form-control" id="profession" name="profession" required>
+                    <div class="mb-3">
+                        <label for="profession" class="form-label">Position</label>
+                        <select class="form-select" id="profession" name="profession" required>
                             <option value="">-- Select Position --</option>
                             <option value="President">President</option>
                             <option value="Vice President">Vice President</option>
@@ -598,12 +602,15 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Save Member</button>
+                    <button type="submit" class="btn btn-primary" id="saveMemberBtn">Save Member</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+
+
 
 <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -639,7 +646,7 @@
 <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -819,16 +826,13 @@ $(document).ready(function() {
 
 
 
-
-
-</script>
-
-<script>
-$(document).ready(function(){
+$(document).ready(function() {
 
     // Initialize DataTable
     let ssgTable = $('#ssg_table').DataTable({
-        columnDefs: [{ orderable: false, targets: 2 }],
+        columnDefs: [
+            { orderable: false, targets: 2 } 
+        ],
         scrollY: 'calc(100vh - 300px)',
         scrollCollapse: true,
         paging: false,
@@ -838,15 +842,15 @@ $(document).ready(function(){
         responsive: true
     });
 
-    // Load all members
-    function loadMembers(){
+    // Load all SSG members
+    function loadMembers() {
         $.ajax({
             url: '<?= base_url("EventsController/all_ssg_members") ?>',
             type: 'GET',
             dataType: 'json',
-            success: function(res){
+            success: function(res) {
                 ssgTable.clear();
-                res.forEach(function(member){
+                res.forEach(function(member) {
                     let rowNode = ssgTable.row.add([
                         member.student_name,
                         member.profession,
@@ -861,66 +865,78 @@ $(document).ready(function(){
 
     loadMembers();
 
-    // Autocomplete student name
+    // Open Add modal
+    $('#addSsgBtn').click(function() {
+        $('#ssgForm')[0].reset();
+        $('#member_id').val('');
+        $('#student_id').val('');
+        $('#ssgModalTitle').text('Add SSG Member');
+        $('#ssgModal').modal('show');
+    });
+
+    // Autocomplete for student_name
     $("#student_name").autocomplete({
-        source: function(request, response){
+        source: function(request, response) {
             $.ajax({
                 url: '<?= base_url("EventsController/search_students") ?>',
                 type: 'GET',
                 dataType: 'json',
-                data: { term: request.term },
-                success: function(data){
-                    response(data);
+                data: { term: request.term, limit: 10 },
+                success: function(data) {
+                    response($.map(data, function(item) {
+                        return {
+                            label: item.full_name,
+                            value: item.full_name,
+                            id: item.id
+                        };
+                    }));
                 }
             });
         },
-        minLength: 2
+        minLength: 2,
+        select: function(event, ui) {
+            $('#student_name').val(ui.item.value); // display name
+            $('#student_id').val(ui.item.id);     // store ID
+            return false;
+        }
     });
 
-    // Open Add Modal
-    $('#addSsgBtn').click(function(){
-        $('#ssgForm')[0].reset();
-        $('#member_id').val('');
-        $('#ssgModalTitle').text('Add SSG Member');
-        $('#ssgModal').modal('show'); // Bootstrap 4
-    });
-
-    // Save/Add or Edit Member
-    $('#ssgForm').submit(function(e){
+    // Save/Add or Update member
+    $('#ssgForm').submit(function(e) {
         e.preventDefault();
         $.ajax({
             url: '<?= base_url("EventsController/save_ssg_member") ?>',
             type: 'POST',
             data: $(this).serialize(),
             dataType: 'json',
-            success: function(res){
-                if(res.status === 'success'){
+            success: function(res) {
+                if (res.status === 'success') {
                     $('#ssgModal').modal('hide');
                     loadMembers();
-                    Swal.fire('Success','Member saved successfully','success');
+                    Swal.fire('Success', 'Member saved successfully', 'success');
                 } else {
-                    Swal.fire('Error','Something went wrong','error');
+                    Swal.fire('Error', 'Something went wrong', 'error');
                 }
             },
-            error: function(){
-                Swal.fire('Error','Something went wrong','error');
+            error: function() {
+                Swal.fire('Error', 'Something went wrong', 'error');
             }
         });
     });
 
-    // Edit Member
-    $(document).on('click', '.editMember', function(){
+    // Edit member
+    $(document).on('click', '.editMember', function() {
         let row = $(this).closest('tr');
         let id = row.data('id');
-
         $.ajax({
             url: '<?= base_url("EventsController/get_ssg_member") ?>/' + id,
             type: 'GET',
             dataType: 'json',
-            success: function(res){
-                if(res.status === 'success'){
+            success: function(res) {
+                if (res.status === 'success') {
                     $('#member_id').val(res.data.id);
                     $('#student_name').val(res.data.student_name);
+                    $('#student_id').val(res.data.student_id || ''); // if stored
                     $('#profession').val(res.data.profession);
                     $('#ssgModalTitle').text('Edit SSG Member');
                     $('#ssgModal').modal('show');
@@ -929,27 +945,26 @@ $(document).ready(function(){
         });
     });
 
-    // Delete Member
-    $(document).on('click', '.deleteMember', function(){
+    // Delete member
+    $(document).on('click', '.deleteMember', function() {
         let row = $(this).closest('tr');
         let id = row.data('id');
-
         Swal.fire({
             title: 'Are you sure?',
             text: "This will delete the member!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!'
-        }).then((result)=>{
-            if(result.isConfirmed){
+        }).then((result) => {
+            if (result.isConfirmed) {
                 $.ajax({
                     url: '<?= base_url("EventsController/delete_ssg_member") ?>/' + id,
                     type: 'POST',
                     dataType: 'json',
-                    success: function(res){
-                        if(res.status === 'success'){
+                    success: function(res) {
+                        if (res.status === 'success') {
                             ssgTable.row(row).remove().draw();
-                            Swal.fire('Deleted!','Member has been deleted.','success');
+                            Swal.fire('Deleted!', 'Member has been deleted.', 'success');
                         }
                     }
                 });
@@ -958,6 +973,5 @@ $(document).ready(function(){
     });
 
 });
-
 
 </script>

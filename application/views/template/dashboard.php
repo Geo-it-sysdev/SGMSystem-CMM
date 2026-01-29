@@ -139,7 +139,7 @@
                         </div><!-- end card -->
                     </div><!-- end ssg member -->
 
-                        <!-- chats -->
+                    <!-- chats -->
                     <div class="col-xxl-6 col-lg-6">
                         <div class="card card-height-100">
                             <div class="card-header align-items-center d-flex">
@@ -177,7 +177,8 @@
 
                             </div>
                         </div>
-                    </div> <!--end chat -->
+                    </div>
+                    <!--end chat -->
                 </div><!-- end row -->
             </div><!-- end col -->
 

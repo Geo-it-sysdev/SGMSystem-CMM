@@ -213,68 +213,46 @@ class EventsController extends CI_Controller {
 
 
 
- // =============================
-    // GET CHAT USER LIST (LEFT SIDE)
-    // =============================
-    public function chat_users()
-    {
-        $me = $this->session->userdata('po_user');
+// =============================
+// FETCH ALL CHAT MESSAGES
+// =============================
+public function fetch()
+{
+    // Fetch all messages from all users, no receiver_id needed
+    $sql = "
+        SELECT 
+            m.*,
+            u.full_name,
+            u.photo
+        FROM tbl_chat_messages m
+        JOIN tbl_users u ON u.id = m.sender_id
+        ORDER BY m.created_at ASC
+    ";
 
-        $sql = "
-        SELECT u.id, u.full_name,
-        (
-            SELECT message FROM tbl_chat_messages 
-            WHERE (sender_id = u.id AND receiver_id = $me)
-               OR (sender_id = $me AND receiver_id = u.id)
-            ORDER BY created_at DESC LIMIT 1
-        ) AS last_message,
-        (
-            SELECT created_at FROM tbl_chat_messages 
-            WHERE (sender_id = u.id AND receiver_id = $me)
-               OR (sender_id = $me AND receiver_id = u.id)
-            ORDER BY created_at DESC LIMIT 1
-        ) AS last_time
-        FROM tbl_users u
-        WHERE u.id != $me
-        HAVING last_message IS NOT NULL
-        ORDER BY last_time DESC
-        ";
+    echo json_encode($this->db->query($sql)->result());
+}
 
-        echo json_encode($this->db->query($sql)->result());
+// =============================
+// SEND MESSAGE
+// =============================
+public function send()
+{
+    $message = $this->input->post('message');
+
+    if(empty($message)){
+        echo json_encode(['status'=>'error','message'=>'Message cannot be empty']);
+        return;
     }
 
-    // =============================
-    // FETCH CHAT MESSAGES
-    // =============================
-    public function fetch()
-    {
-        $me = $this->session->userdata('po_user');
-        $to = $this->input->post('receiver_id');
+    $this->db->insert('tbl_chat_messages', [
+        'sender_id'   => $this->session->userdata('po_user'),
+        'receiver_id' => 0, // optional: 0 means public chat
+        'message'     => $message,
+        'created_at'  => date('Y-m-d H:i:s')
+    ]);
 
-        $this->db->where("
-            (sender_id = $me AND receiver_id = $to)
-            OR
-            (sender_id = $to AND receiver_id = $me)
-        ");
-        $this->db->order_by('created_at', 'ASC');
-
-        echo json_encode($this->db->get('tbl_chat_messages')->result());
-    }
-
-    // =============================
-    // SEND MESSAGE
-    // =============================
-    public function send()
-    {
-        $this->db->insert('tbl_chat_messages', [
-            'sender_id'   => $this->session->userdata('po_user'),
-            'receiver_id' => $this->input->post('receiver_id'),
-            'message'     => $this->input->post('message'),
-            'created_at'  => date('Y-m-d H:i:s')
-        ]);
-
-        echo json_encode(['status' => 'success']);
-    }
+    echo json_encode(['status' => 'success']);
+}
 
 
     

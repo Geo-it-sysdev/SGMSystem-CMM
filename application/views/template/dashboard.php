@@ -165,65 +165,51 @@
 
 
 
-                <div class="row">
+           <div class="col-xxl-6 col-lg-6">
+    <div class="card card-height-100">
 
-    <!-- USER LIST -->
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Users</h5>
-            </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush" id="chat-users"></ul>
-            </div>
+        <div class="card-header align-items-center d-flex">
+            <h4 class="card-title mb-0 flex-grow-1">Chat</h4>
         </div>
-    </div>
 
-    <!-- CHAT AREA -->
-    <div class="col-lg-8">
-        <div class="card card-height-100">
+        <div class="card-body p-0">
+            <div id="users-chat">
+                <div class="chat-conversation p-3"
+                    id="chat-conversation"
+                    data-simplebar
+                    style="height:400px;">
 
-            <div class="card-header align-items-center d-flex">
-                <h4 class="card-title mb-0 flex-grow-1">Chat</h4>
+                    <ul class="list-unstyled chat-conversation-list chat-sm"
+                        id="users-conversation">
+                        <!-- Messages will load here -->
+                    </ul>
+
+                </div>
             </div>
 
-            <div class="card-body p-0">
-                <div id="users-chat">
-                    <div class="chat-conversation p-3"
-                        id="chat-conversation"
-                        data-simplebar
-                        style="height:400px;">
-
-                        <ul class="list-unstyled chat-conversation-list chat-sm"
-                            id="users-conversation">
-                        </ul>
-
+            <div class="border-top border-top-dashed">
+                <div class="row g-2 mx-3 mt-2 mb-3">
+                    <div class="col">
+                        <input type="text"
+                            id="chatMessage"
+                            class="form-control border-light bg-light"
+                            placeholder="Enter Message..." />
+                    </div>
+                    <div class="col-auto">
+                        <button type="button"
+                            id="sendBtn"
+                            class="btn btn-info">
+                            <span class="d-none d-sm-inline-block me-2">Send</span>
+                            <i class="mdi mdi-send"></i>
+                        </button>
                     </div>
                 </div>
-
-                <div class="border-top border-top-dashed">
-                    <div class="row g-2 mx-3 mt-2 mb-3">
-                        <div class="col">
-                            <input type="text"
-                                id="chatMessage"
-                                class="form-control border-light bg-light"
-                                placeholder="Enter Message..." />
-                        </div>
-                        <div class="col-auto">
-                            <button type="button"
-                                id="sendBtn"
-                                class="btn btn-info">
-                                <span class="d-none d-sm-inline-block me-2">Send</span>
-                                <i class="mdi mdi-send"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
             </div>
+
         </div>
     </div>
 </div>
+
 
 
 
@@ -761,122 +747,62 @@ $(document).ready(function() {
 
 <script>
 let my_id = <?= $this->session->userdata('po_user'); ?>;
-let receiver_id = null;
 
-// LOAD USERS
-function loadUsers() {
-    $.get("<?= base_url('EventsController/chat_users'); ?>", function(res) {
-        let users = JSON.parse(res);
+function loadMessages() {
+    $.get("<?= base_url('EventsController/fetch'); ?>", function(res) {
+        let data = JSON.parse(res);
         let html = '';
 
-        users.forEach(u => {
-            let photo = u.photo
-                ? "<?= base_url(); ?>" + u.photo
+        data.forEach(msg => {
+            let isMe = msg.sender_id == my_id;
+            let side = isMe ? 'right' : 'left';
+
+            let avatar = msg.photo
+                ? "<?= base_url(); ?>" + msg.photo
                 : "<?= base_url('assets/img/user-dummy-img.jpg'); ?>";
 
             html += `
-            <li class="list-group-item chat-user"
-                data-id="${u.id}"
-                style="cursor:pointer">
-                <div class="d-flex align-items-center">
-                    <img src="${photo}" class="rounded-circle me-2" width="40">
-                    <div>
-                        <strong>${u.full_name}</strong><br>
-                        <small class="text-muted">${u.last_message ?? ''}</small>
+            <li class="chat-list ${side}">
+                <div class="conversation-list">
+
+                    ${!isMe ? `
+                    <div class="chat-avatar">
+                        <img src="${avatar}" alt="">
+                    </div>` : ``}
+
+                    <div class="user-chat-content">
+                        <div class="ctext-wrap">
+                            <div class="ctext-wrap-content">
+                                <p class="mb-0 ctext-content"><strong>${msg.full_name}:</strong> ${msg.message}</p>
+                            </div>
+                        </div>
+
+                        <div class="conversation-name">
+                            <small class="text-muted time">
+                                ${new Date(msg.created_at).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}
+                            </small>
+                        </div>
                     </div>
                 </div>
             </li>`;
         });
 
-        $('#chat-users').html(html);
+        $('#users-conversation').html(html);
+        $('#chat-conversation').scrollTop($('#chat-conversation')[0].scrollHeight);
     });
 }
 
-// CLICK USER
-$(document).on('click', '.chat-user', function () {
-    receiver_id = $(this).data('id');
-    loadMessages();
-});
-
-// LOAD MESSAGES
-function loadMessages() {
-    if (!receiver_id) return;
-
-    $.post("<?= base_url('EventsController/fetch'); ?>",
-        { receiver_id },
-        function(res) {
-
-            let data = JSON.parse(res);
-            let html = '';
-
-            data.forEach(msg => {
-                let isMe = msg.sender_id == my_id;
-                let side = isMe ? 'right' : 'left';
-
-                let avatar = msg.photo
-                    ? "<?= base_url(); ?>" + msg.photo
-                    : "<?= base_url('assets/img/user-dummy-img.jpg'); ?>";
-
-                html += `
-                <li class="chat-list ${side}">
-                    <div class="conversation-list">
-
-                        ${!isMe ? `
-                        <div class="chat-avatar">
-                            <img src="${avatar}" alt="">
-                        </div>` : ``}
-
-                        <div class="user-chat-content">
-                            <div class="ctext-wrap">
-                                <div class="ctext-wrap-content">
-                                    <p class="mb-0 ctext-content">${msg.message}</p>
-                                </div>
-                            </div>
-
-                            <div class="conversation-name">
-                                <small class="text-muted time">
-                                    ${new Date(msg.created_at).toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </small>
-                                <span class="text-success">
-                                    <i class="ri-check-double-line"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </li>`;
-            });
-
-            $('#users-conversation').html(html);
-            $('#chat-conversation').scrollTop(
-                $('#chat-conversation')[0].scrollHeight
-            );
-        }
-    );
-}
-
-// SEND MESSAGE
 $('#sendBtn').on('click', function () {
     let message = $('#chatMessage').val().trim();
-    if (!message || !receiver_id) return;
+    if(!message) return;
 
-    $.post("<?= base_url('EventsController/send'); ?>", {
-        receiver_id,
-        message
-    }, function () {
+    $.post("<?= base_url('EventsController/send'); ?>", { message }, function () {
         $('#chatMessage').val('');
         loadMessages();
-        loadUsers();
     });
 });
 
-// AUTO REFRESH
-setInterval(() => {
-    loadMessages();
-    loadUsers();
-}, 2000);
+setInterval(loadMessages, 2000);
+loadMessages();
 
-loadUsers();
 </script>

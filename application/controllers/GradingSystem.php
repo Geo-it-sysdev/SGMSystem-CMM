@@ -50,7 +50,7 @@ class GradingSystem extends CI_Controller {
          // Load user profile
          $data['profile'] = $this->AdminModel->get_user($user_id);
          $data['total_classrooms'] = $this->StudentModel->total_classrooms();
-         $data['total_student'] = $this->StudentModel->total_student($user_id);
+         $data['total_student'] = $this->StudentModel->total_student();
          $data['total_users'] = $this->StudentModel->total_users();
         $this->check_log('');
 		$this->load->view('template/header', $data);

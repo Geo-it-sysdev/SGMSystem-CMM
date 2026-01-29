@@ -149,66 +149,45 @@
                     </div><!-- end col -->
 
 
+                    <div class="col-xxl-6 col-lg-6">
+                        <div class="card card-height-100">
 
+                            <div class="card-header align-items-center d-flex">
+                                <h4 class="card-title mb-0 flex-grow-1">Chat (Concerns Only)</h4>
+                            </div>
 
+                            <div class="card-body p-0">
+                                <div id="users-chat">
+                                    <div class="chat-conversation p-3" id="chat-conversation" data-simplebar
+                                        style="height:400px;">
 
+                                        <ul class="list-unstyled chat-conversation-list chat-sm"
+                                            id="users-conversation">
+                                            <!-- Messages will load here -->
+                                        </ul>
 
+                                    </div>
+                                </div>
 
+                                <div class="border-top border-top-dashed">
+                                    <div class="row g-2 mx-3 mt-2 mb-3">
+                                        <div class="col">
+                                            <input type="text" id="chatMessage"
+                                                class="form-control border-light bg-light"
+                                                placeholder="Enter Message..." />
+                                        </div>
+                                        <div class="col-auto">
+                                            <button type="button" id="sendBtn" class="btn btn-info">
+                                                <span class="d-none d-sm-inline-block me-2">Send</span>
+                                                <i class="mdi mdi-send"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
 
-
-
-
-
-
-
-
-
-
-
-           <div class="col-xxl-6 col-lg-6">
-    <div class="card card-height-100">
-
-        <div class="card-header align-items-center d-flex">
-            <h4 class="card-title mb-0 flex-grow-1">Chat</h4>
-        </div>
-
-        <div class="card-body p-0">
-            <div id="users-chat">
-                <div class="chat-conversation p-3"
-                    id="chat-conversation"
-                    data-simplebar
-                    style="height:400px;">
-
-                    <ul class="list-unstyled chat-conversation-list chat-sm"
-                        id="users-conversation">
-                        <!-- Messages will load here -->
-                    </ul>
-
-                </div>
-            </div>
-
-            <div class="border-top border-top-dashed">
-                <div class="row g-2 mx-3 mt-2 mb-3">
-                    <div class="col">
-                        <input type="text"
-                            id="chatMessage"
-                            class="form-control border-light bg-light"
-                            placeholder="Enter Message..." />
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-auto">
-                        <button type="button"
-                            id="sendBtn"
-                            class="btn btn-info">
-                            <span class="d-none d-sm-inline-block me-2">Send</span>
-                            <i class="mdi mdi-send"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
 
 
 
@@ -303,7 +282,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary" id="saveMemberBtn">Save Member</button>
-                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </form>
             </div>
         </div>
@@ -319,17 +298,18 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="eventModalLabel">Add/Edit Event</h5>
-               
+
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="event-date" name="event_date">
                     <div class="mb-3">
                         <label for="event-desc" class="form-label">Event Description</label>
-                        <input type="text" id="event-desc" name="description" class="form-control" required placeholder="Enter event description">
+                        <input type="text" id="event-desc" name="description" class="form-control" required
+                            placeholder="Enter event description">
                     </div>
                     <div class="mb-3">
                         <label for="event-time" class="form-label">Event Time</label>
-                        <input type="time" id="event-time" name="time" class="form-control" required >
+                        <input type="time" id="event-time" name="time" class="form-control" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -351,11 +331,12 @@
 
 
 <script>
+//add event 
 $(document).ready(function() {
 
-    let allEvents = []; // store all events
+    let allEvents = [];
+    const currentUser = <?= json_encode($this->session->userdata('po_user')) ?>;
 
-    // Initialize Flatpickr
     const fp = flatpickr("#calendar", {
         inline: true,
         dateFormat: "Y-m-d",
@@ -382,9 +363,12 @@ $(document).ready(function() {
         }
     });
 
-    // Open modal for new/edit
     function openEventModal(dateStr, event = null) {
         if (event) {
+            if (event.user_id != currentUser) {
+                Swal.fire('Notice', 'You can only edit your own events', 'info');
+                return;
+            }
             $('#event-date').val(event.event_date.split(' ')[0]);
             $('#event-time').val(event.event_date.split(' ')[1]);
             $('#event-desc').val(event.description);
@@ -401,7 +385,46 @@ $(document).ready(function() {
         myModal.show();
     }
 
-    // Handle Add/Edit form submit
+    function generateEventHtml(event) {
+        const dt = new Date(event.event_date);
+        const hours = dt.getHours();
+        const minutes = String(dt.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        const displayHour = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+        const canEdit = event.user_id == currentUser;
+
+        return `
+        <div class="mini-stats-wid d-flex align-items-center mt-3">
+            <div class="flex-shrink-0 avatar-sm">
+                <span class="mini-stat-icon avatar-title rounded-circle text-success bg-success-subtle fs-4 ${canEdit ? 'edit-event' : ''}" 
+                      data-id="${event.id}">${dt.getDate()}</span>
+            </div>
+            <div class="flex-grow-1 ms-3">
+                <h6 class="mb-1">${event.description}</h6>
+                <p class="text-muted mb-0">${event.full_name} (${event.user_type})</p>
+            </div>
+            <div class="flex-shrink-0">
+                <p class="text-muted mb-0">${displayHour}:${minutes} <span class="text-uppercase">${ampm}</span></p>
+            </div>
+        </div>`;
+    }
+
+    function filterEventsByMonth(month, year) {
+        $('#event-list').empty();
+        allEvents.forEach(event => {
+            const dt = new Date(event.event_date);
+            if (dt.getMonth() + 1 === month && dt.getFullYear() === year) {
+                $('#event-list').append(generateEventHtml(event));
+            }
+        });
+    }
+
+    $('#event-list').on('click', '.edit-event', function() {
+        const eventId = $(this).data('id');
+        const event = allEvents.find(ev => ev.id == eventId);
+        if (event) openEventModal(event.event_date.split(' ')[0], event);
+    });
+
     $('#eventForm').on('submit', function(e) {
         e.preventDefault();
         var eventId = $(this).data('event-id');
@@ -412,7 +435,6 @@ $(document).ready(function() {
                 .value;
             else data[item.name] = item.value;
         });
-
         let url = eventId ? "<?php echo site_url('EventsController/update'); ?>" :
             "<?php echo site_url('EventsController/save'); ?>";
         if (eventId) data['id'] = eventId;
@@ -438,7 +460,6 @@ $(document).ready(function() {
         });
     });
 
-    // Delete Event
     $('#deleteEventBtn').on('click', function() {
         var eventId = $('#eventForm').data('event-id');
         if (!eventId) return;
@@ -470,56 +491,12 @@ $(document).ready(function() {
         });
     });
 
-    // Event HTML
-    function generateEventHtml(event) {
-        const dt = new Date(event.event_date);
-        const hours = dt.getHours();
-        const minutes = String(dt.getMinutes()).padStart(2, '0');
-        const ampm = hours >= 12 ? 'pm' : 'am';
-        const displayHour = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
-
-        return `
-        <div class="mini-stats-wid d-flex align-items-center mt-3">
-            <div class="flex-shrink-0 avatar-sm">
-                <span class="mini-stat-icon avatar-title rounded-circle text-success bg-success-subtle fs-4 edit-event" 
-                      data-id="${event.id}">${dt.getDate()}</span>
-            </div>
-            <div class="flex-grow-1 ms-3">
-                <h6 class="mb-1">${event.description}</h6>
-                <p class="text-muted mb-0">${event.full_name} (${event.user_type})</p>
-            </div>
-            <div class="flex-shrink-0">
-                <p class="text-muted mb-0">${displayHour}:${minutes} <span class="text-uppercase">${ampm}</span></p>
-            </div>
-        </div>
-        `;
-    }
-
-    // Filter events by month/year
-    function filterEventsByMonth(month, year) {
-        $('#event-list').empty();
-        allEvents.forEach(event => {
-            const dt = new Date(event.event_date);
-            if (dt.getMonth() + 1 === month && dt.getFullYear() === year) {
-                $('#event-list').append(generateEventHtml(event));
-            }
-        });
-    }
-
-    // Click event to edit
-    $('#event-list').on('click', '.edit-event', function() {
-        const eventId = $(this).data('id');
-        const event = allEvents.find(ev => ev.id == eventId);
-        if (event) openEventModal(event.event_date.split(' ')[0], event);
-    });
-
-    // Load events on page load
     $.getJSON("<?php echo site_url('EventsController/get_events'); ?>", function(events) {
         allEvents = events;
         filterEventsByMonth(fp.currentMonth + 1, fp.currentYear);
     });
-
 });
+//end add event
 
 
 
@@ -527,11 +504,9 @@ $(document).ready(function() {
 
 
 
-
+// add ssg member
 $(document).ready(function() {
 
-    // Initialize DataTable
-   // Custom profession order
     let professionOrder = [
         'President',
         'Vice President',
@@ -542,20 +517,20 @@ $(document).ready(function() {
         'Sgt. at Arms'
     ];
 
-    // Register custom sort plugin
     $.fn.dataTable.ext.order['profession-custom'] = function(settings, col) {
-        return this.api().column(col, {order:'index'}).nodes().map(function(td, i) {
+        return this.api().column(col, {
+            order: 'index'
+        }).nodes().map(function(td, i) {
             let profession = $(td).text().trim();
             let index = professionOrder.indexOf(profession);
-            return index === -1 ? professionOrder.length : index; // put unknowns at end
+            return index === -1 ? professionOrder.length : index;
         });
     };
 
     // Initialize DataTable
     let ssgTable = $('#ssg_table').DataTable({
-        columnDefs: [
-            {
-                targets: 1, // Assuming Profession is column index 1
+        columnDefs: [{
+                targets: 1,
                 orderDataType: 'profession-custom'
             },
             {
@@ -569,7 +544,9 @@ $(document).ready(function() {
         searching: false,
         autoWidth: false,
         responsive: true,
-        order: [[1, 'asc']] // default sort by profession
+        order: [
+            [1, 'asc']
+        ]
     });
 
     // Load SSG members
@@ -595,7 +572,6 @@ $(document).ready(function() {
 
     loadMembers();
 
-    // Open Add Modal
     $('#addSsgBtn').click(function() {
         $('#ssgForm')[0].reset();
         $('#member_id').val('');
@@ -604,7 +580,6 @@ $(document).ready(function() {
         $('#ssgModal').modal('show');
     });
 
-    // Live Search for Student Name
     $("#student_name").on('input', function() {
         let term = $(this).val();
         if (term.length < 3) {
@@ -656,38 +631,36 @@ $(document).ready(function() {
         });
     });
 
-    // Remove dropdown if clicked outside
     $(document).click(function(e) {
         if (!$(e.target).is('#student_name')) {
             $("#autocomplete-list").remove();
         }
     });
 
-    // Save/Add Member via AJAX
     $('#ssgForm').submit(function(e) {
-    e.preventDefault();
-    $.ajax({
-        url: '<?= base_url("EventsController/save_ssg_member") ?>',
-        type: 'POST',
-        data: $(this).serialize(),
-        dataType: 'json',
-        success: function(res) {
-            if (res.status === 'success') {
-                $('#ssgModal').modal('hide');
-                loadMembers(); // reload your members table/list
-                Swal.fire('Success', 'Member saved successfully', 'success');
-            } else if(res.status === 'error') {
-                // Show duplicate name or other errors from backend
-                Swal.fire('Error', res.message, 'error');
-            } else {
+        e.preventDefault();
+        $.ajax({
+            url: '<?= base_url("EventsController/save_ssg_member") ?>',
+            type: 'POST',
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function(res) {
+                if (res.status === 'success') {
+                    $('#ssgModal').modal('hide');
+                    loadMembers();
+                    Swal.fire('Success', 'Member saved successfully', 'success');
+                } else if (res.status === 'error') {
+
+                    Swal.fire('Error', res.message, 'error');
+                } else {
+                    Swal.fire('Error', 'Something went wrong', 'error');
+                }
+            },
+            error: function() {
                 Swal.fire('Error', 'Something went wrong', 'error');
             }
-        },
-        error: function() {
-            Swal.fire('Error', 'Something went wrong', 'error');
-        }
+        });
     });
-});
 
 
     // Edit Member
@@ -742,10 +715,12 @@ $(document).ready(function() {
     });
 
 });
-</script>
+
+//end add ssg member
 
 
-<script>
+
+// chat functionality
 let my_id = <?= $this->session->userdata('po_user'); ?>;
 
 function loadMessages() {
@@ -757,9 +732,9 @@ function loadMessages() {
             let isMe = msg.sender_id == my_id;
             let side = isMe ? 'right' : 'left';
 
-            let avatar = msg.photo
-                ? "<?= base_url(); ?>" + msg.photo
-                : "<?= base_url('assets/img/user-dummy-img.jpg'); ?>";
+            let avatar = msg.photo ?
+                "<?= base_url(); ?>" + msg.photo :
+                "<?= base_url('assets/img/user-dummy-img.jpg'); ?>";
 
             html += `
             <li class="chat-list ${side}">
@@ -792,11 +767,13 @@ function loadMessages() {
     });
 }
 
-$('#sendBtn').on('click', function () {
+$('#sendBtn').on('click', function() {
     let message = $('#chatMessage').val().trim();
-    if(!message) return;
+    if (!message) return;
 
-    $.post("<?= base_url('EventsController/send'); ?>", { message }, function () {
+    $.post("<?= base_url('EventsController/send'); ?>", {
+        message
+    }, function() {
         $('#chatMessage').val('');
         loadMessages();
     });
@@ -805,4 +782,11 @@ $('#sendBtn').on('click', function () {
 setInterval(loadMessages, 2000);
 loadMessages();
 
+window.addEventListener('load', () => {
+    if (!sessionStorage.getItem('reloaded')) {
+        sessionStorage.setItem('reloaded', 'true');
+        location.reload();
+    }
+});
+//end chat functionality
 </script>

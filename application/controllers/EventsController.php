@@ -213,4 +213,31 @@ class EventsController extends CI_Controller {
 
 
 
+      public function fetch() {
+        $me = $this->session->userdata('po_user');
+        $to = $this->input->post('receiver_id');
+
+        $this->db->where("
+            (sender_id = $me AND receiver_id = $to)
+            OR
+            (sender_id = $to AND receiver_id = $me)
+        ");
+        $this->db->order_by('created_at', 'ASC');
+
+        echo json_encode(
+            $this->db->get('tbl_chat_messages')->result()
+        );
+    }
+
+    public function send() {
+        $this->db->insert('tbl_chat_messages', [
+            'sender_id'   => $this->session->userdata('po_user'),
+            'receiver_id' => $this->input->post('receiver_id'),
+            'message'     => $this->input->post('message'),
+            'created_at'  => date('Y-m-d H:i:s')
+        ]);
+
+        echo json_encode(['status' => 'success']);
+    }
+
 }

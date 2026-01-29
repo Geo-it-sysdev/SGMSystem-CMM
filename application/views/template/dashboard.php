@@ -154,58 +154,76 @@
 
 
 
-<div class="col-xxl-6 col-lg-6">
-    <div class="card card-height-100">
 
-        <!-- HEADER -->
-        <div class="card-header align-items-center d-flex">
-            <h4 class="card-title mb-0 flex-grow-1">Chat</h4>
-        </div>
 
-        <!-- BODY -->
-        <div class="card-body p-0">
-            <div id="users-chat">
-                <div class="chat-conversation p-3" id="chat-conversation" data-simplebar style="height:400px;">
-                    <ul class="list-unstyled chat-conversation-list chat-sm"
-    id="users-conversation"></ul>
-                        <!-- MESSAGES WILL LOAD HERE -->
-                    </ul>
-                </div>
+
+
+
+
+
+
+
+
+
+                <div class="row">
+
+    <!-- USER LIST -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Users</h5>
             </div>
-
-            <!-- INPUT -->
-            <div class="border-top border-top-dashed">
-                <div class="row g-2 mx-3 mt-2 mb-3">
-                    <div class="col">
-                       <input type="text"
-       id="chatMessage"
-       class="form-control border-light bg-light"
-       placeholder="Enter Message..." />
-                    </div>
-                    <div class="col-auto">
-                       <button type="button"
-        id="sendBtn"
-        class="btn btn-info">
-    <span class="d-none d-sm-inline-block me-2">Send</span>
-    <i class="mdi mdi-send float-end"></i>
-</button>
-                    </div>
-                </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush" id="chat-users"></ul>
             </div>
         </div>
+    </div>
 
+    <!-- CHAT AREA -->
+    <div class="col-lg-8">
+        <div class="card card-height-100">
+
+            <div class="card-header align-items-center d-flex">
+                <h4 class="card-title mb-0 flex-grow-1">Chat</h4>
+            </div>
+
+            <div class="card-body p-0">
+                <div id="users-chat">
+                    <div class="chat-conversation p-3"
+                        id="chat-conversation"
+                        data-simplebar
+                        style="height:400px;">
+
+                        <ul class="list-unstyled chat-conversation-list chat-sm"
+                            id="users-conversation">
+                        </ul>
+
+                    </div>
+                </div>
+
+                <div class="border-top border-top-dashed">
+                    <div class="row g-2 mx-3 mt-2 mb-3">
+                        <div class="col">
+                            <input type="text"
+                                id="chatMessage"
+                                class="form-control border-light bg-light"
+                                placeholder="Enter Message..." />
+                        </div>
+                        <div class="col-auto">
+                            <button type="button"
+                                id="sendBtn"
+                                class="btn btn-info">
+                                <span class="d-none d-sm-inline-block me-2">Send</span>
+                                <i class="mdi mdi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
 </div>
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -743,42 +761,75 @@ $(document).ready(function() {
 
 <script>
 let my_id = <?= $this->session->userdata('po_user'); ?>;
-let receiver_id = 2; // ⚠️ change this dynamically when clicking a user
+let receiver_id = null;
 
+// LOAD USERS
+function loadUsers() {
+    $.get("<?= base_url('EventsController/chat_users'); ?>", function(res) {
+        let users = JSON.parse(res);
+        let html = '';
+
+        users.forEach(u => {
+            let photo = u.photo
+                ? "<?= base_url(); ?>" + u.photo
+                : "<?= base_url('assets/img/user-dummy-img.jpg'); ?>";
+
+            html += `
+            <li class="list-group-item chat-user"
+                data-id="${u.id}"
+                style="cursor:pointer">
+                <div class="d-flex align-items-center">
+                    <img src="${photo}" class="rounded-circle me-2" width="40">
+                    <div>
+                        <strong>${u.full_name}</strong><br>
+                        <small class="text-muted">${u.last_message ?? ''}</small>
+                    </div>
+                </div>
+            </li>`;
+        });
+
+        $('#chat-users').html(html);
+    });
+}
+
+// CLICK USER
+$(document).on('click', '.chat-user', function () {
+    receiver_id = $(this).data('id');
+    loadMessages();
+});
+
+// LOAD MESSAGES
 function loadMessages() {
+    if (!receiver_id) return;
+
     $.post("<?= base_url('EventsController/fetch'); ?>",
-        { receiver_id: receiver_id },
+        { receiver_id },
         function(res) {
 
             let data = JSON.parse(res);
             let html = '';
 
             data.forEach(msg => {
+                let isMe = msg.sender_id == my_id;
+                let side = isMe ? 'right' : 'left';
 
-                let side = msg.sender_id == my_id ? 'right' : 'left';
+                let avatar = msg.photo
+                    ? "<?= base_url(); ?>" + msg.photo
+                    : "<?= base_url('assets/img/user-dummy-img.jpg'); ?>";
 
                 html += `
                 <li class="chat-list ${side}">
                     <div class="conversation-list">
-                        ${side === 'left' ? `
+
+                        ${!isMe ? `
                         <div class="chat-avatar">
-                            <img src="<?= base_url('assets/images/users/avatar-2.jpg'); ?>" alt="">
+                            <img src="${avatar}" alt="">
                         </div>` : ``}
 
                         <div class="user-chat-content">
                             <div class="ctext-wrap">
                                 <div class="ctext-wrap-content">
                                     <p class="mb-0 ctext-content">${msg.message}</p>
-                                </div>
-
-                                <div class="dropdown align-self-start message-box-drop">
-                                    <a class="dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                        <i class="ri-more-2-fill"></i>
-                                    </a>
-                                    <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="#"><i class="ri-reply-line me-2"></i>Reply</a>
-                                        <a class="dropdown-item" href="#"><i class="ri-delete-bin-5-line me-2"></i>Delete</a>
-                                    </div>
                                 </div>
                             </div>
 
@@ -789,8 +840,8 @@ function loadMessages() {
                                         minute: '2-digit'
                                     })}
                                 </small>
-                                <span class="text-success check-message-icon">
-                                    <i class="ri-check-double-line align-bottom"></i>
+                                <span class="text-success">
+                                    <i class="ri-check-double-line"></i>
                                 </span>
                             </div>
                         </div>
@@ -799,7 +850,6 @@ function loadMessages() {
             });
 
             $('#users-conversation').html(html);
-
             $('#chat-conversation').scrollTop(
                 $('#chat-conversation')[0].scrollHeight
             );
@@ -810,18 +860,23 @@ function loadMessages() {
 // SEND MESSAGE
 $('#sendBtn').on('click', function () {
     let message = $('#chatMessage').val().trim();
-    if (!message) return;
+    if (!message || !receiver_id) return;
 
     $.post("<?= base_url('EventsController/send'); ?>", {
-        receiver_id: receiver_id,
-        message: message
+        receiver_id,
+        message
     }, function () {
         $('#chatMessage').val('');
         loadMessages();
+        loadUsers();
     });
 });
 
 // AUTO REFRESH
-setInterval(loadMessages, 2000);
-loadMessages();
+setInterval(() => {
+    loadMessages();
+    loadUsers();
+}, 2000);
+
+loadUsers();
 </script>

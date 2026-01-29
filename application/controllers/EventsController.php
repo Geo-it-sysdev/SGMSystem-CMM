@@ -243,22 +243,28 @@ class EventsController extends CI_Controller {
         echo json_encode($this->db->query($sql)->result());
     }
 
-    public function fetch_messages()
+    // =============================
+    // FETCH CHAT MESSAGES
+    // =============================
+    public function fetch()
     {
         $me = $this->session->userdata('po_user');
-        $other = $this->input->post('receiver_id');
+        $to = $this->input->post('receiver_id');
 
         $this->db->where("
-            (sender_id = $me AND receiver_id = $other)
+            (sender_id = $me AND receiver_id = $to)
             OR
-            (sender_id = $other AND receiver_id = $me)
+            (sender_id = $to AND receiver_id = $me)
         ");
         $this->db->order_by('created_at', 'ASC');
 
         echo json_encode($this->db->get('tbl_chat_messages')->result());
     }
 
-    public function send_message()
+    // =============================
+    // SEND MESSAGE
+    // =============================
+    public function send()
     {
         $this->db->insert('tbl_chat_messages', [
             'sender_id'   => $this->session->userdata('po_user'),
@@ -271,4 +277,5 @@ class EventsController extends CI_Controller {
     }
 
 
+    
 }

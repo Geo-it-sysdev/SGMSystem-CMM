@@ -166,7 +166,8 @@
         <div class="card-body p-0">
             <div id="users-chat">
                 <div class="chat-conversation p-3" id="chat-conversation" data-simplebar style="height:400px;">
-                    <ul class="list-unstyled chat-conversation-list chat-sm" id="users-conversation">
+                    <ul class="list-unstyled chat-conversation-list chat-sm"
+    id="users-conversation"></ul>
                         <!-- MESSAGES WILL LOAD HERE -->
                     </ul>
                 </div>
@@ -176,15 +177,18 @@
             <div class="border-top border-top-dashed">
                 <div class="row g-2 mx-3 mt-2 mb-3">
                     <div class="col">
-                        <input type="text" id="chatMessage"
-                               class="form-control border-light bg-light"
-                               placeholder="Enter Message..." />
+                       <input type="text"
+       id="chatMessage"
+       class="form-control border-light bg-light"
+       placeholder="Enter Message..." />
                     </div>
                     <div class="col-auto">
-                        <button type="button" id="sendBtn" class="btn btn-info">
-                            <span class="d-none d-sm-inline-block me-2">Send</span>
-                            <i class="mdi mdi-send"></i>
-                        </button>
+                       <button type="button"
+        id="sendBtn"
+        class="btn btn-info">
+    <span class="d-none d-sm-inline-block me-2">Send</span>
+    <i class="mdi mdi-send float-end"></i>
+</button>
                     </div>
                 </div>
             </div>
@@ -192,6 +196,24 @@
 
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -719,89 +741,87 @@ $(document).ready(function() {
 </script>
 
 
-
-
 <script>
-let receiver_id = 2; // CHANGE THIS (user you chat with)
 let my_id = <?= $this->session->userdata('po_user'); ?>;
+let receiver_id = 2; // ⚠️ change this dynamically when clicking a user
 
-// LOAD MESSAGES
 function loadMessages() {
-    $.ajax({
-        url: "<?= base_url('EventsController/fetch'); ?>",
-        type: "POST",
-        data: { receiver_id: receiver_id },
-        dataType: "json",
-        success: function (res) {
+    $.post("<?= base_url('EventsController/fetch'); ?>",
+        { receiver_id: receiver_id },
+        function(res) {
+
+            let data = JSON.parse(res);
             let html = '';
 
-            res.forEach(msg => {
-                let side = (msg.sender_id == my_id) ? 'right' : 'left';
+            data.forEach(msg => {
+
+                let side = msg.sender_id == my_id ? 'right' : 'left';
 
                 html += `
                 <li class="chat-list ${side}">
                     <div class="conversation-list">
-
                         ${side === 'left' ? `
                         <div class="chat-avatar">
-                            <img src="<?= base_url('assets/images/users/avatar-2.jpg'); ?>" />
-                        </div>` : ''}
+                            <img src="<?= base_url('assets/images/users/avatar-2.jpg'); ?>" alt="">
+                        </div>` : ``}
 
                         <div class="user-chat-content">
                             <div class="ctext-wrap">
                                 <div class="ctext-wrap-content">
                                     <p class="mb-0 ctext-content">${msg.message}</p>
                                 </div>
+
+                                <div class="dropdown align-self-start message-box-drop">
+                                    <a class="dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                        <i class="ri-more-2-fill"></i>
+                                    </a>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="#"><i class="ri-reply-line me-2"></i>Reply</a>
+                                        <a class="dropdown-item" href="#"><i class="ri-delete-bin-5-line me-2"></i>Delete</a>
+                                    </div>
+                                </div>
                             </div>
+
                             <div class="conversation-name">
                                 <small class="text-muted time">
-                                    ${msg.created_at}
+                                    ${new Date(msg.created_at).toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
                                 </small>
                                 <span class="text-success check-message-icon">
                                     <i class="ri-check-double-line align-bottom"></i>
                                 </span>
                             </div>
                         </div>
-
                     </div>
                 </li>`;
             });
 
             $('#users-conversation').html(html);
+
             $('#chat-conversation').scrollTop(
                 $('#chat-conversation')[0].scrollHeight
             );
         }
-    });
+    );
 }
 
 // SEND MESSAGE
-$('#sendBtn').click(function () {
+$('#sendBtn').on('click', function () {
     let message = $('#chatMessage').val().trim();
     if (!message) return;
 
-    $.ajax({
-        url: "<?= base_url('EventsController/send'); ?>",
-        type: "POST",
-        data: {
-            receiver_id: receiver_id,
-            message: message
-        },
-        success: function () {
-            $('#chatMessage').val('');
-            loadMessages();
-        }
+    $.post("<?= base_url('EventsController/send'); ?>", {
+        receiver_id: receiver_id,
+        message: message
+    }, function () {
+        $('#chatMessage').val('');
+        loadMessages();
     });
 });
 
-// ENTER KEY SEND
-$('#chatMessage').keypress(function (e) {
-    if (e.which === 13) {
-        $('#sendBtn').click();
-    }
-});
-
-// AUTO LOAD
+// AUTO REFRESH
 setInterval(loadMessages, 2000);
 loadMessages();
 </script>

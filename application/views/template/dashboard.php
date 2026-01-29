@@ -11,7 +11,6 @@
 
 .table-card {
     flex: 1;
-    /* takes remaining space */
 }
 </style>
 
@@ -45,7 +44,6 @@
                                 <div class="d-flex align-items-center">
                                     <div class="avatar-sm flex-shrink-0">
                                         <span class="avatar-title bg-primary-subtle text-primary rounded-2 fs-2">
-                                            <!-- <i data-feather="briefcase" class="text-primary"></i> -->
                                             <i class="ri-building-4-line"></i>
 
                                         </span>
@@ -110,12 +108,8 @@
                     </div><!-- end col -->
                 </div><!-- end row -->
 
-
-
-
-
+                <!-- ssg member -->
                 <div class="row">
-
                     <div class="col-xxl-6">
                         <div class="card card-height-100">
                             <div class="card-header align-items-center d-flex">
@@ -124,9 +118,7 @@
                                     <i class="ri-add-line"></i> Add SSG Member
                                 </button>
 
-
-                            </div><!-- end card header -->
-
+                            </div>
                             <div class="card-body">
 
                                 <div class="table-responsive table-card">
@@ -140,18 +132,16 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <!-- Rows loaded via JS -->
                                         </tbody>
                                     </table>
                                 </div>
                             </div><!-- end cardbody -->
                         </div><!-- end card -->
-                    </div><!-- end col -->
+                    </div><!-- end ssg member -->
 
-
+                        <!-- chats -->
                     <div class="col-xxl-6 col-lg-6">
                         <div class="card card-height-100">
-
                             <div class="card-header align-items-center d-flex">
                                 <h4 class="card-title mb-0 flex-grow-1">Chat (Concerns Only)</h4>
                             </div>
@@ -187,21 +177,7 @@
 
                             </div>
                         </div>
-                    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    </div> <!--end chat -->
                 </div><!-- end row -->
             </div><!-- end col -->
 
@@ -226,17 +202,7 @@
                 </div>
             </div>
 
-
-
-
-
-
-
-
-
-
         </div><!-- end row -->
-
     </div>
     <!-- container-fluid -->
 </div>
@@ -253,9 +219,7 @@
             </div>
             <div class="modal-body">
                 <form id="ssgForm">
-                    <!-- Hidden ID for SSG Member -->
                     <input type="hidden" name="id" id="member_id">
-                    <!-- Hidden student_id -->
                     <input type="hidden" name="student_id" id="student_id">
 
                     <div class="mb-3">
@@ -291,7 +255,7 @@
 
 
 
-
+<!-- Event Modal -->
 <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <form id="eventForm">

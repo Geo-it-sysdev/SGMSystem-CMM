@@ -1,10 +1,4 @@
 <style>
-.table-responsive.table-card {
-    overflow-x: auto;
-    max-height: 400px;
-    /* adjust as needed */
-}
-
 #ssg_table {
     width: 100% !important;
 }
@@ -608,6 +602,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary" id="saveMemberBtn">Save Member</button>
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </form>
             </div>
         </div>
@@ -623,23 +618,23 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="eventModalLabel">Add/Edit Event</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="event-date" name="event_date">
                     <div class="mb-3">
                         <label for="event-desc" class="form-label">Event Description</label>
-                        <input type="text" id="event-desc" name="description" class="form-control" required>
+                        <input type="text" id="event-desc" name="description" class="form-control" required placeholder="Enter event description">
                     </div>
                     <div class="mb-3">
                         <label for="event-time" class="form-label">Event Time</label>
-                        <input type="time" id="event-time" name="time" class="form-control" required>
+                        <input type="time" id="event-time" name="time" class="form-control" required >
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" id="deleteEventBtn"
                         style="display:none;">Delete</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Save Event</button>
                 </div>
             </div>
@@ -868,7 +863,6 @@ $(document).ready(function() {
             }
         ],
         scrollY: 'calc(100vh - 300px)',
-        scrollCollapse: true,
         paging: false,
         info: false,
         searching: false,

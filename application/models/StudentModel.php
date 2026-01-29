@@ -242,8 +242,6 @@ class StudentModel extends CI_Model {
     }
 
 
-    
-
     // Get single activity by ID
     public function get_by_id($id) {
         return $this->db->get_where($this->table, ['id'=>$id])->row_array();
@@ -275,32 +273,21 @@ class StudentModel extends CI_Model {
         $this->db->where('quarter', $quarter);
         return $this->db->count_all_results('tbl_activities_header');
     }
-    
-    
-   
    // end add activities
 
-   public function total_classrooms() {
-        return $this->db->count_all('tbl_classrooms');
-    }
 
-    public function total_student($user_id = null)
-    {
-        $user_type = $this->session->userdata('user_type');
-    
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor','Admin'])) {
-            if (!$user_id) return 0;
-            $this->db->where('user_id', $user_id);
-        }
-    
+   // Dashboard counts
+   public function total_classrooms() {
+    return $this->db->count_all('tbl_classrooms');
+   }
+
+    public function total_student(){
         return $this->db->count_all_results('tbl_students');
     }
-    
 
-
-public function total_users() {
-    return $this->db->count_all('tbl_users');
-}
-
+    public function total_users() {
+        return $this->db->count_all('tbl_users');
+    }
+    // end Dashboard counts
 
 }

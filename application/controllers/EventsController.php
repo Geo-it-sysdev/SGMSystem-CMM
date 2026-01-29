@@ -15,89 +15,94 @@ class EventsController extends CI_Controller {
    
    
    
-   public function save() {
-    $user_id = $this->session->userdata('po_user');
-    $event_date = $this->input->post('event_date');
-    $description = $this->input->post('description');
+    public function save() {
+        $user_id = $this->session->userdata('po_user');
+        $event_date = $this->input->post('event_date');
+        $description = $this->input->post('description');
 
-    if (!$event_date || !$description) {
-        echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
-        return;
+        if (!$event_date || !$description) {
+            echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
+            return;
+        }
+
+        $data = [
+            'user_id'     => $user_id,
+            'event_date'  => $event_date,
+            'description' => $description
+        ];
+
+        if ($this->db->insert('tbl_upcoming_events', $data)) {
+
+            // Get the last inserted event by this user
+            $this->db->select('e.*, u.full_name, u.user_type');
+            $this->db->from('tbl_upcoming_events e');
+            $this->db->join('tbl_users u', 'u.id = e.user_id', 'left');
+            $this->db->where('e.user_id', $user_id);
+            $this->db->order_by('e.created_at', 'DESC'); // get most recent
+            $this->db->limit(1);
+            $event = $this->db->get()->row();
+
+            echo json_encode(['status' => 'success', 'event' => $event]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to save event']);
+        }
     }
 
-    $data = [
-        'user_id'     => $user_id,
-        'event_date'  => $event_date,
-        'description' => $description
-    ];
 
-    if ($this->db->insert('tbl_upcoming_events', $data)) {
-        $this->db->select('e.*, u.full_name, u.user_type');
+    public function update() {
+        $event_id = $this->input->post('id');
+        $event_date = $this->input->post('event_date');
+        $description = $this->input->post('description');
+        $user_id = $this->session->userdata('po_user');
+
+        if (!$event_id || !$event_date || !$description) {
+            echo json_encode(['status' => 'error','message'=>'All fields are required']);
+            return;
+        }
+
+        // Only allow update if user is owner
+        $this->db->where('id', $event_id);
+        $this->db->where('user_id', $user_id);
+        if ($this->db->update('tbl_upcoming_events', ['event_date' => $event_date, 'description' => $description])) {
+            $this->db->select('e.*, u.full_name, u.user_type');
+            $this->db->from('tbl_upcoming_events e');
+            $this->db->join('tbl_users u', 'u.id = e.user_id', 'left');
+            $this->db->where('e.id', $event_id);
+            $event = $this->db->get()->row();
+            echo json_encode(['status'=>'success','event'=>$event]);
+        } else {
+            echo json_encode(['status'=>'error','message'=>'Failed to update event']);
+        }
+    }
+
+    public function delete() {
+        $event_id = $this->input->post('id');
+        $user_id = $this->session->userdata('po_user');
+
+        if (!$event_id) {
+            echo json_encode(['status'=>'error','message'=>'Event ID required']);
+            return;
+        }
+
+        // Only allow delete if user is owner
+        $this->db->where('id', $event_id);
+        $this->db->where('user_id', $user_id);
+        if ($this->db->delete('tbl_upcoming_events')) {
+            echo json_encode(['status'=>'success']);
+        } else {
+            echo json_encode(['status'=>'error','message'=>'Failed to delete event']);
+        }
+    }
+
+    public function get_events() {
+        // Get all events from all users
+        $this->db->select('e.*, u.full_name, u.user_type, e.user_id');
         $this->db->from('tbl_upcoming_events e');
-        $this->db->join('tbl_users u', 'u.id = e.user_id', 'left');
-        $this->db->where('e.id', $this->db->insert_id()); // get last inserted
-        $event = $this->db->get()->row();
-
-        echo json_encode(['status' => 'success', 'event' => $event]);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Failed to save event']);
+        $this->db->join('tbl_users u','u.id=e.user_id','left');
+        $this->db->order_by('e.event_date','ASC');
+        $events = $this->db->get()->result();
+        echo json_encode($events);
     }
-}
-
-public function update() {
-    $event_id = $this->input->post('id');
-    $event_date = $this->input->post('event_date');
-    $description = $this->input->post('description');
-    $user_id = $this->session->userdata('po_user');
-
-    if (!$event_id || !$event_date || !$description) {
-        echo json_encode(['status' => 'error','message'=>'All fields are required']);
-        return;
-    }
-
-    // Only allow update if user is owner
-    $this->db->where('id', $event_id);
-    $this->db->where('user_id', $user_id);
-    if ($this->db->update('tbl_upcoming_events', ['event_date' => $event_date, 'description' => $description])) {
-        $this->db->select('e.*, u.full_name, u.user_type');
-        $this->db->from('tbl_upcoming_events e');
-        $this->db->join('tbl_users u', 'u.id = e.user_id', 'left');
-        $this->db->where('e.id', $event_id);
-        $event = $this->db->get()->row();
-        echo json_encode(['status'=>'success','event'=>$event]);
-    } else {
-        echo json_encode(['status'=>'error','message'=>'Failed to update event']);
-    }
-}
-
-public function delete() {
-    $event_id = $this->input->post('id');
-    $user_id = $this->session->userdata('po_user');
-
-    if (!$event_id) {
-        echo json_encode(['status'=>'error','message'=>'Event ID required']);
-        return;
-    }
-
-    // Only allow delete if user is owner
-    $this->db->where('id', $event_id);
-    $this->db->where('user_id', $user_id);
-    if ($this->db->delete('tbl_upcoming_events')) {
-        echo json_encode(['status'=>'success']);
-    } else {
-        echo json_encode(['status'=>'error','message'=>'Failed to delete event']);
-    }
-}
-
-public function get_events() {
-    // Get all events from all users
-    $this->db->select('e.*, u.full_name, u.user_type, e.user_id');
-    $this->db->from('tbl_upcoming_events e');
-    $this->db->join('tbl_users u','u.id=e.user_id','left');
-    $this->db->order_by('e.event_date','ASC');
-    $events = $this->db->get()->result();
-    echo json_encode($events);
-}
 
 
 

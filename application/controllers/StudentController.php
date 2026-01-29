@@ -56,8 +56,9 @@ class StudentController extends CI_Controller {
         echo json_encode($student);
     }
 
-   public function add_student()
+    public function add_student()
     {
+        $user_id = $this->session->userdata('po_user'); // get current user
         $fullname = $this->input->post('fullname');
 
         if ($this->StudentModel->check_duplicate($fullname)) {
@@ -71,36 +72,39 @@ class StudentController extends CI_Controller {
             'gender'      => $this->input->post('gender'),
             'section'     => $this->input->post('section'),
             'grade_level' => $this->input->post('grade_level'),
-            'created_at'  => date('Y-m-d')
+            'created_at'  => date('Y-m-d'),
+            'user_id'     => $user_id // save who added
         ];
 
         $this->StudentModel->insert_student($data);
         echo json_encode(['status' => 'success']);
     }
 
+    public function update_student()
+    {
+        $user_id = $this->session->userdata('po_user'); // get current user
+        $id = $this->input->post('id');
+        $fullname = $this->input->post('fullname');
 
-public function update_student()
-{
-    $id = $this->input->post('id');
-    $fullname = $this->input->post('fullname');
+        if ($this->StudentModel->check_duplicate_on_update($id, $fullname)) {
+            echo json_encode(['status' => 'duplicate']);
+            return;
+        }
 
-    if ($this->StudentModel->check_duplicate_on_update($id, $fullname)) {
-        echo json_encode(['status' => 'duplicate']);
-        return;
+        $data = [
+            'fullname'    => $fullname,
+            'age'         => $this->input->post('age'),
+            'gender'      => $this->input->post('gender'),
+            'section'     => $this->input->post('section'),
+            'grade_level' => $this->input->post('grade_level'),
+            'created_at'  => date('Y-m-d'),
+            'user_id'  => $user_id // save who updated
+        ];
+
+        $updated = $this->StudentModel->update_student($id, $data);
+        echo json_encode(['status' => $updated ? 'updated' : 'unauthorized']);
     }
 
-    $data = [
-        'fullname'    => $fullname,
-        'age'         => $this->input->post('age'),
-        'gender'      => $this->input->post('gender'),
-        'section'     => $this->input->post('section'),
-        'grade_level' => $this->input->post('grade_level'),
-        'created_at' => date('Y-m-d')
-    ];
-
-    $updated = $this->StudentModel->update_student($id, $data);
-    echo json_encode(['status' => $updated ? 'updated' : 'unauthorized']);
-}
 
 
     public function delete_student($id)
@@ -953,6 +957,48 @@ public function save_activity()
 
         echo json_encode(['data'=>$data]);
     }
+
+
+    public function fetch_students_report_card() {
+        $grade = $this->input->get('grade');
+        $section = $this->input->get('section');
+
+        $this->db->select('fullname AS student_name, grade_level, section, created_at');
+        $this->db->from('tbl_students');
+
+        if (!empty($grade)) {
+            $this->db->where('grade_level', $grade);
+        }
+        if (!empty($section)) {
+            $this->db->where('section', $section);
+        }
+
+        $query = $this->db->get();
+        $students = $query->result_array();
+
+        foreach ($students as &$student) {
+            $student['action'] = '<button class="btn btn-sm btn-primary viewStudentBtn" data-name="'.htmlspecialchars($student['student_name']).'"><i class="ri-eye-line"></i> View</button>';
+        }
+
+        echo json_encode(['data' => $students]);
+    }
+
+    // Fetch unique sections per grade
+    public function fetch_sections() {
+        $grade = $this->input->get('grade');
+
+        $this->db->select('DISTINCT section');
+        $this->db->from('tbl_students');
+        if (!empty($grade)) {
+            $this->db->where('grade_level', $grade);
+        }
+
+        $query = $this->db->get();
+        $sections = array_column($query->result_array(), 'section');
+
+        echo json_encode($sections);
+    }
+
 
 
 }

@@ -244,18 +244,34 @@ class GradingSystem extends CI_Controller {
         $this->load->view('template/footer');
     }
 
-    public function table()
+    public function report_card()
 	{
-        $user_id = $this->session->userdata("po_user");
+         $user_id = $this->session->userdata("po_user");
         if (!isset($user_id)) {
             redirect('AuthController/login_view');
             return;
         }
-
+    
+        // Get user allowed grades
+        $this->db->select('grades, user_type');
+        $this->db->from('tbl_users');
+        $this->db->where('id', $user_id);
+        $query = $this->db->get();
+        $user = $query->row();
+    
+        if ($user && !empty($user->grades)) {
+            $grades = array_map('trim', explode(',', $user->grades));
+        } else {
+            $grades = ['All'];
+        }
+    
+        $data['grade_levels'] = $grades;
+        $data['is_admin'] = ($user->user_type === 'admin'); 
+    
         $data['profile'] = $this->AdminModel->get_user($user_id);
         $this->load->view('template/header', $data);
         $this->load->view('template/sidebar');
-        $this->load->view('Admin/table');
+        $this->load->view('student/report_card', $data);
         $this->load->view('template/footer');
 	}
 

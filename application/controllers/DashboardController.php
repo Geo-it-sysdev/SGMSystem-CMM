@@ -227,14 +227,16 @@ class DashboardController extends CI_Controller {
     }
 
     // SEND MESSAGE
-    public function send()
+  public function send()
     {
         $message = $this->input->post('message');
 
-        if(empty($message)){
-            echo json_encode(['status'=>'error','message'=>'Message cannot be empty']);
+        if (empty($message)) {
+            echo json_encode(['status' => 'error', 'message' => 'Message cannot be empty']);
             return;
         }
+
+        date_default_timezone_set('Asia/Manila');
 
         $this->db->insert('tbl_chat_messages', [
             'sender_id'   => $this->session->userdata('po_user'),

@@ -710,6 +710,39 @@ $(document).ready(function() {
 // chat functionality
 let my_id = <?= $this->session->userdata('po_user'); ?>;
 
+// Convert timestamp to Manila time and calculate relative time
+function timeAgo(date) {
+    const now = new Date();
+    const msgDate = new Date(date);
+
+    // Convert both dates to Manila time
+    const options = { timeZone: 'Asia/Manila' };
+    const nowManila = new Date(now.toLocaleString('en-US', options));
+    const msgManila = new Date(msgDate.toLocaleString('en-US', options));
+
+    const diff = (nowManila - msgManila) / 1000; // difference in seconds
+
+    if (diff < 5) return 'just now';
+    if (diff < 60) return Math.floor(diff) + ' second' + (Math.floor(diff) > 1 ? 's' : '') + ' ago';
+    if (diff < 3600) return Math.floor(diff / 60) + ' minute' + (Math.floor(diff / 60) > 1 ? 's' : '') + ' ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' hour' + (Math.floor(diff / 3600) > 1 ? 's' : '') + ' ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + ' day' + (Math.floor(diff / 86400) > 1 ? 's' : '') + ' ago';
+    if (diff < 2629800) return Math.floor(diff / 604800) + ' week' + (Math.floor(diff / 604800) > 1 ? 's' : '') + ' ago';
+    if (diff < 31557600) return Math.floor(diff / 2629800) + ' month' + (Math.floor(diff / 2629800) > 1 ? 's' : '') + ' ago';
+    return Math.floor(diff / 31557600) + ' year' + (Math.floor(diff / 31557600) > 1 ? 's' : '') + ' ago';
+}
+
+// Optional: show absolute Manila time like "Mon. 11:00 AM" for very old messages
+function formatManilaTime(date) {
+    return new Date(date).toLocaleString('en-US', {
+        timeZone: 'Asia/Manila',
+        weekday: 'short',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
 function loadMessages() {
     $.get("<?= base_url('DashboardController/fetch'); ?>", function(res) {
         let data = JSON.parse(res);
@@ -722,6 +755,15 @@ function loadMessages() {
             let avatar = msg.photo ?
                 "<?= base_url(); ?>" + msg.photo :
                 "<?= base_url('assets/img/user-dummy-img.jpg'); ?>";
+
+            // If older than 1 week, show absolute Manila time
+            let now = new Date();
+            let msgDate = new Date(msg.created_at);
+            const manilaNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+            const manilaMsg = new Date(msgDate.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+            let diffDays = (manilaNow - manilaMsg) / (1000 * 60 * 60 * 24);
+
+            let timeDisplay = diffDays > 7 ? formatManilaTime(msg.created_at) : timeAgo(msg.created_at);
 
             html += `
             <li class="chat-list ${side}">
@@ -741,7 +783,7 @@ function loadMessages() {
 
                         <div class="conversation-name">
                             <small class="text-muted time">
-                                ${new Date(msg.created_at).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}
+                                ${timeDisplay}
                             </small>
                         </div>
                     </div>
@@ -754,26 +796,28 @@ function loadMessages() {
     });
 }
 
+// Send message
 $('#sendBtn').on('click', function() {
     let message = $('#chatMessage').val().trim();
     if (!message) return;
 
-    $.post("<?= base_url('DashboardController/send'); ?>", {
-        message
-    }, function() {
+    $.post("<?= base_url('DashboardController/send'); ?>", { message }, function() {
         $('#chatMessage').val('');
         loadMessages();
     });
 });
 
+// Auto-refresh every 2 seconds
 setInterval(loadMessages, 2000);
 loadMessages();
 
+// Reload page once on load (optional)
 window.addEventListener('load', () => {
     if (!sessionStorage.getItem('reloaded')) {
         sessionStorage.setItem('reloaded', 'true');
         location.reload();
     }
 });
+
 //end chat functionality
 </script>

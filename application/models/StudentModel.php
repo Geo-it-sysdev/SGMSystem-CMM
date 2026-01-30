@@ -11,44 +11,42 @@ class StudentModel extends CI_Model {
 
     //    Add / edit / delete - student
    public function get_all_students($grade_level = null, $section = null, $status = 'active')
-{
-    $user_id   = $this->session->userdata('po_user');
-    $user_type = $this->session->userdata('user_type');
+    {
+        $user_id   = $this->session->userdata('po_user');
+        $user_type = $this->session->userdata('user_type');
 
-    $this->db->select('a.id, a.fullname, a.age, a.gender, a.section, a.grade_level, a.user_id, a.created_at AS school_year, a.status, b.student_id, b.user_id AS teacher_id')
-             ->from('tbl_students AS a')
-             ->join('tbl_tag_students AS b', 'b.student_id = a.id', 'left');
+        $this->db->select('a.id, a.fullname, a.age, a.gender, a.section, a.grade_level, a.user_id, a.created_at AS school_year, a.status, b.student_id, b.user_id AS teacher_id')
+                ->from('tbl_students AS a')
+                ->join('tbl_tag_students AS b', 'b.student_id = a.id', 'left');
 
-    // Restrict access for non-admin users
-    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor', 'Admin'])) {
-        if (!$user_id) return [];
-        if ($user_type === 'Teacher') {
-            $this->db->where('b.user_id', $user_id)
-                     ->where('b.status', 'active');
-        } else {
-            $this->db->where('a.user_id', $user_id);
+        // Restrict access for non-admin users
+        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor', 'Admin'])) {
+            if (!$user_id) return [];
+            if ($user_type === 'Teacher') {
+                $this->db->where('b.user_id', $user_id)
+                        ->where('b.status', 'active');
+            } else {
+                $this->db->where('a.user_id', $user_id);
+            }
         }
-    }
 
-    if ($grade_level) {
-        $this->db->where('a.grade_level', $grade_level);
-    }
-
-    if ($section) {
-        if (is_array($section)) {
-            $this->db->where_in('a.section', $section);
-        } else {
-            $this->db->where('a.section', $section);
+        if ($grade_level) {
+            $this->db->where('a.grade_level', $grade_level);
         }
+
+        if ($section) {
+            if (is_array($section)) {
+                $this->db->where_in('a.section', $section);
+            } else {
+                $this->db->where('a.section', $section);
+            }
+        }
+
+        $this->db->where('a.status', $status ?: 'active');
+        $this->db->group_by('a.fullname');
+
+        return $this->db->get()->result();
     }
-
-    $this->db->where('a.status', $status ?: 'active');
-    $this->db->group_by('a.fullname');
-
-    return $this->db->get()->result();
-}
-
-
         
 
     public function get_sections_by_grade() {
@@ -97,10 +95,10 @@ class StudentModel extends CI_Model {
     }
 
    public function get_student_by_id($id)
-{
-    // Fetch student by ID only, no session restriction
-    return $this->db->get_where('tbl_students', ['id' => $id])->row();
-}
+    {
+        // Fetch student by ID only, no session restriction
+        return $this->db->get_where('tbl_students', ['id' => $id])->row();
+    }
 
 
     public function update_student($id, $data)
@@ -135,8 +133,6 @@ class StudentModel extends CI_Model {
 
         return $this->db->get('tbl_students')->num_rows() > 0;
     }
-
-
     // end Add / edit / delete - student
 
 
@@ -146,8 +142,6 @@ class StudentModel extends CI_Model {
         return $this->db->insert('tbl_activity_type', $data);
     }
 
-    
-  
 
     // start crud classrooms
     public function get_all_classrooms() {
@@ -210,7 +204,6 @@ class StudentModel extends CI_Model {
 
         return $this->db->trans_status();
     }
-
 
 
    public function get_by_grade($grade_level, $user_id = null)

@@ -603,7 +603,7 @@
 
 $('#generatePDFBtn').on('click', function() {
     const { jsPDF } = window.jspdf;
-    
+
     // Step 1: Fetch all students
     $.ajax({
         url: '<?= base_url("StudentController/fetch_students_report_card") ?>',
@@ -631,15 +631,15 @@ $('#generatePDFBtn').on('click', function() {
                 const doc = new jsPDF('p', 'pt', 'a4');
                 let y = 40;
 
-                results.forEach(studentReport => {
+                results.forEach((studentReport, index) => {
                     const studentInfo = studentReport.student_info;
                     const studentName = studentInfo.student_name;
                     const gradeLevel = studentInfo.grade_level;
                     const section = studentInfo.section;
-                    const schoolYear = studentReport.school_year_start + '-' + (parseInt(studentReport.school_year_start)+1);
+                    const schoolYear = studentReport.school_year_start + '-' + (parseInt(studentReport.school_year_start) + 1);
                     const data = studentReport.data;
 
-                    // Header
+                    // --- Header ---
                     doc.setFontSize(14);
                     doc.text("Student Report Card", 40, y);
                     doc.setFontSize(11);
@@ -653,35 +653,40 @@ $('#generatePDFBtn').on('click', function() {
                     doc.text(`School Year: ${schoolYear}`, 40, y);
                     y += 20;
 
-                    // Table header
-                    doc.setFontSize(10);
-                    doc.text('Subject', 40, y);
-                    doc.text('1st Q', 150, y);
-                    doc.text('2nd Q', 220, y);
-                    doc.text('3rd Q', 290, y);
-                    doc.text('4th Q', 360, y);
-                    doc.text('Final', 430, y);
-                    y += 10;
+                    // --- Table ---
+                    const tableData = data.map(d => [
+                        d.subject,
+                        d.q1,
+                        d.q2,
+                        d.q3,
+                        d.q4,
+                        d.final_grade
+                    ]);
 
-                    // Table rows
-                    data.forEach(d => {
-                        doc.text(d.subject, 40, y);
-                        doc.text(d.q1.toString(), 150, y);
-                        doc.text(d.q2.toString(), 220, y);
-                        doc.text(d.q3.toString(), 290, y);
-                        doc.text(d.q4.toString(), 360, y);
-                        doc.text(d.final_grade.toString(), 430, y);
-                        y += 15;
-
-                        // Add new page if near bottom
-                        if (y > 750) {
-                            doc.addPage();
-                            y = 40;
+                    doc.autoTable({
+                        head: [['Subject', '1st Q', '2nd Q', '3rd Q', '4th Q', 'Final']],
+                        body: tableData,
+                        startY: y,
+                        margin: { left: 40, right: 40 },
+                        styles: { fontSize: 10 },
+                        headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: 'center' },
+                        columnStyles: {
+                            0: { cellWidth: 120 },
+                            1: { cellWidth: 50, halign: 'center' },
+                            2: { cellWidth: 50, halign: 'center' },
+                            3: { cellWidth: 50, halign: 'center' },
+                            4: { cellWidth: 50, halign: 'center' },
+                            5: { cellWidth: 50, halign: 'center' }
+                        },
+                        didDrawPage: function (data) {
+                            y = data.cursor.y + 20; // update y after table
                         }
                     });
 
                     y += 30; // space before next student
-                    if (y > 750) {
+
+                    // Add new page if not last student
+                    if (index < results.length - 1) {
                         doc.addPage();
                         y = 40;
                     }

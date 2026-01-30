@@ -196,12 +196,21 @@ class StudentModel extends CI_Model {
         return $this->db->update($this->table, $data);
     }
 
-    // Delete activity (only owner)
-    public function delete($id, $user_id) {
+    public function delete_activity($id, $user_id) {
+        $this->db->trans_start();
+
+        $this->db->where('activities_id_header', $id);
+        $this->db->delete('tbl_activities_lines');
+
         $this->db->where('id', $id);
         $this->db->where('user_id', $user_id);
-        return $this->db->delete($this->table);
+        $this->db->delete($this->table);
+
+        $this->db->trans_complete();
+
+        return $this->db->trans_status();
     }
+
 
 
    public function get_by_grade($grade_level, $user_id = null)

@@ -545,7 +545,7 @@ public function save_activity()
     // Delete activity
     public function delete_activity($id) {
         $user_id = $this->session->userdata('po_user');
-        $result = $this->StudentModel->delete($id, $user_id);
+        $result = $this->StudentModel->delete_activity($id, $user_id);
         echo json_encode(['status'=>$result]);
     }
     
@@ -813,7 +813,7 @@ public function save_activity()
         $user_id   = $this->session->userdata('po_user');     
         $user_type = $this->session->userdata('user_type');   
 
-        $this->db->select('b.student_name, b.section, a.grade_level, c.full_name AS teacher');
+        $this->db->select('b.student_name, b.section, a.grade_level, c.full_name AS teacher, d.created_at');
         $this->db->from('tbl_activities_header AS a');
         $this->db->join('tbl_activities_lines AS b', 'b.activities_id_header = a.id', 'left');
         $this->db->join('tbl_users AS c', 'c.id = a.user_id', 'left');
@@ -847,116 +847,123 @@ public function save_activity()
 
 
     // Fetch per-student grades for modal
-    public function fetch_final_average() {
-        $student_name = $this->input->post('student_name');
-        $grade_level  = $this->input->post('grade_level');
-        $section      = $this->input->post('section');
-        $user_id      = $this->session->userdata('po_user');      
-        $user_type    = $this->session->userdata('user_type');   
+ public function fetch_final_average() {
+    $student_name = $this->input->post('student_name');
+    $grade_level  = $this->input->post('grade_level');
+    $section      = $this->input->post('section');
+    $user_id      = $this->session->userdata('po_user');      
+    $user_type    = $this->session->userdata('user_type');   
 
-        // Weight rules
-        if (in_array($grade_level, ['Grade 7','Grade 8','Grade 9','Grade 10'])) {
-            $weight_WW = 0.30; 
-            $weight_PT = 0.50; 
-            $weight_QA = 0.20;
-        } else {
-            $weight_WW = 0.25; 
-            $weight_PT = 0.50; 
-            $weight_QA = 0.25;
-        }
-
-        // Fetch all activities for this student
-        $this->db->select('a.subject, a.quarter, a.description AS activity_type, a.overall AS overall_score, b.score, d.full_name AS teacher');
-        $this->db->from('tbl_activities_header AS a');
-        $this->db->join('tbl_activities_lines AS b','b.activities_id_header = a.id','left');
-        $this->db->join('tbl_students AS c','c.id = b.student_id','left');
-        $this->db->join('tbl_users AS d','d.id = a.user_id','left');
-        $this->db->where('a.grade_level', $grade_level);
-        $this->db->where('b.student_name', $student_name);
-        $this->db->where('b.section', $section);
-        $this->db->where('c.status', 'active');
-
-        // Apply user filter only if user is NOT Principal, Registrar, or Guidance Councilor
-        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
-            $this->db->where('a.user_id', $user_id);
-        }
-
-        $query = $this->db->get()->result();
-
-        $subjects = [];
-
-        // Organize activities by subject and type
-        foreach($query as $row){
-            if(!isset($subjects[$row->subject])){
-                $subjects[$row->subject] = ['WW'=>[],'PT'=>[],'QA'=>[]];
-            }
-            switch($row->activity_type){
-                case 'Written Works': $subjects[$row->subject]['WW'][] = $row; break;
-                case 'Performance Task': $subjects[$row->subject]['PT'][] = $row; break;
-                case 'Quarterly Assessment': $subjects[$row->subject]['QA'][] = $row; break;
-            }
-        }
-
-        $data = [];
-
-        // Loop per subject
-        foreach($subjects as $subject => $subData){
-            $finalGradesPerQuarter = [];
-
-            foreach(['1st Quarter','2nd Quarter','3rd Quarter','4th Quarter'] as $quarter){
-                // Written Works
-                $WW_total = $WW_overall = 0;
-                foreach($subData['WW'] as $w){
-                    if($w->quarter == $quarter){
-                        $WW_total += $w->score;
-                        $WW_overall += $w->overall_score;
-                    }
-                }
-                $WW_percent = $WW_overall ? ($WW_total/$WW_overall*100) : 0;
-
-                // Performance Task
-                $PT_total = $PT_overall = 0;
-                foreach($subData['PT'] as $p){
-                    if($p->quarter == $quarter){
-                        $PT_total += $p->score;
-                        $PT_overall += $p->overall_score;
-                    }
-                }
-                $PT_percent = $PT_overall ? ($PT_total/$PT_overall*100) : 0;
-
-                // Quarterly Assessment
-                $QA_total = $QA_overall = 0;
-                foreach($subData['QA'] as $qTask){
-                    if($qTask->quarter == $quarter){
-                        $QA_total += $qTask->score;
-                        $QA_overall += $qTask->overall_score;
-                    }
-                }
-                $QA_percent = $QA_overall ? ($QA_total/$QA_overall*100) : 0;
-
-                // Final grade for this quarter
-                $finalQuarter = ($WW_percent*$weight_WW)+($PT_percent*$weight_PT)+($QA_percent*$weight_QA);
-                $finalGradesPerQuarter[] = round($finalQuarter,2);
-            }
-
-            // Add subject only if it has grades for a semester
-            $hasFirstSem = ($finalGradesPerQuarter[0] > 0 || $finalGradesPerQuarter[1] > 0);
-            $hasSecondSem = ($finalGradesPerQuarter[2] > 0 || $finalGradesPerQuarter[3] > 0);
-
-            if($hasFirstSem || $hasSecondSem){
-                $data[] = [
-                    'subject' => $subject,
-                    'q1' => $finalGradesPerQuarter[0],
-                    'q2' => $finalGradesPerQuarter[1],
-                    'q3' => $finalGradesPerQuarter[2],
-                    'q4' => $finalGradesPerQuarter[3],
-                    'final_grade' => round(array_sum($finalGradesPerQuarter)/4,2)
-                ];
-            }
-        }
-
-        echo json_encode(['data'=>$data]);
+    // Weight rules
+    if (in_array($grade_level, ['Grade 7','Grade 8','Grade 9','Grade 10'])) {
+        $weight_WW = 0.30; 
+        $weight_PT = 0.50; 
+        $weight_QA = 0.20;
+    } else {
+        $weight_WW = 0.25; 
+        $weight_PT = 0.50; 
+        $weight_QA = 0.25;
     }
+
+    // Fetch all activities for this student
+    $this->db->select('a.subject, a.quarter, a.description AS activity_type, a.overall AS overall_score, b.score, d.full_name AS teacher, c.created_at');
+    $this->db->from('tbl_activities_header AS a');
+    $this->db->join('tbl_activities_lines AS b','b.activities_id_header = a.id','left');
+    $this->db->join('tbl_students AS c','c.id = b.student_id','left');
+    $this->db->join('tbl_users AS d','d.id = a.user_id','left');
+    $this->db->where('a.grade_level', $grade_level);
+    $this->db->where('b.student_name', $student_name);
+    $this->db->where('b.section', $section);
+    $this->db->where('c.status', 'active');
+
+    // Apply user filter only if user is NOT Principal, Registrar, or Guidance Councilor
+    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
+        $this->db->where('a.user_id', $user_id);
+    }
+
+    $query = $this->db->get()->result();
+
+    $subjects = [];
+
+    // Organize activities by subject and type
+    foreach($query as $row){
+        if(!isset($subjects[$row->subject])){
+            $subjects[$row->subject] = ['WW'=>[],'PT'=>[],'QA'=>[]];
+        }
+        switch($row->activity_type){
+            case 'Written Works': $subjects[$row->subject]['WW'][] = $row; break;
+            case 'Performance Task': $subjects[$row->subject]['PT'][] = $row; break;
+            case 'Quarterly Assessment': $subjects[$row->subject]['QA'][] = $row; break;
+        }
+    }
+
+    $data = [];
+
+    // Loop per subject
+    foreach($subjects as $subject => $subData){
+        $finalGradesPerQuarter = [];
+
+        foreach(['1st Quarter','2nd Quarter','3rd Quarter','4th Quarter'] as $quarter){
+            // Written Works
+            $WW_total = $WW_overall = 0;
+            foreach($subData['WW'] as $w){
+                if($w->quarter == $quarter){
+                    $WW_total += $w->score;
+                    $WW_overall += $w->overall_score;
+                }
+            }
+            $WW_percent = $WW_overall ? ($WW_total/$WW_overall*100) : 0;
+
+            // Performance Task
+            $PT_total = $PT_overall = 0;
+            foreach($subData['PT'] as $p){
+                if($p->quarter == $quarter){
+                    $PT_total += $p->score;
+                    $PT_overall += $p->overall_score;
+                }
+            }
+            $PT_percent = $PT_overall ? ($PT_total/$PT_overall*100) : 0;
+
+            // Quarterly Assessment
+            $QA_total = $QA_overall = 0;
+            foreach($subData['QA'] as $qTask){
+                if($qTask->quarter == $quarter){
+                    $QA_total += $qTask->score;
+                    $QA_overall += $qTask->overall_score;
+                }
+            }
+            $QA_percent = $QA_overall ? ($QA_total/$QA_overall*100) : 0;
+
+            // Final grade for this quarter
+            $finalQuarter = ($WW_percent*$weight_WW)+($PT_percent*$weight_PT)+($QA_percent*$weight_QA);
+            $finalGradesPerQuarter[] = round($finalQuarter,2);
+        }
+
+        // Add subject only if it has grades for a semester
+        $hasFirstSem = ($finalGradesPerQuarter[0] > 0 || $finalGradesPerQuarter[1] > 0);
+        $hasSecondSem = ($finalGradesPerQuarter[2] > 0 || $finalGradesPerQuarter[3] > 0);
+
+        if($hasFirstSem || $hasSecondSem){
+            $data[] = [
+                'subject' => $subject,
+                'q1' => $finalGradesPerQuarter[0],
+                'q2' => $finalGradesPerQuarter[1],
+                'q3' => $finalGradesPerQuarter[2],
+                'q4' => $finalGradesPerQuarter[3],
+                'final_grade' => round(array_sum($finalGradesPerQuarter)/4,2),
+                'created_at' => !empty($query) ? $query[0]->created_at : null
+            ];
+        }
+    }
+
+    // Send data + school_year_start
+    $school_year_start = !empty($query) ? date('Y', strtotime($query[0]->created_at)) : date('Y');
+
+    echo json_encode([
+        'data' => $data,
+        'school_year_start' => $school_year_start
+    ]);
+}
 
 
     public function fetch_students_report_card() {

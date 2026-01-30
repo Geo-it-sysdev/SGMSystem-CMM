@@ -593,6 +593,90 @@
 
 
 
+
+
+
+
+
+
+
+
+            $('#generatePDF').click(function() {
+    var student_name = $('#studentNameInput').val(); // if you have input
+    var grade_level = $('#gradeLevelInput').val();
+    var section = $('#sectionInput').val();
+
+    $.ajax({
+        url: '<?= base_url("StudentController/fetch_final_average") ?>',
+        type: 'POST',
+        data: {
+            student_name: student_name,
+            grade_level: grade_level,
+            section: section
+        },
+        dataType: 'json',
+        success: function(res) {
+            if(res.data.length === 0){
+                alert('No data found.');
+                return;
+            }
+
+            generatePDF(res);
+        },
+        error: function(err){
+            console.log(err);
+            alert('Error generating PDF.');
+        }
+    });
+});
+
+
+
+function generatePDF(res) {
+    const { jsPDF } = window.jspdf;
+    var doc = new jsPDF('p', 'pt', 'a4');
+
+    // Title
+    doc.setFontSize(14);
+    doc.text("Student Final Grades", 40, 40);
+
+    // Student & School Year
+    doc.setFontSize(12);
+    doc.text("Student: " + (res.data[0].student_name || ""), 40, 60);
+    doc.text("School Year: " + res.school_year_start + "-" + (parseInt(res.school_year_start)+1), 300, 60);
+
+    // Table Headers
+    var tableColumn = ["Subject", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "Final Grade"];
+    var tableRows = [];
+
+    res.data.forEach(item => {
+        var row = [
+            item.subject,
+            item.q1 || "",
+            item.q2 || "",
+            item.q3 || "",
+            item.q4 || "",
+            item.final_grade || ""
+        ];
+        tableRows.push(row);
+    });
+
+    doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 80,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+        styles: { fontSize: 10 }
+    });
+
+    // Open in new window
+    window.open(doc.output('bloburl'), '_blank');
+}
+
+
+
+
         });
         </script>
 

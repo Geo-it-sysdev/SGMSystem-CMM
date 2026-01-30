@@ -79,7 +79,16 @@
                                             <div class="card p-3">
                                                 <h5 class="mb-3"><?= $grade ?> Activity</h5>
                                                 <?php if($is_admin || $grade_levels): ?>
-                                               
+                                                <div class="d-flex align-items-center gap-2 mb-3">
+                                                    <?php if ($this->session->userdata('user_type') === 'Admin' || $this->session->userdata('user_type') === 'Registrar' || $this->session->userdata('user_type') === 'Principal'): ?>
+                                                    <button type="button"
+                                                        class="btn btn-outline-success addActivityBtn rounded-pill btn-border"
+                                                        data-bs-toggle="modal" data-bs-target="#ActivityModal"
+                                                        data-grade="<?= $grade ?>">
+                                                        <i class="ri-add-line align-bottom "></i> Add Activity
+                                                    </button>
+                                                    <?php endif; ?>
+                                                </div>
                                                 <?php endif; ?>
 
                                                 <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3 "

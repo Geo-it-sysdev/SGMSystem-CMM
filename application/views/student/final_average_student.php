@@ -80,19 +80,22 @@
                                                 <h5 class="mb-3"><?= $grade ?> Activity</h5>
                                                 <?php if($is_admin || $grade_levels): ?>
                                                 <div class="d-flex align-items-center gap-2 mb-3">
-                                                    <?php if ($this->session->userdata('user_type') === 'Admin' || $this->session->userdata('user_type') === 'Registrar' || $this->session->userdata('user_type') === 'Principal'): ?>
-                                                    <button type="button"
-                                                        class="btn btn-outline-success addActivityBtn rounded-pill btn-border"
-                                                        data-bs-toggle="modal" data-bs-target="#ActivityModal"
-                                                        data-grade="<?= $grade ?>">
-                                                        <i class="ri-add-line align-bottom "></i> Add Activity
-                                                    </button>
-                                                    <?php endif; ?>
+                                                  
                                                 </div>
                                                 <?php endif; ?>
 
-                                                <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3 "
-                                                    id="sectionTabs_<?= $grade_id ?>" role="tablist"></ul>
+                                              <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-0" id="sectionTabs_<?= $grade_id ?>" role="tablist">
+                                                        <!-- Tabs will be here -->
+                                                    </ul>
+
+                                                    <?php if (in_array($this->session->userdata('user_type'), ['Admin', 'Registrar', 'Principal'])): ?>
+                                                        <button type="button"
+                                                                class="btn btn-outline-success addActivityBtn rounded-pill btn-border" id="generatePDF">
+                                                            <i class="ri-file-pdf-line align-bottom"></i> Generate PDF 
+                                                        </button>
+                                                    <?php endif; ?>
+                                                </div>
 
 
                                                 <table id="activityTable_<?= $grade_id ?>"

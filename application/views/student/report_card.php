@@ -124,6 +124,122 @@
         </div> <!-- end main-content -->
 
 
+        <!-- Final Average per Student Modal -->
+        <div class="modal fade" id="finalAverageStudentModal" tabindex="-1"
+            aria-labelledby="finalAverageStudentModalLabel" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Final Average</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3 equal-width">
+                            <div class="col">
+                                <label for="student_name" class="form-label">Student Name</label>
+                                <input type="text" id="student_name" name="student_name"
+                                    class="form-control underline-input" autocomplete="off" readonly
+                                    style="text-align:center;">
+                            </div>
+                            <div class="col">
+                                <label for="student_grade_level" class="form-label">Grade Level</label>
+                                <input type="text" id="student_grade_level" name="student_grade_level"
+                                    class="form-control underline-input" autocomplete="off" readonly
+                                    style="text-align:center;">
+                            </div>
+                            <div class="col">
+                                <label for="final_average" class="form-label">General Average </label>
+                                <input type="text" id="final_average" name="final_average"
+                                    class="form-control underline-input" autocomplete="off" readonly
+                                    style="text-align:center;">
+                            </div>
+                        </div>
+
+                        <!-- Single table for Grades 7–10 -->
+                        <div id="grades7to10TableDiv" class="table-responsive" style="display:none;">
+                            <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                                style="width:100%" id="grades7to10Table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>1st Quarter</th>
+                                        <th>2nd Quarter</th>
+                                        <th>3rd Quarter</th>
+                                        <th>4th Quarter</th>
+                                        <th>Final Average</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Separate tables for Grades 11–12 -->
+                        <div id="grades11to12TableDiv" style="display:none;">
+                            <h5>First Semester</h5>
+                            <div class="table-responsive mb-3">
+                                <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                                    style="width:100%" id="firstSemesterTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Subject</th>
+                                            <th>1st Quarter</th>
+                                            <th>2nd Quarter</th>
+                                            <th>Final Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+
+                            <h5>Second Semester</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                                    style="width:100%" id="secondSemesterTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Subject</th>
+                                            <th>3rd Quarter</th>
+                                            <th>4th Quarter</th>
+                                            <th>Final Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+
+                            <div class="row mb-3 equal-width mt-3">
+                                <div class="col">
+                                    <label for="general_average_first_sem" class="form-label">General Average First
+                                        Semester</label>
+                                    <input type="text" id="general_average_first_sem" name="general_average_first_sem"
+                                        class="form-control underline-input" autocomplete="off" readonly
+                                        style="text-align:center;">
+                                </div>
+                                <div class="col">
+                                    <label for="general_average_second_sem" class="form-label">General Average Second
+                                        Semester</label>
+                                    <input type="text" id="general_average_second_sem" name="general_average_second_sem"
+                                        class="form-control underline-input" autocomplete="off" readonly
+                                        style="text-align:center;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-success btn-border" id="btnPrintFinalAverage">
+                            <i class="ri-printer-fill me-1"></i> Print
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
+                            <i class="ri-close-fill me-1"></i> Close
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
         <script>
         $(document).ready(function() {
             let tables = {};
@@ -147,9 +263,6 @@
                             "data": "grade_level"
                         },
                         {
-                            "data": "subject"
-                        },
-                        {
                             "data": "section"
                         },
                         {
@@ -162,7 +275,7 @@
                         }
                     ],
                     "language": {
-                        "infoFiltered": "" 
+                        "infoFiltered": ""
                     }
                 });
 
@@ -221,6 +334,257 @@
                     tables[grade_id].ajax.reload(null, false);
                 }
             });
+
+
+            // ----------------------------
+            // VIEW STUDENT FINAL AVERAGE
+            // ----------------------------
+            $(document).on('click', '.viewStudentBtn', function() {
+
+                let student_name = $(this).data('name');
+                let grade_level = $(this).data('grade');
+                let section = $(this).data('section');
+
+                // Fill top inputs
+                $('#student_name').val(student_name);
+                $('#student_grade_level').val(grade_level);
+
+                // Reset tables
+                $('#grades7to10Table tbody').empty();
+                $('#firstSemesterTable tbody').empty();
+                $('#secondSemesterTable tbody').empty();
+
+                $('#grades7to10TableDiv').hide();
+                $('#grades11to12TableDiv').hide();
+
+                // Fetch grades
+                $.ajax({
+                    url: "<?= base_url('StudentController/fetch_final_average') ?>",
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        student_name: student_name,
+                        grade_level: grade_level,
+                        section: section
+                    },
+                    success: function(res) {
+
+                        let data = res.data || [];
+
+                        // Build School Year from backend
+                        let schoolYear = res.school_year_start ?
+                            res.school_year_start + '–' + (parseInt(res.school_year_start) +
+                                1) :
+                            'N/A';
+
+                        // Store global student info for printing
+                        window.currentStudent = {
+                            name: student_name,
+                            gradeLevel: grade_level,
+                            teacher: data.length > 0 ? data[0].teacher ?? '' : '',
+                            schoolYear: schoolYear
+                        };
+
+                        // Fill teacher and school year inputs
+                        $('#teacher_name').val(window.currentStudent.teacher);
+                        $('#school_year').val(window.currentStudent.schoolYear);
+
+                        if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(
+                                grade_level)) {
+                            $('#grades7to10TableDiv').show();
+
+                            let totalFinal = 0;
+                            let count = 0;
+
+                            data.forEach(row => {
+                                $('#grades7to10Table tbody').append(`
+                        <tr>
+                            <td>${row.subject}</td>
+                            <td>${row.q1}</td>
+                            <td>${row.q2}</td>
+                            <td>${row.q3}</td>
+                            <td>${row.q4}</td>
+                            <td><strong>${row.final_grade}</strong></td>
+                        </tr>
+                    `);
+
+                                totalFinal += parseFloat(row.final_grade);
+                                count++;
+                            });
+
+                            $('#final_average').val(count ? (totalFinal / count).toFixed(
+                                2) : '0');
+
+                        } else {
+                            $('#grades11to12TableDiv').show();
+
+                            let firstSem = 0,
+                                secondSem = 0,
+                                fsCount = 0,
+                                ssCount = 0;
+
+                            data.forEach(row => {
+                                if (row.q1 > 0 || row.q2 > 0) {
+                                    $('#firstSemesterTable tbody').append(`
+                            <tr>
+                                <td>${row.subject}</td>
+                                <td>${row.q1}</td>
+                                <td>${row.q2}</td>
+                                <td>${((row.q1 + row.q2) / 2).toFixed(2)}</td>
+                            </tr>
+                        `);
+                                    firstSem += (row.q1 + row.q2) / 2;
+                                    fsCount++;
+                                }
+
+                                if (row.q3 > 0 || row.q4 > 0) {
+                                    $('#secondSemesterTable tbody').append(`
+                            <tr>
+                                <td>${row.subject}</td>
+                                <td>${row.q3}</td>
+                                <td>${row.q4}</td>
+                                <td>${((row.q3 + row.q4) / 2).toFixed(2)}</td>
+                            </tr>
+                        `);
+                                    secondSem += (row.q3 + row.q4) / 2;
+                                    ssCount++;
+                                }
+                            });
+
+                            $('#general_average_first_sem').val(fsCount ? (firstSem /
+                                fsCount).toFixed(2) : '0');
+                            $('#general_average_second_sem').val(ssCount ? (secondSem /
+                                ssCount).toFixed(2) : '0');
+                            $('#final_average').val(((firstSem + secondSem) / (fsCount +
+                                ssCount)).toFixed(2));
+                        }
+
+                        $('#finalAverageStudentModal').modal('show');
+                    }
+                });
+            });
+
+            // ----------------------------
+            // PRINT FINAL AVERAGE
+            // ----------------------------
+            $(document).on("click", "#btnPrintFinalAverage", function() {
+
+                let student = window.currentStudent || {};
+                let studentName = student.name || $('#student_name').val();
+                let gradeLevel = student.gradeLevel || $('#student_grade_level').val();
+                let teacherName = student.teacher || $('#teacher_name').val();
+                let schoolYear = student.schoolYear || $('#school_year').val() || 'N/A';
+                let generalAverage = $('#final_average').val() || '0';
+
+                let printContent = '';
+
+                if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(gradeLevel)) {
+                    printContent = `
+        <h2 style="text-align:center; margin-bottom:20px;">Student Report Card</h2>
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <div>
+                <strong>Name Student:</strong> ${studentName}<br>
+                <strong>Grade Level:</strong> ${gradeLevel}<br>
+            </div>
+            <div style="text-align:right;">
+                <strong>General Average:</strong> ${generalAverage}<br>
+                <strong>School Year:</strong> ${schoolYear}
+            </div>
+        </div>
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>1st Quarter</th>
+                    <th>2nd Quarter</th>
+                    <th>3rd Quarter</th>
+                    <th>4th Quarter</th>
+                    <th>Final Average</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${$('#grades7to10Table tbody').html()}
+            </tbody>
+        </table>`;
+                } else {
+                    let firstSemGA = $('#general_average_first_sem').val() || '0';
+                    let secondSemGA = $('#general_average_second_sem').val() || '0';
+                    let hasSecondSemSubjects = $('#secondSemesterTable tbody tr').length > 0;
+
+                    printContent = `
+        <h2 style="text-align:center; margin-bottom:20px;">Student Report Card</h2>
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <div>
+                <strong>Name Student:</strong> ${studentName}<br>
+                <strong>Grade Level:</strong> ${gradeLevel}<br>
+            </div>
+            <div style="text-align:right;">
+                <strong>General Average:</strong> ${generalAverage}<br>
+                <strong>School Year:</strong> ${schoolYear}
+            </div>
+        </div>
+        <h3 style="margin-top:30px;">First Semester</h3>
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>1st Quarter</th>
+                    <th>2nd Quarter</th>
+                    <th>Final Average</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${$('#firstSemesterTable tbody').html()}
+            </tbody>
+        </table>
+        <p><strong>General Average (1st Semester):</strong> ${firstSemGA}</p>`;
+
+                    if (hasSecondSemSubjects) {
+                        printContent += `
+            <h3 style="margin-top:30px;">Second Semester</h3>
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>3rd Quarter</th>
+                        <th>4th Quarter</th>
+                        <th>Final Average</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${$('#secondSemesterTable tbody').html()}
+                </tbody>
+            </table>
+            <p><strong>General Average (2nd Semester):</strong> ${secondSemGA}</p>`;
+                    }
+                }
+
+                let printWindow = window.open('', '', 'width=1000,height=900');
+                printWindow.document.write(`
+        <html>
+        <head>
+            <title>Student Report Card</title>
+            <style>
+                body { font-family: Arial; padding: 25px; }
+                h2, h3 { margin: 10px 0; }
+                table { width:100%; border-collapse:collapse; margin-bottom: 20px; }
+                .print-table th, .print-table td { border: 1px solid #000; padding: 8px; text-align: center; }
+                .print-table th { background: #eee; }
+                div { font-size: 14px; }
+                p { font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            ${printContent}
+        </body>
+        </html>
+    `);
+                printWindow.document.close();
+                printWindow.print();
+            });
+
+
+
         });
         </script>
 

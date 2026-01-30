@@ -141,7 +141,9 @@ if (isset($user_id)) {
                         <span>Students’ Quarter Grades</span>
                     </a>
                 </li>
+                  <?php endif; ?>
 
+                <?php if ($user_type === 'Teacher'): ?>
                 <li class="nav-item">
                     <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/final_average_student') ? 'active' : ''; ?>"
                         href="<?php echo site_url('GradingSystem/final_average_student'); ?>">

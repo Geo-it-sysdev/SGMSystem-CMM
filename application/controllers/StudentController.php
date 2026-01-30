@@ -986,11 +986,15 @@ public function save_activity()
 
         // Add action button
         foreach ($students as &$student) {
-            $student['action'] = '<button class="btn btn-sm btn-outline-primary btn-border viewStudentBtn" data-name="' 
-                                    . htmlspecialchars($student['student_name']) . '">
-                                    <i class="ri-eye-line"></i> View
-                                </button>';
+            $student['action'] = '
+                <button class="btn btn-sm btn-outline-primary btn-border viewStudentBtn"
+                    data-name="'.htmlspecialchars($student['student_name']).'"
+                    data-grade="'.htmlspecialchars($student['grade_level']).'"
+                    data-section="'.htmlspecialchars($student['section']).'">
+                    <i class="ri-eye-line"></i> View
+                </button>';
         }
+
 
         echo json_encode(['data' => $students]);
     }

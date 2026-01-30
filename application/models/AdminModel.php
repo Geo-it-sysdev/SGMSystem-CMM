@@ -38,24 +38,24 @@ public function update_per_user($user_id, $data){
 
   //=============== Chat us function (chat & retrive chat) =====================\\
 
-public function get_all_users_with_unread_count($current_user_id) {
-    $this->db->select('pu.*, COUNT(cm.id) AS unread_count');
-    $this->db->from('tbl_users pu');
-    $this->db->join('chat_messages cm', 'cm.sender_id = pu.id AND cm.receiver_id = ' . $this->db->escape($current_user_id) . ' AND cm.is_read = 0', 'left');
-    $this->db->where('pu.id !=', $current_user_id); 
-    $this->db->group_by('pu.id');
-    return $this->db->get()->result();
-}
+// public function get_all_users_with_unread_count($current_user_id) {
+//     $this->db->select('pu.*, COUNT(cm.id) AS unread_count');
+//     $this->db->from('tbl_users pu');
+//     $this->db->join('chat_messages cm', 'cm.sender_id = pu.id AND cm.receiver_id = ' . $this->db->escape($current_user_id) . ' AND cm.is_read = 0', 'left');
+//     $this->db->where('pu.id !=', $current_user_id); 
+//     $this->db->group_by('pu.id');
+//     return $this->db->get()->result();
+// }
 
-public function get_chat_messages($sender_id, $receiver_id) {
-    $this->db->where("(sender_id = $sender_id AND receiver_id = $receiver_id) OR (sender_id = $receiver_id AND receiver_id = $sender_id)");
-    $this->db->order_by('timestamp', 'ASC');
-    return $this->db->get('chat_messages')->result();
-}
+// public function get_chat_messages($sender_id, $receiver_id) {
+//     $this->db->where("(sender_id = $sender_id AND receiver_id = $receiver_id) OR (sender_id = $receiver_id AND receiver_id = $sender_id)");
+//     $this->db->order_by('timestamp', 'ASC');
+//     return $this->db->get('chat_messages')->result();
+// }
 
-public function insert_chat_message($data) {
-    return $this->db->insert('chat_messages', $data);
-}
+// public function insert_chat_message($data) {
+//     return $this->db->insert('chat_messages', $data);
+// }
 
 // add user setup
 public function get_all_users() {
@@ -86,4 +86,14 @@ public function delete_user($id) {
 }
 // endd add user setup
 
+
+ public function get_today_events()
+    {
+        $this->db->select('description');
+        $this->db->from('tbl_upcoming_events');
+        $this->db->where('DATE(event_date)', date('Y-m-d'));
+        return $this->db->get()->result();
+    }
+
+    
 }

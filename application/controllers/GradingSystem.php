@@ -52,6 +52,7 @@ class GradingSystem extends CI_Controller {
          $data['total_classrooms'] = $this->StudentModel->total_classrooms();
          $data['total_student'] = $this->StudentModel->total_student();
          $data['total_users'] = $this->StudentModel->total_users();
+         $data['today_events'] = $this->AdminModel->get_today_events();
         $this->check_log('');
 		$this->load->view('template/header', $data);
         $this->load->view('template/sidebar');

@@ -187,7 +187,24 @@
             <div class="col-xxl-4">
                 <div class="card">
                     <div class="card-header border-0">
-                        <h4 class="card-title mb-0">Upcoming Schedules</h4>
+                        <div class="d-flex align-items-center w-100">
+                            <h4 class="card-title mb-0 me-3 text-nowrap">
+                                Upcoming Schedules
+                            </h4>
+
+                           <?php if (!empty($today_events)): ?>
+                            <marquee behavior="scroll" direction="left" scrollamount="6"
+                                style="padding:10px;font-weight:bold;">
+                                📢 TODAY'S EVENT:
+                                <?php foreach ($today_events as $event): ?>
+                                    <?= htmlspecialchars($event->description); ?> &nbsp; &nbsp;
+                                <?php endforeach; ?>
+                            </marquee>
+                        <?php endif; ?>
+
+                        </div>
+
+
                     </div>
                     <div class="card-body pt-0">
                         <!-- Inline Flatpickr calendar -->
@@ -196,7 +213,7 @@
                         </div>
 
                         <h6 class="text-uppercase fw-semibold mt-4 mb-3 text-muted">Upcoming Schedules:</h6>
-                       <div id="event-list" style="max-height: 300px; overflow-y: auto;">
+                        <div id="event-list" style="max-height: 300px; overflow-y: auto;">
                             <!-- Events will be loaded here -->
                         </div>
                     </div>
@@ -246,8 +263,10 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-outline-primary btn-border" id="saveMemberBtn"><i class="ri-save-line"></i> Save Member</button>
-                    <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"><i class="ri-close-line"></i> Close</button>
+                    <button type="submit" class="btn btn-outline-primary btn-border" id="saveMemberBtn"><i
+                            class="ri-save-line"></i> Save Member</button>
+                    <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal"><i
+                            class="ri-close-line"></i> Close</button>
                 </form>
             </div>
         </div>
@@ -280,7 +299,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" id="deleteEventBtn"
                         style="display:none;">Delete</button>
-                   <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
                         <i class="ri-close-line"></i> Close
                     </button>
                     <button type="submit" class="btn btn-outline-primary btn-border">

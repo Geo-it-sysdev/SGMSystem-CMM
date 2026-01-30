@@ -2,8 +2,7 @@
 
     <!-- Begin page -->
     <div id="layout-wrapper">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
 
 
 
@@ -92,10 +91,9 @@
                                                     </ul>
 
                                                     <?php if (in_array($this->session->userdata('user_type'), ['Admin', 'Registrar', 'Principal'])): ?>
-                                                        <button type="button"
-                                                                class="btn btn-outline-success addActivityBtn rounded-pill btn-border" id="generatePDFBtn">
-                                                            <i class="ri-file-pdf-line align-bottom"></i> Generate PDF 
-                                                        </button>
+                                                        <button type="button" class="btn btn-outline-success rounded-pill btn-border" id="generatePDFBtn">
+    <i class="ri-file-pdf-line align-bottom"></i> Generate PDF
+</button>
                                                     <?php endif; ?>
                                                 </div>
 
@@ -243,6 +241,7 @@
             </div>
         </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 
         <script>
@@ -602,14 +601,17 @@
 
 
 
-
 $('#generatePDFBtn').on('click', function() {
+    const { jsPDF } = window.jspdf;
+    
+    // Step 1: Fetch all students
     $.ajax({
-        url: '<?= base_url("AdminController/fetch_students_report_card") ?>',
+        url: '<?= base_url("StudentController/fetch_students_report_card") ?>',
         method: 'GET',
         success: function(res) {
             const students = JSON.parse(res).data;
 
+            // Step 2: Fetch grades for each student
             let promises = students.map(student => {
                 return $.ajax({
                     url: '<?= base_url("StudentController/fetch_final_average") ?>',
@@ -619,76 +621,79 @@ $('#generatePDFBtn').on('click', function() {
                         grade_level: student.grade_level,
                         section: student.section
                     }
+                }).then(res => {
+                    return { ...JSON.parse(res), student_info: student };
                 });
             });
 
+            // Step 3: Once all AJAX calls finish, generate PDF
             Promise.all(promises).then(results => {
-                // results = array of {data: [...], school_year_start: ...}
-                generatePDF(results);
+                const doc = new jsPDF('p', 'pt', 'a4');
+                let y = 40;
+
+                results.forEach(studentReport => {
+                    const studentInfo = studentReport.student_info;
+                    const studentName = studentInfo.student_name;
+                    const gradeLevel = studentInfo.grade_level;
+                    const section = studentInfo.section;
+                    const schoolYear = studentReport.school_year_start + '-' + (parseInt(studentReport.school_year_start)+1);
+                    const data = studentReport.data;
+
+                    // Header
+                    doc.setFontSize(14);
+                    doc.text("Student Report Card", 40, y);
+                    doc.setFontSize(11);
+                    y += 20;
+                    doc.text(`Name: ${studentName}`, 40, y);
+                    y += 15;
+                    doc.text(`Grade: ${gradeLevel}`, 40, y);
+                    y += 15;
+                    doc.text(`Section: ${section}`, 40, y);
+                    y += 15;
+                    doc.text(`School Year: ${schoolYear}`, 40, y);
+                    y += 20;
+
+                    // Table header
+                    doc.setFontSize(10);
+                    doc.text('Subject', 40, y);
+                    doc.text('1st Q', 150, y);
+                    doc.text('2nd Q', 220, y);
+                    doc.text('3rd Q', 290, y);
+                    doc.text('4th Q', 360, y);
+                    doc.text('Final', 430, y);
+                    y += 10;
+
+                    // Table rows
+                    data.forEach(d => {
+                        doc.text(d.subject, 40, y);
+                        doc.text(d.q1.toString(), 150, y);
+                        doc.text(d.q2.toString(), 220, y);
+                        doc.text(d.q3.toString(), 290, y);
+                        doc.text(d.q4.toString(), 360, y);
+                        doc.text(d.final_grade.toString(), 430, y);
+                        y += 15;
+
+                        // Add new page if near bottom
+                        if (y > 750) {
+                            doc.addPage();
+                            y = 40;
+                        }
+                    });
+
+                    y += 30; // space before next student
+                    if (y > 750) {
+                        doc.addPage();
+                        y = 40;
+                    }
+                });
+
+                // Step 4: Open PDF in new tab
+                const blobURL = doc.output('bloburl');
+                window.open(blobURL, '_blank');
             });
         }
     });
 });
-
-
-
-function generatePDF(results) {
-    const doc = new jsPDF('p', 'pt', 'a4');
-    let y = 40;
-
-    results.forEach(studentReport => {
-        const data = studentReport.data;
-        const studentName = data.length ? data[0].student_name : "N/A";
-        const gradeLevel = data.length ? data[0].grade_level : "N/A";
-        const section = data.length ? data[0].section : "N/A";
-        const schoolYear = studentReport.school_year_start + '-' + (parseInt(studentReport.school_year_start)+1);
-
-        // Header
-        doc.setFontSize(14);
-        doc.text(`Student Report Card`, 40, y);
-        doc.setFontSize(12);
-        y += 20;
-        doc.text(`Name: ${studentName}`, 40, y);
-        y += 15;
-        doc.text(`Grade: ${gradeLevel}`, 40, y);
-        y += 15;
-        doc.text(`Section: ${section}`, 40, y);
-        y += 15;
-        doc.text(`School Year: ${schoolYear}`, 40, y);
-        y += 20;
-
-        // Table header
-        doc.setFontSize(10);
-        doc.text('Subject', 40, y);
-        doc.text('1st Q', 150, y);
-        doc.text('2nd Q', 220, y);
-        doc.text('3rd Q', 290, y);
-        doc.text('4th Q', 360, y);
-        doc.text('Final', 430, y);
-        y += 10;
-
-        // Table rows
-        data.forEach(d => {
-            doc.text(d.subject, 40, y);
-            doc.text(d.q1.toString(), 150, y);
-            doc.text(d.q2.toString(), 220, y);
-            doc.text(d.q3.toString(), 290, y);
-            doc.text(d.q4.toString(), 360, y);
-            doc.text(d.final_grade.toString(), 430, y);
-            y += 15;
-        });
-
-        y += 30; // space before next student
-        if (y > 700) {  // Add new page if needed
-            doc.addPage();
-            y = 40;
-        }
-    });
-
-    // Generate blob URL and open in new tab
-    const blob = doc.output('bloburl');
-    window.open(blob);
-}
 
 
         });

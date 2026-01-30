@@ -2,6 +2,8 @@
 
     <!-- Begin page -->
     <div id="layout-wrapper">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 
 
@@ -91,7 +93,7 @@
 
                                                     <?php if (in_array($this->session->userdata('user_type'), ['Admin', 'Registrar', 'Principal'])): ?>
                                                         <button type="button"
-                                                                class="btn btn-outline-success addActivityBtn rounded-pill btn-border" id="generatePDF">
+                                                                class="btn btn-outline-success addActivityBtn rounded-pill btn-border" id="generatePDFBtn">
                                                             <i class="ri-file-pdf-line align-bottom"></i> Generate PDF 
                                                         </button>
                                                     <?php endif; ?>
@@ -601,80 +603,92 @@
 
 
 
-            $('#generatePDF').click(function() {
-    var student_name = $('#studentNameInput').val(); // if you have input
-    var grade_level = $('#gradeLevelInput').val();
-    var section = $('#sectionInput').val();
-
+$('#generatePDFBtn').on('click', function() {
     $.ajax({
-        url: '<?= base_url("StudentController/fetch_final_average") ?>',
-        type: 'POST',
-        data: {
-            student_name: student_name,
-            grade_level: grade_level,
-            section: section
-        },
-        dataType: 'json',
+        url: '<?= base_url("AdminController/fetch_students_report_card") ?>',
+        method: 'GET',
         success: function(res) {
-            if(res.data.length === 0){
-                alert('No data found.');
-                return;
-            }
+            const students = JSON.parse(res).data;
 
-            generatePDF(res);
-        },
-        error: function(err){
-            console.log(err);
-            alert('Error generating PDF.');
+            let promises = students.map(student => {
+                return $.ajax({
+                    url: '<?= base_url("StudentController/fetch_final_average") ?>',
+                    method: 'POST',
+                    data: {
+                        student_name: student.student_name,
+                        grade_level: student.grade_level,
+                        section: student.section
+                    }
+                });
+            });
+
+            Promise.all(promises).then(results => {
+                // results = array of {data: [...], school_year_start: ...}
+                generatePDF(results);
+            });
         }
     });
 });
 
 
 
-function generatePDF(res) {
-    const { jsPDF } = window.jspdf;
-    var doc = new jsPDF('p', 'pt', 'a4');
+function generatePDF(results) {
+    const doc = new jsPDF('p', 'pt', 'a4');
+    let y = 40;
 
-    // Title
-    doc.setFontSize(14);
-    doc.text("Student Final Grades", 40, 40);
+    results.forEach(studentReport => {
+        const data = studentReport.data;
+        const studentName = data.length ? data[0].student_name : "N/A";
+        const gradeLevel = data.length ? data[0].grade_level : "N/A";
+        const section = data.length ? data[0].section : "N/A";
+        const schoolYear = studentReport.school_year_start + '-' + (parseInt(studentReport.school_year_start)+1);
 
-    // Student & School Year
-    doc.setFontSize(12);
-    doc.text("Student: " + (res.data[0].student_name || ""), 40, 60);
-    doc.text("School Year: " + res.school_year_start + "-" + (parseInt(res.school_year_start)+1), 300, 60);
+        // Header
+        doc.setFontSize(14);
+        doc.text(`Student Report Card`, 40, y);
+        doc.setFontSize(12);
+        y += 20;
+        doc.text(`Name: ${studentName}`, 40, y);
+        y += 15;
+        doc.text(`Grade: ${gradeLevel}`, 40, y);
+        y += 15;
+        doc.text(`Section: ${section}`, 40, y);
+        y += 15;
+        doc.text(`School Year: ${schoolYear}`, 40, y);
+        y += 20;
 
-    // Table Headers
-    var tableColumn = ["Subject", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "Final Grade"];
-    var tableRows = [];
+        // Table header
+        doc.setFontSize(10);
+        doc.text('Subject', 40, y);
+        doc.text('1st Q', 150, y);
+        doc.text('2nd Q', 220, y);
+        doc.text('3rd Q', 290, y);
+        doc.text('4th Q', 360, y);
+        doc.text('Final', 430, y);
+        y += 10;
 
-    res.data.forEach(item => {
-        var row = [
-            item.subject,
-            item.q1 || "",
-            item.q2 || "",
-            item.q3 || "",
-            item.q4 || "",
-            item.final_grade || ""
-        ];
-        tableRows.push(row);
+        // Table rows
+        data.forEach(d => {
+            doc.text(d.subject, 40, y);
+            doc.text(d.q1.toString(), 150, y);
+            doc.text(d.q2.toString(), 220, y);
+            doc.text(d.q3.toString(), 290, y);
+            doc.text(d.q4.toString(), 360, y);
+            doc.text(d.final_grade.toString(), 430, y);
+            y += 15;
+        });
+
+        y += 30; // space before next student
+        if (y > 700) {  // Add new page if needed
+            doc.addPage();
+            y = 40;
+        }
     });
 
-    doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 80,
-        theme: 'grid',
-        headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-        styles: { fontSize: 10 }
-    });
-
-    // Open in new window
-    window.open(doc.output('bloburl'), '_blank');
+    // Generate blob URL and open in new tab
+    const blob = doc.output('bloburl');
+    window.open(blob);
 }
-
-
 
 
         });

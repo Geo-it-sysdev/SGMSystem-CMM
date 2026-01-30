@@ -141,9 +141,7 @@ if (isset($user_id)) {
                         <span>Students’ Quarter Grades</span>
                     </a>
                 </li>
-                  <?php endif; ?>
 
-                <?php if ($user_type === 'Teacher'): ?>
                 <li class="nav-item">
                     <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/final_average_student') ? 'active' : ''; ?>"
                         href="<?php echo site_url('GradingSystem/final_average_student'); ?>">
@@ -157,18 +155,7 @@ if (isset($user_id)) {
                 <?php endif; ?>
 
 
-                <?php if ($user_type === 'Registrar' || $user_type === 'Principal'|| $user_type === 'Admin'): ?>
-                 <li class="nav-item">
-                    <a class="nav-link menu-link <?php echo (uri_string() === 'GradingSystem/report_card') ? 'active' : ''; ?>"
-                        href="<?php echo site_url('GradingSystem/report_card'); ?>">
-                        <i
-                            class="bx bx-file bx-sm
-                        <?php echo (uri_string() === 'GradingSystem/report_card') ? 'animate__animated animate__heartBeat animate__infinite' : ''; ?>">
-                        </i>
-                        <span>Grade Reports</span>
-                    </a>
-                </li>
-                <?php endif; ?>
+               
 
                 <!--============================ Layouts ====================================-->
                 <!-- <li class="nav-item">

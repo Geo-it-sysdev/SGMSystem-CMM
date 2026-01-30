@@ -1,19 +1,3 @@
-<style>
-#studentTableG8 tbody tr td {
-    color: #212529 !important;
-    opacity: 1 !important;
-}
-
-#studentTableG8 thead th {
-    color: #000 !important;
-    font-weight: 600;
-}
-
-#studentTableG8 .btn {
-    opacity: 1 !important;
-}
-</style>
-
 <body>
 
     <!-- Begin page -->
@@ -21,7 +5,12 @@
 
 
 
-
+        <?php
+            $user_id = $this->session->userdata("po_user");
+            if (isset($user_id)) {
+                $user = $this->AuthModel->get_user_by_user_id($user_id);
+            }
+            ?>
 
         <!-- ============================================================== -->
         <!-- Start right Content here -->
@@ -36,12 +25,12 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                                <h4 class="mb-sm-0">Final Average</h4>
+                                <h4 class="mb-sm-0">Students Activity</h4>
 
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
                                         <li class="breadcrumb-item"><a href="javascript:void(0);">Tables</a></li>
-                                        <li class="breadcrumb-item active">Final Average</li>
+                                        <li class="breadcrumb-item active">Activity Setup</li>
                                     </ol>
                                 </div>
 
@@ -57,59 +46,60 @@
                                     <!-- NAV PILLS -->
                                     <ul class="nav nav-pills arrow-navtabs nav-primary bg-light mb-3 flex-wrap">
                                         <?php
-                                                    $all_grades = ['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'];
-                                                    $active_set = false;
+                                    $all_grades = ['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'];
+                                    $active_set = false;
 
-                                                    foreach ($all_grades as $grade):
-                                                        if (in_array('All',$grade_levels) || in_array($grade,$grade_levels)):
-                                                            $grade_id = strtolower(str_replace(' ','',$grade));
-                                                            $active_class = (!$active_set)?'active':'';
-                                                            $active_set = true;
-                                                ?>
+                                    foreach ($all_grades as $grade):
+                                        if (in_array('All',$grade_levels) || in_array($grade,$grade_levels)):
+                                            $grade_id = strtolower(str_replace(' ','',$grade));
+                                            $active_class = (!$active_set)?'active':'';
+                                            $active_set = true;
+                                ?>
                                         <li class="nav-item">
                                             <a href="#<?= $grade_id ?>-student" data-bs-toggle="tab"
-                                                class="nav-link gradeTab <?= $active_class ?>"
-                                                data-grade="<?= $grade_id ?>" data-grade-text="<?= $grade ?>">
-                                                <?= $grade ?> Final Grades
+                                                class="nav-link <?= $active_class ?>">
+                                                <?= $grade ?> Report Card
                                             </a>
-
                                         </li>
                                         <?php endif; endforeach; ?>
                                     </ul>
 
-
                                     <!-- TAB CONTENT -->
                                     <div class="tab-content">
                                         <?php
-                                            $tab_first = true;
-                                            foreach ($all_grades as $grade):
-                                                if (in_array('All',$grade_levels) || in_array($grade,$grade_levels)):
-                                                    $grade_id = strtolower(str_replace(' ','',$grade));
-                                                    $show_class = $tab_first?'show active':'';
-                                                    $tab_first = false;
-                                            ?>
-                                        <div class="tab-pane fade <?= $show_class ?>" id="<?= $grade_id ?>-student">
+                                    $tab_first = true;
+                                    foreach ($all_grades as $grade):
+                                        if (in_array('All',$grade_levels) || in_array($grade,$grade_levels)):
+                                            $grade_id = strtolower(str_replace(' ','',$grade));
+                                            $show_class = $tab_first?'show active':'';
+                                            $tab_first = false;
+                                ?>
+                                        <div class="tab-pane fade <?= $show_class ?>" id="<?= $grade_id ?>-student"
+                                            data-grade="<?= $grade ?>">
                                             <div class="card p-3">
-                                                <h5 class="mb-3"><?= $grade ?> Average</h5>
+                                                <h5 class="mb-3"><?= $grade ?> Activity</h5>
                                                 <?php if($is_admin || $grade_levels): ?>
-
+                                               
                                                 <?php endif; ?>
+
+                                                <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3 "
+                                                    id="sectionTabs_<?= $grade_id ?>" role="tablist"></ul>
+
+
                                                 <table id="activityTable_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle activityTable"
                                                     style="width:100%">
-
                                                     <thead>
                                                         <tr>
+                                                            <th>Student Name</th>
                                                             <th>Grade Level</th>
                                                             <th>Section</th>
-                                                            <th>Teacher</th>
-                                                            <?php if($is_admin || $grade_levels): ?><th>Action</th>
-                                                            <?php endif; ?>
+                                                            <th>School Year</th>
+                                                            <th>Action</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody></tbody>
                                                 </table>
-
 
                                             </div>
                                         </div>
@@ -124,61 +114,6 @@
             </div> <!-- end page-content -->
         </div> <!-- end main-content -->
 
-
-        <!-- Final Average Modal -->
-        <div class="modal fade" id="finalAverageModal" tabindex="-1" aria-labelledby="finalAverageModalLabel"
-            aria-hidden="true" data-bs-backdrop="static">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Final Average Details</h5>
-                    </div>
-                    <br>
-                    <div class="ms-4">
-                        <!-- Adds left margin -->
-                        <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3" id="sectionTabs"
-                            role="tablist"></ul>
-                    </div>
-
-
-
-                    <div class="modal-body">
-                        <div class="row mb-3 equal-width">
-                            <div class="col">
-                                <label for="grade_level" class="form-label">Grade Level</label>
-                                <input type="text" id="grade_level" name="grade_level"
-                                    class="form-control underline-input" autocomplete="off" readonly
-                                    style="text-align:center;">
-                            </div>
-                            <div class="col">
-                                <label for="teacher" class="form-label">Teacher</label>
-                                <input type="text" id="teacher" name="teacher" class="form-control underline-input"
-                                    autocomplete="off" readonly style="text-align:center;">
-                            </div>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
-                                style="width:100%" id="finalGradesTable">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Student Name</th>
-                                        <th>Section</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">
-                            <i class="ri-close-fill me-1"></i> Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Final Average per Student Modal -->
         <div class="modal fade" id="finalAverageStudentModal" tabindex="-1"
@@ -205,12 +140,6 @@
                             <div class="col">
                                 <label for="final_average" class="form-label">General Average </label>
                                 <input type="text" id="final_average" name="final_average"
-                                    class="form-control underline-input" autocomplete="off" readonly
-                                    style="text-align:center;">
-                            </div>
-                            <div class="col">
-                                <label for="teacher_name" class="form-label">Teacher</label>
-                                <input type="text" id="teacher_name" name="teacher_name"
                                     class="form-control underline-input" autocomplete="off" readonly
                                     style="text-align:center;">
                             </div>
@@ -302,238 +231,256 @@
 
 
 
-
-
         <script>
-        let loadedTables = {};
-
         $(document).ready(function() {
+            let tables = {};
 
-            // Load first active tab (optional)
-            let firstTab = $('.gradeTab.active');
-            if (firstTab.length) {
-                loadGradeTable(firstTab.data('grade'), firstTab.data('grade-text'));
-            }
-
-            // On grade tab change
-            $(document).on('shown.bs.tab', '.gradeTab', function() {
-                let gradeId = $(this).data('grade');
-                let gradeText = $(this).data('grade-text');
-                loadGradeTable(gradeId, gradeText);
-            });
-
-            // Click "View Student" button
-            $(document).on('click', '.view-btn', function() {
-                let table = $(this).closest('table').DataTable();
-                let rowData = table.row($(this).closest('tr')).data();
-
-                $('#grade_level').val(rowData.grade_level);
-                $('#teacher').val(rowData.full_name);
-
-                $.ajax({
-                    url: '<?= base_url("StudentController/fetch_students_by_section") ?>',
-                    type: 'POST',
-                    data: {
-                        section: rowData.section
+            function initTable(grade_id, grade_name) {
+                let table = $('#activityTable_' + grade_id).DataTable({
+                    "processing": true,
+                    "serverSide": false,
+                    "destroy": true,
+                    "ajax": {
+                        "url": "<?= base_url('StudentController/fetch_students_report_card') ?>",
+                        "type": "GET",
+                        "data": {
+                            grade: grade_name
+                        }
                     },
-                    dataType: 'json',
-                    success: function(res) {
-                        if ($.fn.DataTable.isDataTable('#finalGradesTable')) {
-                            $('#finalGradesTable').DataTable().clear().destroy();
-                        }
-
-                        let sections = [...new Set(res.data.map(s => s.section))];
-
-                        let tabsHtml = '';
-                        sections.forEach((section, index) => {
-                            tabsHtml += `
-                    <li class="nav-item">
-                        <a class="nav-link ${index === 0 ? 'active' : ''}" 
-                           data-section="${section}" 
-                           href="#" role="tab">
-                           ${section}
-                        </a>
-                    </li>`;
-                        });
-                        $('#sectionTabs').html(tabsHtml);
-
-                        let dataTable = $('#finalGradesTable').DataTable({
-                            data: res.data,
-                            columns: [{
-                                    data: 'student_name'
-                                },
-                                {
-                                    data: 'section'
-                                },
-                                {
-                                    data: null,
-                                    render: function(row) {
-                                        return `<button class="btn btn-sm btn-outline-primary btn-border view-final-average"
-                                        data-student-name="${row.student_name}"
-                                        data-grade-level="${row.grade_level}"
-                                        data-section="${row.section}"
-                                        data-teacher-name="${row.teacher}">
-                                        <i class='ri-eye-line'></i> View Average
-                                    </button>`;
-                                    }
-                                }
-                            ],
-                            infoCallback: function(settings, start, end, max, total,
-                                pre) {
-                                return `Showing ${start} to ${end} of ${total} entries`;
+                    "columns": [{
+                            "data": "student_name"
+                        },
+                        {
+                            "data": "grade_level"
+                        },
+                        {
+                            "data": "section"
+                        },
+                        {
+                            data: 'created_at',
+                            render: function(data) {
+                                if (!data) return '';
+                                const year = new Date(data).getFullYear();
+                                return `${year}–${year + 1}`;
                             }
-                        });
-
-
-                        $('#sectionTabs a').off('click').on('click', function(e) {
-                            e.preventDefault();
-                            $('#sectionTabs a').removeClass('active');
-                            $(this).addClass('active');
-
-                            let selectedSection = $(this).data('section');
-                            dataTable.column(1).search(selectedSection)
-                                .draw();
-                        });
-
-                        if (sections.length > 0) {
-                            dataTable.column(1).search(sections[0]).draw();
+                        },
+                        {
+                            "data": "action",
+                            "orderable": false,
+                            "searchable": false
                         }
+                    ],
+                    "language": {
+                        "infoFiltered": ""
                     }
                 });
 
-                $('#finalAverageModal').modal('show');
+
+                tables[grade_id] = table;
+
+                // Generate Section filter buttons
+                table.on('xhr', function() {
+                    let data = table.ajax.json().data;
+                    let sections = [...new Set(data.map(d => d.section))].sort();
+                    let sectionTabs = $(`#sectionTabs_${grade_id}`);
+                    sectionTabs.empty();
+
+                    // Add buttons for each section only
+                    sections.forEach((section, index) => {
+                        let activeClass = index === 0 ? 'active' : '';
+                        sectionTabs.append(`
+                    <li class="nav-item">
+                        <button class="nav-link ${activeClass}" data-section="${section}" type="button">${section}</button>
+                    </li>
+                `);
+                    });
+
+                    // Filter by Section
+                    sectionTabs.find('button').click(function() {
+                        let section = $(this).data('section');
+                        sectionTabs.find('button').removeClass('active');
+                        $(this).addClass('active');
+
+                        table.column(2).search('^' + section + '$', true, false).draw();
+                    });
+
+                    // Automatically filter by the first section
+                    let firstSectionButton = sectionTabs.find('button').eq(0);
+                    if (firstSectionButton.length) {
+                        firstSectionButton.click();
+                    }
+                });
+            }
+
+            // Initialize the first grade tab
+            let firstPane = $('.tab-pane.show.active');
+            let firstGradeId = firstPane.attr('id').replace('-student', '');
+            let firstGradeName = firstPane.data('grade');
+            initTable(firstGradeId, firstGradeName);
+
+            // Handle grade tab switching
+            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+                let target = $(e.target).attr("href");
+                let grade_id = target.replace('#', '').replace('-student', '');
+                let grade_name = $('#' + grade_id + '-student').data('grade');
+
+                if (!tables[grade_id]) {
+                    initTable(grade_id, grade_name);
+                } else {
+                    tables[grade_id].ajax.reload(null, false);
+                }
             });
 
 
-
-           $(document).on('click', '.view-final-average', function() {
-    let studentName = $(this).data('student-name');
-    let gradeLevel = $(this).data('grade-level');
-    let section = $(this).data('section');
-    let teacherName = $(this).data('teacher-name');
-
-    // Fill hidden inputs (optional, keeps your code intact)
-    $('#student_name').val(studentName);
-    $('#student_grade_level').val(gradeLevel);
-    $('#teacher_name').val(teacherName);
-
-    // Hide all tables initially
-    $('#grades7to10TableDiv, #grades11to12TableDiv').hide();
-    $('#grades7to10Table tbody, #firstSemesterTable tbody, #secondSemesterTable tbody').empty();
-
-    $.ajax({
-        url: '<?= base_url("StudentController/fetch_final_average") ?>',
-        type: 'POST',
-        data: {
-            student_name: studentName,
-            grade_level: gradeLevel,
-            section: section
-        },
-        dataType: 'json',
-        success: function(res) {
-
-            // ✅ CALCULATE SCHOOL YEAR FROM res.school_year_start (c.created_at)
-            let startYear = parseInt(res.school_year_start); // e.g., "2026-01-23" → 2026
-            let endYear = startYear + 1;
-            let schoolYear = `${startYear}–${endYear}`;
-
-            // Save to a JS object for print
-            window.currentStudent = {
-                name: studentName,
-                gradeLevel: gradeLevel,
-                teacher: teacherName,
-                schoolYear: schoolYear
-            };
-
             // ----------------------------
-            // KEEP YOUR TABLE LOGIC INTACT
+            // VIEW STUDENT FINAL AVERAGE
             // ----------------------------
-            if (['Grade 7','Grade 8','Grade 9','Grade 10'].includes(gradeLevel)) {
-                $('#grades7to10TableDiv').show();
-                let totalGeneral = 0;
-                res.data.forEach(item => {
-                    let finalAvg = ((parseFloat(item.q1)+parseFloat(item.q2)+parseFloat(item.q3)+parseFloat(item.q4))/4).toFixed(2);
-                    $('#grades7to10Table tbody').append(`
+            $(document).on('click', '.viewStudentBtn', function() {
+
+                let student_name = $(this).data('name');
+                let grade_level = $(this).data('grade');
+                let section = $(this).data('section');
+
+                // Fill top inputs
+                $('#student_name').val(student_name);
+                $('#student_grade_level').val(grade_level);
+
+                // Reset tables
+                $('#grades7to10Table tbody').empty();
+                $('#firstSemesterTable tbody').empty();
+                $('#secondSemesterTable tbody').empty();
+
+                $('#grades7to10TableDiv').hide();
+                $('#grades11to12TableDiv').hide();
+
+                // Fetch grades
+                $.ajax({
+                    url: "<?= base_url('StudentController/fetch_final_average') ?>",
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        student_name: student_name,
+                        grade_level: grade_level,
+                        section: section
+                    },
+                    success: function(res) {
+
+                        let data = res.data || [];
+
+                        // Build School Year from backend
+                        let schoolYear = res.school_year_start ?
+                            res.school_year_start + '–' + (parseInt(res.school_year_start) +
+                                1) :
+                            'N/A';
+
+                        // Store global student info for printing
+                        window.currentStudent = {
+                            name: student_name,
+                            gradeLevel: grade_level,
+                            teacher: data.length > 0 ? data[0].teacher ?? '' : '',
+                            schoolYear: schoolYear
+                        };
+
+                        // Fill teacher and school year inputs
+                        $('#teacher_name').val(window.currentStudent.teacher);
+                        $('#school_year').val(window.currentStudent.schoolYear);
+
+                        if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(
+                                grade_level)) {
+                            $('#grades7to10TableDiv').show();
+
+                            let totalFinal = 0;
+                            let count = 0;
+
+                            data.forEach(row => {
+                                $('#grades7to10Table tbody').append(`
                         <tr>
-                            <td>${item.subject}</td>
-                            <td>${item.q1}</td>
-                            <td>${item.q2}</td>
-                            <td>${item.q3}</td>
-                            <td>${item.q4}</td>
-                            <td>${finalAvg}</td>
+                            <td>${row.subject}</td>
+                            <td>${row.q1}</td>
+                            <td>${row.q2}</td>
+                            <td>${row.q3}</td>
+                            <td>${row.q4}</td>
+                            <td><strong>${row.final_grade}</strong></td>
                         </tr>
                     `);
-                    totalGeneral += parseFloat(finalAvg);
-                });
-                $('#final_average').val(res.data.length ? (totalGeneral/res.data.length).toFixed(2) : 0);
 
-            } else if (['Grade 11','Grade 12'].includes(gradeLevel)) {
-                $('#grades11to12TableDiv').show();
-                let totalFirstSem = 0, totalSecondSem = 0, firstCount = 0, secondCount = 0;
+                                totalFinal += parseFloat(row.final_grade);
+                                count++;
+                            });
 
-                res.data.forEach(item => {
-                    if(item.q1>0 || item.q2>0){
-                        let q1 = item.q1||0, q2=item.q2||0;
-                        let firstSemAvg = ((q1+q2)/((q1>0 && q2>0)?2:1)).toFixed(2);
-                        $('#firstSemesterTable tbody').append(`
+                            $('#final_average').val(count ? (totalFinal / count).toFixed(
+                                2) : '0');
+
+                        } else {
+                            $('#grades11to12TableDiv').show();
+
+                            let firstSem = 0,
+                                secondSem = 0,
+                                fsCount = 0,
+                                ssCount = 0;
+
+                            data.forEach(row => {
+                                if (row.q1 > 0 || row.q2 > 0) {
+                                    $('#firstSemesterTable tbody').append(`
                             <tr>
-                                <td>${item.subject}</td>
-                                <td>${q1}</td>
-                                <td>${q2}</td>
-                                <td>${firstSemAvg}</td>
+                                <td>${row.subject}</td>
+                                <td>${row.q1}</td>
+                                <td>${row.q2}</td>
+                                <td>${((row.q1 + row.q2) / 2).toFixed(2)}</td>
                             </tr>
                         `);
-                        totalFirstSem += parseFloat(firstSemAvg);
-                        firstCount++;
-                    }
-                    if(item.q3>0 || item.q4>0){
-                        let q3=item.q3||0, q4=item.q4||0;
-                        let secondSemAvg = ((q3+q4)/((q3>0 && q4>0)?2:1)).toFixed(2);
-                        $('#secondSemesterTable tbody').append(`
+                                    firstSem += (row.q1 + row.q2) / 2;
+                                    fsCount++;
+                                }
+
+                                if (row.q3 > 0 || row.q4 > 0) {
+                                    $('#secondSemesterTable tbody').append(`
                             <tr>
-                                <td>${item.subject}</td>
-                                <td>${q3}</td>
-                                <td>${q4}</td>
-                                <td>${secondSemAvg}</td>
+                                <td>${row.subject}</td>
+                                <td>${row.q3}</td>
+                                <td>${row.q4}</td>
+                                <td>${((row.q3 + row.q4) / 2).toFixed(2)}</td>
                             </tr>
                         `);
-                        totalSecondSem += parseFloat(secondSemAvg);
-                        secondCount++;
+                                    secondSem += (row.q3 + row.q4) / 2;
+                                    ssCount++;
+                                }
+                            });
+
+                            $('#general_average_first_sem').val(fsCount ? (firstSem /
+                                fsCount).toFixed(2) : '0');
+                            $('#general_average_second_sem').val(ssCount ? (secondSem /
+                                ssCount).toFixed(2) : '0');
+                            $('#final_average').val(((firstSem + secondSem) / (fsCount +
+                                ssCount)).toFixed(2));
+                        }
+
+                        $('#finalAverageStudentModal').modal('show');
                     }
                 });
+            });
 
-                $('#general_average_first_sem').val(firstCount ? (totalFirstSem/firstCount).toFixed(2) : 0);
-                $('#general_average_second_sem').val(secondCount ? (totalSecondSem/secondCount).toFixed(2) : 0);
-                $('#final_average').val((firstCount+secondCount) ? ((totalFirstSem+totalSecondSem)/(firstCount+secondCount)).toFixed(2) : 0);
-            }
+            // ----------------------------
+            // PRINT FINAL AVERAGE
+            // ----------------------------
+            $(document).on("click", "#btnPrintFinalAverage", function() {
 
-            // Show modal
-            new bootstrap.Modal(document.getElementById('finalAverageStudentModal'), { backdrop: 'static' }).show();
-        }
-    });
-});
+                let student = window.currentStudent || {};
+                let studentName = student.name || $('#student_name').val();
+                let gradeLevel = student.gradeLevel || $('#student_grade_level').val();
+                let teacherName = student.teacher || $('#teacher_name').val();
+                let schoolYear = student.schoolYear || $('#school_year').val() || 'N/A';
+                let generalAverage = $('#final_average').val() || '0';
 
-// ----------------------------
-// PRINT LOGIC
-// ----------------------------
-$(document).on("click", "#btnPrintFinalAverage", function() {
-    let student = window.currentStudent || { name: "N/A", gradeLevel: "N/A", teacher: "N/A", schoolYear: "N/A" };
-    let gradeLevel = student.gradeLevel;
-    let studentName = student.name;
-    let teacherName = student.teacher;
-    let schoolYear = student.schoolYear;
-    let generalAverage = $('#final_average').val();
+                let printContent = '';
 
-    let printContent = "";
-
-    if (['Grade 7','Grade 8','Grade 9','Grade 10'].includes(gradeLevel)) {
-        printContent = `
+                if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(gradeLevel)) {
+                    printContent = `
         <h2 style="text-align:center; margin-bottom:20px;">Student Report Card</h2>
         <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
             <div>
                 <strong>Name Student:</strong> ${studentName}<br>
                 <strong>Grade Level:</strong> ${gradeLevel}<br>
-                <strong>Teacher:</strong> ${teacherName}
             </div>
             <div style="text-align:right;">
                 <strong>General Average:</strong> ${generalAverage}<br>
@@ -543,7 +490,7 @@ $(document).on("click", "#btnPrintFinalAverage", function() {
         <table class="print-table">
             <thead>
                 <tr>
-                    <th>Subjects</th>
+                    <th>Subject</th>
                     <th>1st Quarter</th>
                     <th>2nd Quarter</th>
                     <th>3rd Quarter</th>
@@ -555,18 +502,17 @@ $(document).on("click", "#btnPrintFinalAverage", function() {
                 ${$('#grades7to10Table tbody').html()}
             </tbody>
         </table>`;
-    } else {
-        let firstSemGA = $('#general_average_first_sem').val();
-        let secondSemGA = $('#general_average_second_sem').val();
-        let hasSecondSemSubjects = $('#secondSemesterTable tbody tr').length > 0;
+                } else {
+                    let firstSemGA = $('#general_average_first_sem').val() || '0';
+                    let secondSemGA = $('#general_average_second_sem').val() || '0';
+                    let hasSecondSemSubjects = $('#secondSemesterTable tbody tr').length > 0;
 
-        printContent = `
+                    printContent = `
         <h2 style="text-align:center; margin-bottom:20px;">Student Report Card</h2>
         <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
             <div>
                 <strong>Name Student:</strong> ${studentName}<br>
                 <strong>Grade Level:</strong> ${gradeLevel}<br>
-                <strong>Teacher:</strong> ${teacherName}
             </div>
             <div style="text-align:right;">
                 <strong>General Average:</strong> ${generalAverage}<br>
@@ -577,7 +523,7 @@ $(document).on("click", "#btnPrintFinalAverage", function() {
         <table class="print-table">
             <thead>
                 <tr>
-                    <th>Subjects</th>
+                    <th>Subject</th>
                     <th>1st Quarter</th>
                     <th>2nd Quarter</th>
                     <th>Final Average</th>
@@ -589,13 +535,13 @@ $(document).on("click", "#btnPrintFinalAverage", function() {
         </table>
         <p><strong>General Average (1st Semester):</strong> ${firstSemGA}</p>`;
 
-        if (hasSecondSemSubjects) {
-            printContent += `
+                    if (hasSecondSemSubjects) {
+                        printContent += `
             <h3 style="margin-top:30px;">Second Semester</h3>
             <table class="print-table">
                 <thead>
                     <tr>
-                        <th>Subjects</th>
+                        <th>Subject</th>
                         <th>3rd Quarter</th>
                         <th>4th Quarter</th>
                         <th>Final Average</th>
@@ -606,19 +552,22 @@ $(document).on("click", "#btnPrintFinalAverage", function() {
                 </tbody>
             </table>
             <p><strong>General Average (2nd Semester):</strong> ${secondSemGA}</p>`;
-        }
-    }
+                    }
+                }
 
-    let printWindow = window.open('', '', 'width=1000,height=900');
-    printWindow.document.write(`
+                let printWindow = window.open('', '', 'width=1000,height=900');
+                printWindow.document.write(`
         <html>
         <head>
             <title>Student Report Card</title>
             <style>
                 body { font-family: Arial; padding: 25px; }
+                h2, h3 { margin: 10px 0; }
                 table { width:100%; border-collapse:collapse; margin-bottom: 20px; }
                 .print-table th, .print-table td { border: 1px solid #000; padding: 8px; text-align: center; }
                 .print-table th { background: #eee; }
+                div { font-size: 14px; }
+                p { font-weight: bold; }
             </style>
         </head>
         <body>
@@ -626,52 +575,15 @@ $(document).on("click", "#btnPrintFinalAverage", function() {
         </body>
         </html>
     `);
-    printWindow.document.close();
-    printWindow.print();
-});
-
+                printWindow.document.close();
+                printWindow.print();
+            });
 
 
 
         });
-
-        // Load activity table per grade
-        function loadGradeTable(gradeId, gradeText) {
-            let tableSelector = "#activityTable_" + gradeId;
-            if (loadedTables[gradeId]) return;
-            loadedTables[gradeId] = true;
-
-            $(tableSelector).DataTable({
-                processing: true,
-                serverSide: false,
-                ajax: {
-                    url: "<?= base_url('StudentController/fetch_activity_by_grade'); ?>",
-                    type: "POST",
-                    data: {
-                        grade_level: gradeText
-                    }
-                },
-                columns: [{
-                        data: "grade_level"
-                    },
-                    {
-                        data: "section"
-                    },
-                    {
-                        data: "full_name"
-                    },
-                    {
-                        data: null,
-                        render: function(row) {
-                            return `<button class="btn btn-sm btn-outline-info view-btn btn-border">
-                      <i class='ri-eye-line'></i> View Student
-                  </button>`;
-                        }
-                    }
-                ]
-            });
-        }
         </script>
+
 
     </div>
     </div>

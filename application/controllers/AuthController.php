@@ -26,7 +26,7 @@ class AuthController extends CI_Controller {
             if ($user->user_type == 'Admin') {
                 redirect('GradingSystem/dashboard');
 
-            // } elseif ($user->user_type == 'Corporate Manager') {
+            // } elseif ($user->user_type == 'Manager') {
             //     redirect('AdminController/dashboard');
 
             } else {

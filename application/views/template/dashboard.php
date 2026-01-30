@@ -422,8 +422,8 @@ $(document).ready(function() {
                 .value;
             else data[item.name] = item.value;
         });
-        let url = eventId ? "<?php echo site_url('EventsController/update'); ?>" :
-            "<?php echo site_url('EventsController/save'); ?>";
+        let url = eventId ? "<?php echo site_url('DashboardController/update'); ?>" :
+            "<?php echo site_url('DashboardController/save'); ?>";
         if (eventId) data['id'] = eventId;
 
         $.post(url, data, function(res) {
@@ -459,7 +459,7 @@ $(document).ready(function() {
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                $.post("<?php echo site_url('EventsController/delete'); ?>", {
+                $.post("<?php echo site_url('DashboardController/delete'); ?>", {
                     id: eventId
                 }, function(res) {
                     var response = JSON.parse(res);
@@ -478,7 +478,7 @@ $(document).ready(function() {
         });
     });
 
-    $.getJSON("<?php echo site_url('EventsController/get_events'); ?>", function(events) {
+    $.getJSON("<?php echo site_url('DashboardController/get_events'); ?>", function(events) {
         allEvents = events;
         filterEventsByMonth(fp.currentMonth + 1, fp.currentYear);
     });
@@ -539,7 +539,7 @@ $(document).ready(function() {
     // Load SSG members
     function loadMembers() {
         $.ajax({
-            url: '<?= base_url("EventsController/all_ssg_members") ?>',
+            url: '<?= base_url("DashboardController/all_ssg_members") ?>',
             type: 'GET',
             dataType: 'json',
             success: function(res) {
@@ -575,7 +575,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: '<?= base_url("EventsController/search_students") ?>',
+            url: '<?= base_url("DashboardController/search_students") ?>',
             type: 'GET',
             dataType: 'json',
             data: {
@@ -627,7 +627,7 @@ $(document).ready(function() {
     $('#ssgForm').submit(function(e) {
         e.preventDefault();
         $.ajax({
-            url: '<?= base_url("EventsController/save_ssg_member") ?>',
+            url: '<?= base_url("DashboardController/save_ssg_member") ?>',
             type: 'POST',
             data: $(this).serialize(),
             dataType: 'json',
@@ -656,7 +656,7 @@ $(document).ready(function() {
         let id = row.data('id');
 
         $.ajax({
-            url: '<?= base_url("EventsController/get_ssg_member") ?>/' + id,
+            url: '<?= base_url("DashboardController/get_ssg_member") ?>/' + id,
             type: 'GET',
             dataType: 'json',
             success: function(res) {
@@ -686,7 +686,7 @@ $(document).ready(function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '<?= base_url("EventsController/delete_ssg_member") ?>/' + id,
+                    url: '<?= base_url("DashboardController/delete_ssg_member") ?>/' + id,
                     type: 'POST',
                     dataType: 'json',
                     success: function(res) {
@@ -711,7 +711,7 @@ $(document).ready(function() {
 let my_id = <?= $this->session->userdata('po_user'); ?>;
 
 function loadMessages() {
-    $.get("<?= base_url('EventsController/fetch'); ?>", function(res) {
+    $.get("<?= base_url('DashboardController/fetch'); ?>", function(res) {
         let data = JSON.parse(res);
         let html = '';
 
@@ -758,7 +758,7 @@ $('#sendBtn').on('click', function() {
     let message = $('#chatMessage').val().trim();
     if (!message) return;
 
-    $.post("<?= base_url('EventsController/send'); ?>", {
+    $.post("<?= base_url('DashboardController/send'); ?>", {
         message
     }, function() {
         $('#chatMessage').val('');

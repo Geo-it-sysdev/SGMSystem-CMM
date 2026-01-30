@@ -2,18 +2,15 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /** @property CI_DB_query_builder $db */
-class EventsController extends CI_Controller {
+class DashboardController extends CI_Controller {
 
 	
 		public function __construct() {
         parent::__construct();
         $this->load->database();
-        $this->load->model('StudentModel');
         $this->load->helper(['url', 'form']);
          $this->load->library('session');
     }
-   
-   
    
     public function save() {
         $user_id = $this->session->userdata('po_user');
@@ -33,12 +30,11 @@ class EventsController extends CI_Controller {
 
         if ($this->db->insert('tbl_upcoming_events', $data)) {
 
-            // Get the last inserted event by this user
             $this->db->select('e.*, u.full_name, u.user_type');
             $this->db->from('tbl_upcoming_events e');
             $this->db->join('tbl_users u', 'u.id = e.user_id', 'left');
             $this->db->where('e.user_id', $user_id);
-            $this->db->order_by('e.created_at', 'DESC'); // get most recent
+            $this->db->order_by('e.created_at', 'DESC'); 
             $this->db->limit(1);
             $event = $this->db->get()->row();
 
@@ -60,7 +56,6 @@ class EventsController extends CI_Controller {
             return;
         }
 
-        // Only allow update if user is owner
         $this->db->where('id', $event_id);
         $this->db->where('user_id', $user_id);
         if ($this->db->update('tbl_upcoming_events', ['event_date' => $event_date, 'description' => $description])) {
@@ -84,7 +79,6 @@ class EventsController extends CI_Controller {
             return;
         }
 
-        // Only allow delete if user is owner
         $this->db->where('id', $event_id);
         $this->db->where('user_id', $user_id);
         if ($this->db->delete('tbl_upcoming_events')) {
@@ -95,7 +89,6 @@ class EventsController extends CI_Controller {
     }
 
     public function get_events() {
-        // Get all events from all users
         $this->db->select('e.*, u.full_name, u.user_type, e.user_id');
         $this->db->from('tbl_upcoming_events e');
         $this->db->join('tbl_users u','u.id=e.user_id','left');
@@ -118,7 +111,6 @@ class EventsController extends CI_Controller {
             return;
         }
 
-        // Only active students
         $this->db->select('id, fullname');
         $this->db->from('tbl_students');
         $this->db->like('fullname', $term);
@@ -186,7 +178,6 @@ class EventsController extends CI_Controller {
     }
 
 
-    // Get single member
     public function get_ssg_member($id)
     {
         $member = $this->db
@@ -219,47 +210,43 @@ class EventsController extends CI_Controller {
 
 
 
-// =============================
-// FETCH ALL CHAT MESSAGES
-// =============================
-public function fetch()
-{
-    // Fetch all messages from all users, no receiver_id needed
-    $sql = "
-        SELECT 
-            m.*,
-            u.full_name,
-            u.photo
-        FROM tbl_chat_messages m
-        JOIN tbl_users u ON u.id = m.sender_id
-        ORDER BY m.created_at ASC
-    ";
+    // FETCH ALL CHAT MESSAGES
+    public function fetch()
+    {
+        $sql = "
+            SELECT 
+                m.*,
+                u.full_name,
+                u.photo
+            FROM tbl_chat_messages m
+            JOIN tbl_users u ON u.id = m.sender_id
+            ORDER BY m.created_at ASC
+        ";
 
-    echo json_encode($this->db->query($sql)->result());
-}
-
-// =============================
-// SEND MESSAGE
-// =============================
-public function send()
-{
-    $message = $this->input->post('message');
-
-    if(empty($message)){
-        echo json_encode(['status'=>'error','message'=>'Message cannot be empty']);
-        return;
+        echo json_encode($this->db->query($sql)->result());
     }
 
-    $this->db->insert('tbl_chat_messages', [
-        'sender_id'   => $this->session->userdata('po_user'),
-        'receiver_id' => 0, // optional: 0 means public chat
-        'message'     => $message,
-        'created_at'  => date('Y-m-d H:i:s')
-    ]);
+    // SEND MESSAGE
+    public function send()
+    {
+        $message = $this->input->post('message');
 
-    echo json_encode(['status' => 'success']);
-}
+        if(empty($message)){
+            echo json_encode(['status'=>'error','message'=>'Message cannot be empty']);
+            return;
+        }
 
+        $this->db->insert('tbl_chat_messages', [
+            'sender_id'   => $this->session->userdata('po_user'),
+            'receiver_id' => 0, 
+            'message'     => $message,
+            'created_at'  => date('Y-m-d H:i:s')
+        ]);
+
+        echo json_encode(['status' => 'success']);
+    }
+
+    
 
     
 }

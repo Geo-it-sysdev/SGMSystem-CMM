@@ -147,6 +147,9 @@
                             "data": "grade_level"
                         },
                         {
+                            "data": "subject"
+                        },
+                        {
                             "data": "section"
                         },
                         {

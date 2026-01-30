@@ -61,75 +61,14 @@
                                 <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
 
                                     <!-- Add Classroom Button -->
-                                    <button id="addClassroomBtn" class="btn btn-outline-success btn-md rounded-pill"
+                                    <button id="addClassroomBtn" class="btn btn-outline-success btn-border btn-md rounded-pill"
                                         data-bs-toggle="modal" data-bs-target="#classroomModal">
-                                        <i class="bx bxs-group me-1"></i> Add Classroom
+                                        <i class="ri-building-2-fill"></i> Add Classroom
                                     </button>
-
-                                    <!-- Filter Classrooms -->
-                                    <!-- <div class="dropdown">
-                                        <button
-                                            class="btn btn-outline-primary dropdown-toggle rounded-pill d-flex align-items-center"
-                                            type="button" id="filterClassroomBtn" data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                            <i class="ri-filter-3-line me-1"></i> Filter Classrooms
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="filterClassroomBtn">
-                                            <li><a class="dropdown-item" href="#"
-                                                    onclick="setFilter('Section 1')">Section 1</a></li>
-                                            <li><a class="dropdown-item" href="#"
-                                                    onclick="setFilter('Section 2')">Section 2</a></li>
-                                            <li><a class="dropdown-item" href="#"
-                                                    onclick="setFilter('Section 3')">Section 3</a></li>
-                                            <li><a class="dropdown-item" href="#"
-                                                    onclick="setFilter('Section 4')">Section 4</a></li>
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
-                                            <div class="d-flex justify-content-center mt-2 mb-2">
-                                                <button type="button" class="btn btn-outline-danger btn-sm"
-                                                    onclick="clearFilter()">Clear Filter</button>
-                                            </div>
-                                        </ul>
-                                    </div> -->
-
-                                    <!-- Filter Grade Level -->
-                                    <!-- <div class="dropdown">
-                                        <button
-                                            class="btn btn-outline-primary dropdown-toggle rounded-pill d-flex align-items-center"
-                                            type="button" id="filterGradeBtn" data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                            <i class="ri-filter-3-line me-1"></i> Filter Grade Level
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="filterGradeBtn">
-                                            <li><a class="dropdown-item" href="#" onclick="setFilter('Grade 7')">Grade
-                                                    7</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="setFilter('Grade 8')">Grade
-                                                    8</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="setFilter('Grade 9')">Grade
-                                                    9</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="setFilter('Grade 10')">Grade
-                                                    10</a></li>
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
-                                            <div class="d-flex justify-content-center mt-2 mb-2">
-                                                <button type="button" class="btn btn-outline-danger btn-sm"
-                                                    onclick="clearFilter()">Clear Filter</button>
-                                            </div>
-                                        </ul>
-                                    </div> -->
 
                                 </div>
 
 
-                                <!-- Uncomment if needed -->
-                                <!-- <a class="btn btn-soft-primary btn-md me-2">
-                                    <i class="ri-file-pdf-fill me-2"></i> PDF
-                                </a>
-                                <a class="btn btn-soft-success btn-md">
-                                    <i class="ri-file-excel-2-fill me-2"></i> Excel
-                                </a> -->
                             </div>
                             <table id="classroomTable" class="table table-bordered dt-responsive nowrap table-striped align-middle"
                                                     style="width:100%">
@@ -187,8 +126,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" id="saveBtn" class="btn btn-success">Save</button>
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="saveBtn" class="btn btn-outline-success btn-border"><i class="ri-save-line"></i> Save</button>
+                    <button type="button" class="btn btn-outline-danger btn-border" data-bs-dismiss="modal">   <i class="ri-close-line"></i> Close</button>
                 </div>
             </form>
         </div>

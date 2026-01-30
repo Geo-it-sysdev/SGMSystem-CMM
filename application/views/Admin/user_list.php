@@ -55,7 +55,7 @@
 
                         <div class="card-body">
                             <div class="d-flex justify-content-start align-items-center mb-3">
-                                <button id="add_users" class="btn btn-outline-success btn-md me-2 rounded-pill"
+                                <button id="add_users" class="btn btn-outline-success btn-border btn-md me-2 rounded-pill"
                                     data-bs-toggle="modal" data-bs-target="#addUserModal">
                                     <i class="ri-user-add-line me-1"></i> Add New User
                                 </button>
@@ -196,8 +196,13 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-success" id="saveBtn">Save</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-outline-success btn-border" id="saveBtn">
+               <i class="ri-save-line"></i>Save
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-border" data-bs-dismiss="modal">
+                <i class="ri-close-line" style="margin-right:5px;"></i>
+                Cancel
+                </button>
                 </div>
 
             </div>
@@ -220,23 +225,30 @@ $(document).ready(function() {
         ordering: true,
         info: true,
         processing: true,
+        autoWidth: false, 
         columns: [{
-                data: 'full_name'
+                data: 'full_name',
+                width: '12%'
             },
             {
-                data: 'user_name'
+                data: 'user_name',
+                width: '5%'
             },
             {
-                data: 'user_type'
+                data: 'user_type',
+                width: '5%'
             },
             {
-                data: 'grades'
+                data: 'grades',
+                width: '15%'
             },
             {
-                data: 'subjects'
+                data: 'subjects',
+                width: '20%'
             },
             {
                 data: 'status',
+                width: '3%',
                 render: function(data, type, row) {
                     if (data === 'Active') {
                         return '<span class="badge bg-success">' + data + '</span>';
@@ -247,19 +259,24 @@ $(document).ready(function() {
             },
             {
                 data: null,
+                width: '12%',
                 className: 'text-left',
                 render: function(data, type, row) {
                     return `
-                    <button class="btn btn-outline-primary btn-sm editBtn me-1" data-id="${row.id}">
+                    <button class="btn btn-outline-primary btn-sm btn-border editBtn me-1" data-id="${row.id}">
                         <i class="bi bi-pencil-square me-1"></i> Edit
                     </button>
-                    <button class="btn btn-outline-danger btn-sm deleteBtn" data-id="${row.id}">
+                    <button class="btn btn-outline-danger btn-sm btn-border deleteBtn" data-id="${row.id}">
                         <i class="bi bi-trash me-1"></i> Delete
                     </button>
-
-                    `;
+                `;
                 }
             }
+        ],
+        columnDefs: [{
+                targets: '_all',
+                className: 'dt-center'
+            } // optional: center-align all columns
         ],
         language: {
             search: '',
@@ -267,6 +284,7 @@ $(document).ready(function() {
             processing: '<div class="table-loader"></div>'
         }
     });
+
 
 
     // =============================
@@ -303,7 +321,8 @@ $(document).ready(function() {
         INDUSTRIAL_ARTS: ["Welding", "Automotive Servicing", "Electrical Installation", "Carpentry"],
         HOME_ECONOMICS: ["Cookery", "Bread & Pastry", "Housekeeping", "Food & Beverage Services"],
         ICT: ["Computer Systems Servicing (CSS)", "Programming", "Data Communication",
-            "Computer Networking"],
+            "Computer Networking"
+        ],
         ABM: ["Business Math", "Business Finance", "Organization & Management", "Principles of Marketing",
             "Applied Economics", "Business Ethics & Social Responsibility"
         ],
@@ -431,7 +450,7 @@ $(document).ready(function() {
         $('#userForm')[0].reset();
         $('#id').val('');
         $('#addUserModalTitle').text('Add User');
-        $('#saveBtn').text('Save');
+        $('#saveBtn').html('<i class="ri-save-line"></i> Save');
         $('#gradeLevelContainer, #strandContainer, #subjectContainer').hide();
         $('input[name="grade[]"], input[name="strand[]"]').prop('checked', false);
         $('#subjectCheckboxes').empty();
@@ -496,7 +515,7 @@ $(document).ready(function() {
                 }
 
                 $('#addUserModalTitle').text("Edit User");
-                $('#saveBtn').text("Update");
+                $('#saveBtn').html('<i class="ri-save-line"></i> Update');
                 $('#addUserModal').modal("show");
             }
         });

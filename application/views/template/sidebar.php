@@ -163,7 +163,7 @@ if (isset($user_id)) {
                             class="bx bx-file bx-sm
                         <?php echo (uri_string() === 'GradingSystem/report_card') ? 'animate__animated animate__heartBeat animate__infinite' : ''; ?>">
                         </i>
-                        <span>Report Card</span>
+                        <span>Grade Reports</span>
                     </a>
                 </li>
                 <?php endif; ?>

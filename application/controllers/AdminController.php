@@ -17,7 +17,6 @@ class AdminController extends CI_Controller {
     
 
 
-     //=============== User profile function ( view profile, update username & password )=====================\\
      public function profile()
      {
          $user_id = $this->session->userdata("po_user");
@@ -48,7 +47,7 @@ class AdminController extends CI_Controller {
          // Upload config
          $config['upload_path'] = './assets/images/users/';
          $config['allowed_types'] = 'jpg|jpeg|png|gif|webp';
-         $config['max_size'] = 5120; // 5MB
+         $config['max_size'] = 5120; 
          $config['encrypt_name'] = TRUE;
      
          $this->load->library('upload', $config);
@@ -65,12 +64,10 @@ class AdminController extends CI_Controller {
          $upload_data = $this->upload->data();
          $new_filename = 'assets/images/users/' . $upload_data['file_name'];
      
-         // Delete old image (except default)
          if (!empty($old_photo) && file_exists('./' . $old_photo) && $old_photo != 'assets/img/user-dummy-img.jpg') {
              unlink('./' . $old_photo);
          }
      
-         // Update DB
          $this->db->where('id', $user_id)->update('tbl_users', [
              'photo' => $new_filename
          ]);
@@ -125,57 +122,6 @@ class AdminController extends CI_Controller {
         }
     }
 
-   //=============== Chat us function (chat & retrive chat) =====================\\
-    public function chat_us() {
-        $user_id = $this->session->userdata("po_user");
-        if (!isset($user_id)) {
-            redirect('AuthController/login_view');
-            return;
-        }
-
-        $data['users'] = $this->AdminModel->get_all_users_with_unread_count($user_id);
-
-        $data['profile'] = $this->AdminModel->get_user($user_id);
-        $this->load->view('template/header', $data);
-        $this->load->view('template/sidebar');
-        $this->load->view('template/chat_us', $data);
-        $this->load->view('template/footer');
-    }
-
-
-    public function fetch_messages($receiver_id) {
-        $sender_id = $this->session->userdata("po_user");
-        $messages = $this->AdminModel->get_chat_messages($sender_id, $receiver_id);
-        echo json_encode($messages);
-    }
-
-    public function send_message() {
-        $sender_id = $this->session->userdata("po_user");
-        if (!$sender_id) {
-            echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
-            return;
-        }
-
-        $receiver_id = $this->input->post("receiver_id");
-        $message = $this->input->post("message");
-
-        if (!empty($message) && !empty($receiver_id)) {
-            $inserted = $this->AdminModel->insert_chat_message([
-                'sender_id' => $sender_id,
-                'receiver_id' => $receiver_id,
-                'message' => $message,
-                'timestamp' => date('Y-m-d H:i:s')
-            ]);
-            if ($inserted) {
-                echo json_encode(['status' => 'success']);
-            } else {
-                echo json_encode(['status' => 'error', 'message' => 'Failed to insert message']);
-            }
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Invalid data']);
-        }
-    }
-    
     
     public function datatable() {
         $user_id = $this->session->userdata("po_user");
@@ -209,8 +155,6 @@ class AdminController extends CI_Controller {
         }
     }
     
-    
-
    
     public function fetch_users() {
         $users = $this->AdminModel->get_all_users();

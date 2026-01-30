@@ -227,8 +227,7 @@ class DashboardController extends CI_Controller {
     }
 
     // SEND MESSAGE
-  public function send()
-    {
+  public function send(){
         $message = $this->input->post('message');
 
         if (empty($message)) {
@@ -246,7 +245,7 @@ class DashboardController extends CI_Controller {
         ]);
 
         echo json_encode(['status' => 'success']);
-    }
+  }
 
     
 

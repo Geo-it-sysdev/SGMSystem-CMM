@@ -847,8 +847,8 @@ public function save_activity()
 
 
     // Fetch per-student grades for modal
- public function fetch_final_average() {
-    $student_name = $this->input->post('student_name');
+public function fetch_final_average() {
+    $student_id   = $this->input->post('student_id');  
     $grade_level  = $this->input->post('grade_level');
     $section      = $this->input->post('section');
     $user_id      = $this->session->userdata('po_user');      
@@ -872,11 +872,10 @@ public function save_activity()
     $this->db->join('tbl_students AS c','c.id = b.student_id','left');
     $this->db->join('tbl_users AS d','d.id = a.user_id','left');
     $this->db->where('a.grade_level', $grade_level);
-    $this->db->where('b.student_name', $student_name);
-    $this->db->where('b.section', $section);
+    $this->db->where('b.student_id', $student_id);
     $this->db->where('c.status', 'active');
 
-    // Apply user filter only if user is NOT Principal, Registrar, or Guidance Councilor
+    // Restrict for normal users
     if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
         $this->db->where('a.user_id', $user_id);
     }
@@ -939,7 +938,7 @@ public function save_activity()
             $finalGradesPerQuarter[] = round($finalQuarter,2);
         }
 
-        // Add subject only if it has grades for a semester
+        // Only include subjects with grades
         $hasFirstSem = ($finalGradesPerQuarter[0] > 0 || $finalGradesPerQuarter[1] > 0);
         $hasSecondSem = ($finalGradesPerQuarter[2] > 0 || $finalGradesPerQuarter[3] > 0);
 
@@ -956,7 +955,6 @@ public function save_activity()
         }
     }
 
-    // Send data + school_year_start
     $school_year_start = !empty($query) ? date('Y', strtotime($query[0]->created_at)) : date('Y');
 
     echo json_encode([
@@ -966,38 +964,39 @@ public function save_activity()
 }
 
 
-    public function fetch_students_report_card() {
-        $grade = $this->input->get('grade');
-        $section = $this->input->get('section');
 
-        $this->db->select('fullname AS student_name, grade_level, section, created_at');
-        $this->db->from('tbl_students');
+  public function fetch_students_report_card() {
+    $grade = $this->input->get('grade');
+    $section = $this->input->get('section');
 
-        if (!empty($grade)) {
-            $this->db->where('grade_level', $grade);
-        }
+    $this->db->select('id, fullname AS student_name, grade_level, section, created_at');
+    $this->db->from('tbl_students');
 
-        if (!empty($section)) {
-            $this->db->where('section', $section);
-        }
-
-        $query = $this->db->get();
-        $students = $query->result_array();
-
-        // Add action button
-        foreach ($students as &$student) {
-            $student['action'] = '
-                <button class="btn btn-sm btn-outline-primary btn-border viewStudentBtn"
-                    data-name="'.htmlspecialchars($student['student_name']).'"
-                    data-grade="'.htmlspecialchars($student['grade_level']).'"
-                    data-section="'.htmlspecialchars($student['section']).'">
-                    <i class="ri-eye-line"></i> View
-                </button>';
-        }
-
-
-        echo json_encode(['data' => $students]);
+    if (!empty($grade)) {
+        $this->db->where('grade_level', $grade);
     }
+
+    if (!empty($section)) {
+        $this->db->where('section', $section);
+    }
+
+    $query = $this->db->get();
+    $students = $query->result_array();
+
+    // Add action button
+    foreach ($students as &$student) {
+        $student['action'] = '
+            <button class="btn btn-sm btn-outline-primary btn-border viewStudentBtn"
+                data-id="'. $student['id'] .'"
+                data-name="'. htmlspecialchars($student['student_name']) .'"
+                data-grade="'. htmlspecialchars($student['grade_level']) .'"
+                data-section="'. htmlspecialchars($student['section']) .'">
+                <i class="ri-eye-line"></i> View
+            </button>';
+    }
+
+    echo json_encode(['data' => $students]);
+}
 
 
 

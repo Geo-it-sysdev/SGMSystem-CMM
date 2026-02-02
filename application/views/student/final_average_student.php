@@ -351,65 +351,56 @@
             // ----------------------------
             // VIEW STUDENT FINAL AVERAGE
             // ----------------------------
-            $(document).on('click', '.viewStudentBtn', function() {
+           $(document).on('click', '.viewStudentBtn', function() {
+    let student_id = $(this).data('id');
+    let student_name = $(this).data('name');
+    let grade_level = $(this).data('grade');
+    let section = $(this).data('section');
 
-                let student_name = $(this).data('name');
-                let grade_level = $(this).data('grade');
-                let section = $(this).data('section');
+    // Fill top inputs
+    $('#student_name').val(student_name);
+    $('#student_grade_level').val(grade_level);
 
-                // Fill top inputs
-                $('#student_name').val(student_name);
-                $('#student_grade_level').val(grade_level);
+    // Reset tables
+    $('#grades7to10Table tbody').empty();
+    $('#firstSemesterTable tbody').empty();
+    $('#secondSemesterTable tbody').empty();
+    $('#grades7to10TableDiv').hide();
+    $('#grades11to12TableDiv').hide();
 
-                // Reset tables
-                $('#grades7to10Table tbody').empty();
-                $('#firstSemesterTable tbody').empty();
-                $('#secondSemesterTable tbody').empty();
+    // Fetch grades
+    $.ajax({
+        url: "<?= base_url('StudentController/fetch_final_average') ?>",
+        type: "POST",
+        dataType: "json",
+        data: {
+            student_id: student_id,
+            student_name: student_name,
+            grade_level: grade_level,
+            section: section
+        },
+        success: function(res) {
+            console.log(res); // Debug
 
-                $('#grades7to10TableDiv').hide();
-                $('#grades11to12TableDiv').hide();
+            let data = res.data || [];
+            let schoolYear = res.school_year_start ? res.school_year_start + '–' + (parseInt(res.school_year_start) + 1) : 'N/A';
 
-                // Fetch grades
-                $.ajax({
-                    url: "<?= base_url('StudentController/fetch_final_average') ?>",
-                    type: "POST",
-                    dataType: "json",
-                    data: {
-                        student_name: student_name,
-                        grade_level: grade_level,
-                        section: section
-                    },
-                    success: function(res) {
+            window.currentStudent = {
+                name: student_name,
+                gradeLevel: grade_level,
+                teacher: data.length > 0 ? data[0].teacher ?? '' : '',
+                schoolYear: schoolYear
+            };
 
-                        let data = res.data || [];
+            $('#teacher_name').val(window.currentStudent.teacher);
+            $('#school_year').val(window.currentStudent.schoolYear);
 
-                        // Build School Year from backend
-                        let schoolYear = res.school_year_start ?
-                            res.school_year_start + '–' + (parseInt(res.school_year_start) +
-                                1) :
-                            'N/A';
+            if (['Grade 7','Grade 8','Grade 9','Grade 10'].includes(grade_level)) {
+                $('#grades7to10TableDiv').show();
+                let totalFinal = 0, count = 0;
 
-                        // Store global student info for printing
-                        window.currentStudent = {
-                            name: student_name,
-                            gradeLevel: grade_level,
-                            teacher: data.length > 0 ? data[0].teacher ?? '' : '',
-                            schoolYear: schoolYear
-                        };
-
-                        // Fill teacher and school year inputs
-                        $('#teacher_name').val(window.currentStudent.teacher);
-                        $('#school_year').val(window.currentStudent.schoolYear);
-
-                        if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(
-                                grade_level)) {
-                            $('#grades7to10TableDiv').show();
-
-                            let totalFinal = 0;
-                            let count = 0;
-
-                            data.forEach(row => {
-                                $('#grades7to10Table tbody').append(`
+                data.forEach(row => {
+                    $('#grades7to10Table tbody').append(`
                         <tr>
                             <td>${row.subject}</td>
                             <td>${row.q1}</td>
@@ -419,62 +410,53 @@
                             <td><strong>${row.final_grade}</strong></td>
                         </tr>
                     `);
+                    totalFinal += parseFloat(row.final_grade);
+                    count++;
+                });
 
-                                totalFinal += parseFloat(row.final_grade);
-                                count++;
-                            });
+                $('#final_average').val(count ? (totalFinal/count).toFixed(2) : '0');
 
-                            $('#final_average').val(count ? (totalFinal / count).toFixed(
-                                2) : '0');
+            } else {
+                $('#grades11to12TableDiv').show();
+                let firstSem = 0, secondSem = 0, fsCount = 0, ssCount = 0;
 
-                        } else {
-                            $('#grades11to12TableDiv').show();
-
-                            let firstSem = 0,
-                                secondSem = 0,
-                                fsCount = 0,
-                                ssCount = 0;
-
-                            data.forEach(row => {
-                                if (row.q1 > 0 || row.q2 > 0) {
-                                    $('#firstSemesterTable tbody').append(`
+                data.forEach(row => {
+                    if(row.q1 > 0 || row.q2 > 0){
+                        $('#firstSemesterTable tbody').append(`
                             <tr>
                                 <td>${row.subject}</td>
                                 <td>${row.q1}</td>
                                 <td>${row.q2}</td>
-                                <td>${((row.q1 + row.q2) / 2).toFixed(2)}</td>
+                                <td>${((row.q1+row.q2)/2).toFixed(2)}</td>
                             </tr>
                         `);
-                                    firstSem += (row.q1 + row.q2) / 2;
-                                    fsCount++;
-                                }
-
-                                if (row.q3 > 0 || row.q4 > 0) {
-                                    $('#secondSemesterTable tbody').append(`
+                        firstSem += (row.q1 + row.q2)/2;
+                        fsCount++;
+                    }
+                    if(row.q3 > 0 || row.q4 > 0){
+                        $('#secondSemesterTable tbody').append(`
                             <tr>
                                 <td>${row.subject}</td>
                                 <td>${row.q3}</td>
                                 <td>${row.q4}</td>
-                                <td>${((row.q3 + row.q4) / 2).toFixed(2)}</td>
+                                <td>${((row.q3+row.q4)/2).toFixed(2)}</td>
                             </tr>
                         `);
-                                    secondSem += (row.q3 + row.q4) / 2;
-                                    ssCount++;
-                                }
-                            });
-
-                            $('#general_average_first_sem').val(fsCount ? (firstSem /
-                                fsCount).toFixed(2) : '0');
-                            $('#general_average_second_sem').val(ssCount ? (secondSem /
-                                ssCount).toFixed(2) : '0');
-                            $('#final_average').val(((firstSem + secondSem) / (fsCount +
-                                ssCount)).toFixed(2));
-                        }
-
-                        $('#finalAverageStudentModal').modal('show');
+                        secondSem += (row.q3 + row.q4)/2;
+                        ssCount++;
                     }
                 });
-            });
+
+                $('#general_average_first_sem').val(fsCount ? (firstSem/fsCount).toFixed(2) : '0');
+                $('#general_average_second_sem').val(ssCount ? (secondSem/ssCount).toFixed(2) : '0');
+                $('#final_average').val(((firstSem + secondSem)/(fsCount + ssCount)).toFixed(2));
+            }
+
+            $('#finalAverageStudentModal').modal('show');
+        }
+    });
+});
+
 
             // ----------------------------
             // PRINT FINAL AVERAGE

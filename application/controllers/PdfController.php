@@ -9,12 +9,12 @@ class PdfController extends CI_Controller {
         $this->load->library('tcpdf');
     }
 
-public function generate_report_card()
+public function generate_pdf_grades()
 {
     $grade = $this->input->get('grade');
     $section = $this->input->get('section');
 
-    $students = $this->fetch_students_report_card($grade, $section)['data'];
+    $students = $this->fetch_generate_pdf_grades($grade, $section)['data'];
 
     // Init PDF with custom header
     $pdf = new class extends TCPDF {
@@ -101,7 +101,7 @@ public function generate_report_card()
 
 
     // --- Fetch students ---
-    private function fetch_students_report_card($grade=null, $section=null)
+    private function fetch_generate_pdf_grades($grade=null, $section=null)
     {
         $this->db->select('fullname AS student_name, grade_level, section, created_at');
         $this->db->from('tbl_students');

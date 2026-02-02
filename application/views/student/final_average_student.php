@@ -291,7 +291,6 @@
                     }
                 });
 
-
                 tables[grade_id] = table;
 
                 // Generate Section filter buttons
@@ -301,7 +300,6 @@
                     let sectionTabs = $(`#sectionTabs_${grade_id}`);
                     sectionTabs.empty();
 
-                    // Add buttons for each section only
                     sections.forEach((section, index) => {
                         let activeClass = index === 0 ? 'active' : '';
                         sectionTabs.append(`
@@ -316,19 +314,28 @@
                         let section = $(this).data('section');
                         sectionTabs.find('button').removeClass('active');
                         $(this).addClass('active');
-
                         table.column(2).search('^' + section + '$', true, false).draw();
                     });
 
-                    // Automatically filter by the first section
+                    // Auto-filter first section
                     let firstSectionButton = sectionTabs.find('button').eq(0);
-                    if (firstSectionButton.length) {
-                        firstSectionButton.click();
-                    }
+                    if (firstSectionButton.length) firstSectionButton.click();
+                });
+
+                // Bind Generate PDF for this tab’s button
+                $(`#${grade_id}-student`).find('#generatePDFBtn').off('click').on('click', function() {
+                    let activeSectionBtn = $(`#${grade_id}-student`).find('.nav-link.active');
+                    let section = activeSectionBtn.length ? activeSectionBtn.data('section') : '';
+
+                    let url = '<?= base_url("PdfController/generate_pdf_grades") ?>';
+                    url += '?grade=' + encodeURIComponent(grade_name);
+                    if (section) url += '&section=' + encodeURIComponent(section);
+
+                    window.open(url, '_blank');
                 });
             }
 
-            // Initialize the first grade tab
+            // Initialize the first active tab
             let firstPane = $('.tab-pane.show.active');
             let firstGradeId = firstPane.attr('id').replace('-student', '');
             let firstGradeName = firstPane.data('grade');
@@ -351,56 +358,59 @@
             // ----------------------------
             // VIEW STUDENT FINAL AVERAGE
             // ----------------------------
-           $(document).on('click', '.viewStudentBtn', function() {
-    let student_id = $(this).data('id');
-    let student_name = $(this).data('name');
-    let grade_level = $(this).data('grade');
-    let section = $(this).data('section');
+            $(document).on('click', '.viewStudentBtn', function() {
+                let student_id = $(this).data('id');
+                let student_name = $(this).data('name');
+                let grade_level = $(this).data('grade');
+                let section = $(this).data('section');
 
-    // Fill top inputs
-    $('#student_name').val(student_name);
-    $('#student_grade_level').val(grade_level);
+                // Fill top inputs
+                $('#student_name').val(student_name);
+                $('#student_grade_level').val(grade_level);
 
-    // Reset tables
-    $('#grades7to10Table tbody').empty();
-    $('#firstSemesterTable tbody').empty();
-    $('#secondSemesterTable tbody').empty();
-    $('#grades7to10TableDiv').hide();
-    $('#grades11to12TableDiv').hide();
+                // Reset tables
+                $('#grades7to10Table tbody').empty();
+                $('#firstSemesterTable tbody').empty();
+                $('#secondSemesterTable tbody').empty();
+                $('#grades7to10TableDiv').hide();
+                $('#grades11to12TableDiv').hide();
 
-    // Fetch grades
-    $.ajax({
-        url: "<?= base_url('StudentController/fetch_final_average') ?>",
-        type: "POST",
-        dataType: "json",
-        data: {
-            student_id: student_id,
-            student_name: student_name,
-            grade_level: grade_level,
-            section: section
-        },
-        success: function(res) {
-            console.log(res); // Debug
+                // Fetch grades
+                $.ajax({
+                    url: "<?= base_url('StudentController/fetch_final_average') ?>",
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        student_id: student_id,
+                        student_name: student_name,
+                        grade_level: grade_level,
+                        section: section
+                    },
+                    success: function(res) {
+                        console.log(res); // Debug
 
-            let data = res.data || [];
-            let schoolYear = res.school_year_start ? res.school_year_start + '–' + (parseInt(res.school_year_start) + 1) : 'N/A';
+                        let data = res.data || [];
+                        let schoolYear = res.school_year_start ? res.school_year_start +
+                            '–' + (parseInt(res.school_year_start) + 1) : 'N/A';
 
-            window.currentStudent = {
-                name: student_name,
-                gradeLevel: grade_level,
-                teacher: data.length > 0 ? data[0].teacher ?? '' : '',
-                schoolYear: schoolYear
-            };
+                        window.currentStudent = {
+                            name: student_name,
+                            gradeLevel: grade_level,
+                            teacher: data.length > 0 ? data[0].teacher ?? '' : '',
+                            schoolYear: schoolYear
+                        };
 
-            $('#teacher_name').val(window.currentStudent.teacher);
-            $('#school_year').val(window.currentStudent.schoolYear);
+                        $('#teacher_name').val(window.currentStudent.teacher);
+                        $('#school_year').val(window.currentStudent.schoolYear);
 
-            if (['Grade 7','Grade 8','Grade 9','Grade 10'].includes(grade_level)) {
-                $('#grades7to10TableDiv').show();
-                let totalFinal = 0, count = 0;
+                        if (['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].includes(
+                                grade_level)) {
+                            $('#grades7to10TableDiv').show();
+                            let totalFinal = 0,
+                                count = 0;
 
-                data.forEach(row => {
-                    $('#grades7to10Table tbody').append(`
+                            data.forEach(row => {
+                                $('#grades7to10Table tbody').append(`
                         <tr>
                             <td>${row.subject}</td>
                             <td>${row.q1}</td>
@@ -410,19 +420,23 @@
                             <td><strong>${row.final_grade}</strong></td>
                         </tr>
                     `);
-                    totalFinal += parseFloat(row.final_grade);
-                    count++;
-                });
+                                totalFinal += parseFloat(row.final_grade);
+                                count++;
+                            });
 
-                $('#final_average').val(count ? (totalFinal/count).toFixed(2) : '0');
+                            $('#final_average').val(count ? (totalFinal / count).toFixed(
+                                2) : '0');
 
-            } else {
-                $('#grades11to12TableDiv').show();
-                let firstSem = 0, secondSem = 0, fsCount = 0, ssCount = 0;
+                        } else {
+                            $('#grades11to12TableDiv').show();
+                            let firstSem = 0,
+                                secondSem = 0,
+                                fsCount = 0,
+                                ssCount = 0;
 
-                data.forEach(row => {
-                    if(row.q1 > 0 || row.q2 > 0){
-                        $('#firstSemesterTable tbody').append(`
+                            data.forEach(row => {
+                                if (row.q1 > 0 || row.q2 > 0) {
+                                    $('#firstSemesterTable tbody').append(`
                             <tr>
                                 <td>${row.subject}</td>
                                 <td>${row.q1}</td>
@@ -430,11 +444,11 @@
                                 <td>${((row.q1+row.q2)/2).toFixed(2)}</td>
                             </tr>
                         `);
-                        firstSem += (row.q1 + row.q2)/2;
-                        fsCount++;
-                    }
-                    if(row.q3 > 0 || row.q4 > 0){
-                        $('#secondSemesterTable tbody').append(`
+                                    firstSem += (row.q1 + row.q2) / 2;
+                                    fsCount++;
+                                }
+                                if (row.q3 > 0 || row.q4 > 0) {
+                                    $('#secondSemesterTable tbody').append(`
                             <tr>
                                 <td>${row.subject}</td>
                                 <td>${row.q3}</td>
@@ -442,20 +456,23 @@
                                 <td>${((row.q3+row.q4)/2).toFixed(2)}</td>
                             </tr>
                         `);
-                        secondSem += (row.q3 + row.q4)/2;
-                        ssCount++;
+                                    secondSem += (row.q3 + row.q4) / 2;
+                                    ssCount++;
+                                }
+                            });
+
+                            $('#general_average_first_sem').val(fsCount ? (firstSem /
+                                fsCount).toFixed(2) : '0');
+                            $('#general_average_second_sem').val(ssCount ? (secondSem /
+                                ssCount).toFixed(2) : '0');
+                            $('#final_average').val(((firstSem + secondSem) / (fsCount +
+                                ssCount)).toFixed(2));
+                        }
+
+                        $('#finalAverageStudentModal').modal('show');
                     }
                 });
-
-                $('#general_average_first_sem').val(fsCount ? (firstSem/fsCount).toFixed(2) : '0');
-                $('#general_average_second_sem').val(ssCount ? (secondSem/ssCount).toFixed(2) : '0');
-                $('#final_average').val(((firstSem + secondSem)/(fsCount + ssCount)).toFixed(2));
-            }
-
-            $('#finalAverageStudentModal').modal('show');
-        }
-    });
-});
+            });
 
 
             // ----------------------------
@@ -586,115 +603,11 @@
 
 
 
-            // $('#generatePDFBtn').on('click', function() {
-            //     const { jsPDF } = window.jspdf;
-
-            //     // Step 1: Fetch all students
-            //     $.ajax({
-            //         url: '<?= base_url("StudentController/fetch_students_report_card") ?>',
-            //         method: 'GET',
-            //         success: function(res) {
-            //             const students = JSON.parse(res).data;
-
-            //             // Step 2: Fetch grades for each student
-            //             let promises = students.map(student => {
-            //                 return $.ajax({
-            //                     url: '<?= base_url("StudentController/fetch_final_average") ?>',
-            //                     method: 'POST',
-            //                     data: {
-            //                         student_name: student.student_name,
-            //                         grade_level: student.grade_level,
-            //                         section: student.section
-            //                     }
-            //                 }).then(res => {
-            //                     return { ...JSON.parse(res), student_info: student };
-            //                 });
-            //             });
-
-            //             // Step 3: Once all AJAX calls finish, generate PDF
-            //             Promise.all(promises).then(results => {
-            //                 const doc = new jsPDF('p', 'pt', 'a4');
-            //                 let y = 40;
-
-            //                 results.forEach(studentReport => {
-            //                     const studentInfo = studentReport.student_info;
-            //                     const studentName = studentInfo.student_name;
-            //                     const gradeLevel = studentInfo.grade_level;
-            //                     const section = studentInfo.section;
-            //                     const schoolYear = studentReport.school_year_start + '-' + (parseInt(studentReport.school_year_start)+1);
-            //                     const data = studentReport.data;
-
-            //                     // Header
-            //                     doc.setFontSize(14);
-            //                     doc.text("Student Report Card", 40, y);
-            //                     doc.setFontSize(11);
-            //                     y += 20;
-            //                     doc.text(`Name: ${studentName}`, 40, y);
-            //                     y += 15;
-            //                     doc.text(`Grade: ${gradeLevel}`, 40, y);
-            //                     y += 15;
-            //                     doc.text(`Section: ${section}`, 40, y);
-            //                     y += 15;
-            //                     doc.text(`School Year: ${schoolYear}`, 40, y);
-            //                     y += 20;
-
-            //                     // Table header
-            //                     doc.setFontSize(10);
-            //                     doc.text('Subject', 40, y);
-            //                     doc.text('1st Q', 150, y);
-            //                     doc.text('2nd Q', 220, y);
-            //                     doc.text('3rd Q', 290, y);
-            //                     doc.text('4th Q', 360, y);
-            //                     doc.text('Final', 430, y);
-            //                     y += 10;
-
-            //                     // Table rows
-            //                     data.forEach(d => {
-            //                         doc.text(d.subject, 40, y);
-            //                         doc.text(d.q1.toString(), 150, y);
-            //                         doc.text(d.q2.toString(), 220, y);
-            //                         doc.text(d.q3.toString(), 290, y);
-            //                         doc.text(d.q4.toString(), 360, y);
-            //                         doc.text(d.final_grade.toString(), 430, y);
-            //                         y += 15;
-
-            //                         // Add new page if near bottom
-            //                         if (y > 750) {
-            //                             doc.addPage();
-            //                             y = 40;
-            //                         }
-            //                     });
-
-            //                     y += 30; // space before next student
-            //                     if (y > 750) {
-            //                         doc.addPage();
-            //                         y = 40;
-            //                     }
-            //                 });
-
-            //                 // Step 4: Open PDF in new tab
-            //                 const blobURL = doc.output('bloburl');
-            //                 window.open(blobURL, '_blank');
-            //             });
-            //         }
-            //     });
-            // });
 
 
 
-            $('#generatePDFBtn').on('click', function() {
-                let grade = $('#gradeFilter').val();
-                let section = $('#sectionFilter').val();
 
-                let url = '<?= base_url("PdfController/generate_report_card") ?>';
-                if (grade || section) {
-                    url += '?';
-                    if (grade) url += 'grade=' + encodeURIComponent(grade) + '&';
-                    if (section) url += 'section=' + encodeURIComponent(section);
-                }
 
-                window.open(url, '_blank');
-            });
 
         });
         </script>

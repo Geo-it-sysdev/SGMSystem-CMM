@@ -621,9 +621,9 @@ public function save_activity()
     $this->db->where('a.subject', $subject);
     $this->db->where('a.quarter', $quarter);
     $this->db->where('a.grade_level', $grade_level);
-    $this->db->where_in('b.section', $sections_arr); // fetch all sections
-    $this->db->where('d.status','active');           // student active
-    $this->db->where('t.status','active');          // tag active
+    $this->db->where_in('b.section', $sections_arr); 
+    $this->db->where('d.status','active');           
+    $this->db->where('t.status','active');          
 
     // Only show students tagged to this user (except admins)
     if (!in_array($user_type,['Principal','Registrar','Guidance Councilor','Admin'])) {

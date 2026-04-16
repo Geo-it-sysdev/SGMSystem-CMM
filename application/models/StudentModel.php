@@ -15,22 +15,20 @@ class StudentModel extends CI_Model {
     $user_id   = $this->session->userdata('po_user');
     $user_type = $this->session->userdata('user_type');
 
-    $this->db->distinct(); // ✅ prevent duplicates
-
     $this->db->select('
-        a.id, 
+        MAX(a.id) as id,
         a.fullname, 
-        a.age, 
-        a.gender, 
+        MAX(a.age) as age, 
+        MAX(a.gender) as gender, 
         a.section, 
         a.grade_level, 
-        a.user_id, 
-        a.created_at AS school_year, 
-        a.status, 
-        b.student_id, 
-        b.user_id AS teacher_id
+        MAX(a.user_id) as user_id, 
+        MAX(a.created_at) AS school_year, 
+        MAX(a.status) as status, 
+        MAX(b.student_id) as student_id, 
+        MAX(b.user_id) AS teacher_id
     ');
-    
+
     $this->db->from('tbl_students AS a');
     $this->db->join('tbl_tag_students AS b', 'b.student_id = a.id', 'left');
 
@@ -59,6 +57,9 @@ class StudentModel extends CI_Model {
     }
 
     $this->db->where('a.status', $status ?: 'active');
+
+    // ✅ GROUP BY
+    $this->db->group_by(['a.fullname', 'a.section', 'a.grade_level']);
 
     return $this->db->get()->result();
 }

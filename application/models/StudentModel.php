@@ -26,7 +26,9 @@ class StudentModel extends CI_Model {
             MAX(a.created_at) AS school_year, 
             MAX(a.status) as status, 
             MAX(b.student_id) as student_id, 
-            MAX(b.user_id) AS teacher_id
+            MAX(b.user_id) AS teacher_id,
+            MAX(b.status) AS tag_student_status
+
         ');
 
         $this->db->from('tbl_students AS a');

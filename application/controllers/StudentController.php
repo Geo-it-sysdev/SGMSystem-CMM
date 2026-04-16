@@ -134,6 +134,8 @@ class StudentController extends CI_Controller {
     }
 
 
+  
+
     // end add / edit / delete student
 
     //tag student

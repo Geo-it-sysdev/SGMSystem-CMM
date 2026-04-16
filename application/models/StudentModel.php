@@ -1,4 +1,4 @@
-    <?php
+<?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class StudentModel extends CI_Model {
@@ -11,57 +11,42 @@ class StudentModel extends CI_Model {
 
     //    Add / edit / delete - student
    public function get_all_students($grade_level = null, $section = null, $status = 'active')
-{
-    $user_id   = $this->session->userdata('po_user');
-    $user_type = $this->session->userdata('user_type');
+    {
+        $user_id   = $this->session->userdata('po_user');
+        $user_type = $this->session->userdata('user_type');
 
-    $this->db->distinct(); // ✅ prevent duplicates
+        $this->db->select('a.id, a.fullname, a.age, a.gender, a.section, a.grade_level, a.user_id, a.created_at AS school_year, a.status, b.student_id, b.user_id AS teacher_id')
+                ->from('tbl_students AS a')
+                ->join('tbl_tag_students AS b', 'b.student_id = a.id', 'left');
 
-    $this->db->select('
-        a.id, 
-        a.fullname, 
-        a.age, 
-        a.gender, 
-        a.section, 
-        a.grade_level, 
-        a.user_id, 
-        a.created_at AS school_year, 
-        a.status, 
-        b.student_id, 
-        b.user_id AS teacher_id
-    ');
-    
-    $this->db->from('tbl_students AS a');
-    $this->db->join('tbl_tag_students AS b', 'b.student_id = a.id', 'left');
-
-    // Restrict access
-    if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor', 'Admin'])) {
-        if (!$user_id) return [];
-
-        if ($user_type === 'Teacher') {
-            $this->db->where('b.user_id', $user_id);
-            $this->db->where('b.status', 'active');
-        } else {
-            $this->db->where('a.user_id', $user_id);
+        // Restrict access for non-admin users
+        if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Counselor', 'Admin'])) {
+            if (!$user_id) return [];
+            if ($user_type === 'Teacher') {
+                $this->db->where('b.user_id', $user_id)
+                        ->where('b.status', 'active');
+            } else {
+                $this->db->where('a.user_id', $user_id);
+            }
         }
-    }
 
-    if ($grade_level) {
-        $this->db->where('a.grade_level', $grade_level);
-    }
-
-    if ($section) {
-        if (is_array($section)) {
-            $this->db->where_in('a.section', $section);
-        } else {
-            $this->db->where('a.section', $section);
+        if ($grade_level) {
+            $this->db->where('a.grade_level', $grade_level);
         }
+
+        if ($section) {
+            if (is_array($section)) {
+                $this->db->where_in('a.section', $section);
+            } else {
+                $this->db->where('a.section', $section);
+            }
+        }
+
+        $this->db->where('a.status', $status ?: 'active');
+        $this->db->group_by('a.fullname');
+
+        return $this->db->get()->result();
     }
-
-    $this->db->where('a.status', $status ?: 'active');
-
-    return $this->db->get()->result();
-}
         
 
     public function get_sections_by_grade() {

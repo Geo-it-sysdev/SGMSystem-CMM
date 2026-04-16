@@ -68,6 +68,8 @@
                     </div>
                     <!-- end page title -->
 
+                    <div id="statusAlert" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card">
@@ -120,9 +122,23 @@
                                                 </div>
                                                 <?php endif; ?>
 
-                                                <ul class="nav nav-tabs nav-border-top nav-border-top-success mb-3 text-dark"
-                                                    id="subjectTabs_<?= $grade_id ?>" role="tablist"></ul>
+                                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                                    <!-- LEFT: Tabs -->
+                                                    <ul class="nav nav-tabs nav-border-top nav-border-top-success text-dark mb-0"
+                                                        id="subjectTabs_<?= $grade_id ?>" role="tablist">
+                                                    </ul>
 
+                                                    <!-- RIGHT: Toggle -->
+                                                    <div
+                                                        class="form-check form-switch form-switch-right form-switch-md m-0">
+                                                        <label for="activity_history" class="form-label mb-0 me-2">
+                                                            Show Inactive Activity
+                                                        </label>
+                                                        <input class="form-check-input code-switcher" type="checkbox"
+                                                            id="activity_history" />
+                                                    </div>
+
+                                                </div>
 
                                                 <table id="activityTable_<?= $grade_id ?>"
                                                     class="table table-bordered dt-responsive nowrap table-striped align-middle activityTable"
@@ -464,8 +480,10 @@
                     ajax: {
                         url: "<?= site_url('StudentController/fetch_activitie'); ?>",
                         type: 'POST',
-                        data: {
-                            grade_level: grade_level
+                        data: function(d) {
+                            d.grade_level = grade_level;
+                            d.status_view = $('#activity_history').is(':checked') ?
+                                'inactive' : 'active';
                         },
                         dataSrc: 'data'
                     },
@@ -533,7 +551,11 @@
 
                                 let teacherButtons = `<?php if ($this->session->userdata('user_type') === 'Teacher'): ?>
                             <button class="btn btn-sm btn-outline-primary editBtn me-1 btn-border" data-id="${row.id}"><i class="ri-edit-line"></i> Edit</button>
-                            <button class="btn btn-sm btn-outline-danger deleteBtn btn-border" data-id="${row.id}"><i class="ri-delete-bin-line"></i> Delete</button>
+                            <button class="btn btn-sm btn-outline-danger deleteBtn btn-border me-1" data-id="${row.id}"><i class="ri-delete-bin-line"></i> Delete</button>
+                             <button class="btn btn-sm btn-border toggleActivityStatusBtn ${row.status == 'active' ? 'btn-outline-success' : 'btn-outline-danger'}" data-id="${row.id}" data-status="${row.status}">
+                                <i class="${row.status == 'active' ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'}"></i>
+                                ${row.status == 'active' ? 'Active' : 'Inactive'}
+                            </button>
                         <?php endif; ?>`;
 
                                 return buttonHtml + teacherButtons;
@@ -570,6 +592,13 @@
                     });
 
                     tabsContainer.find('button.active').click();
+                });
+            });
+
+            $('#activity_history').on('change', function() {
+                $('.activityTable').each(function() {
+                    let table = $(this).DataTable();
+                    table.ajax.reload();
                 });
             });
 
@@ -734,6 +763,77 @@
                                     $(this).data('tableInstance').ajax.reload();
                                 });
                             });
+                    }
+                });
+            });
+
+
+
+            $(document).on('click', '.toggleActivityStatusBtn', function() {
+                let btn = $(this);
+                let id = btn.data('id');
+                let currentStatus = btn.data('status');
+
+                $.ajax({
+                    url: "<?= site_url('StudentController/update_activity_status'); ?>",
+                    type: "POST",
+                    data: {
+                        id: id,
+                        status: currentStatus
+                    },
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.success) {
+
+                            let newStatus = res.new_status;
+
+                            btn.data('status', newStatus);
+
+                            // 🔁 update button UI
+                            if (newStatus === 'active') {
+                                btn.removeClass('btn-outline-danger')
+                                    .addClass('btn-outline-success')
+                                    .html('<i class="ri-checkbox-circle-fill"></i> Active');
+                            } else {
+                                btn.removeClass('btn-outline-success')
+                                    .addClass('btn-outline-danger')
+                                    .html('<i class="ri-close-circle-fill"></i> Inactive');
+                            }
+
+                            // 🔔 ALERT MESSAGE
+                            let alertClass = (newStatus === 'active') ? 'alert-success' :
+                                'alert-danger';
+                            let message = (newStatus === 'active') ?
+                                'Activity is now Active' : 'Activity is now Inactive';
+
+                            $('#statusAlert').html(`
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+            </div>
+        `);
+
+                            // auto hide after 3 seconds
+                            setTimeout(() => {
+                                $('.alert').fadeOut('slow', function() {
+                                    $(this).remove();
+                                });
+                            }, 3000);
+
+                            // 🔄 RELOAD ALL ACTIVITY TABLES
+                            $('.activityTable').each(function() {
+                                $(this).DataTable().ajax.reload(null, false);
+                            });
+
+                        } else {
+                            $('#statusAlert').html(`
+            <div class="alert alert-warning">Failed to update status</div>
+        `);
+                        }
+                    },
+                    error: function() {
+                        $('#statusAlert').html(`
+                <div class="alert alert-danger">Server error occurred</div>
+            `);
                     }
                 });
             });

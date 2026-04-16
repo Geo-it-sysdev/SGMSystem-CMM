@@ -224,11 +224,10 @@ class StudentModel extends CI_Model {
     }
 
 
-   public function get_by_grade($grade_level, $user_id = null)
+   public function get_by_grade($grade_level, $user_id = null, $status_view = 'active')
     {
         $user_type = $this->session->userdata('user_type');
 
-        // Use session user if no user_id is provided
         if (!$user_id) {
             $user_id = $this->session->userdata("po_user");
         }
@@ -239,18 +238,22 @@ class StudentModel extends CI_Model {
                 FROM tbl_students s
                 INNER JOIN tbl_tag_students t ON t.student_id = s.id
                 WHERE s.grade_level = a.grade_level
-                AND t.user_id = {$user_id}  
-                AND t.status = 'active'  
+                AND t.user_id = {$user_id}
+                AND t.status = 'active'
                 AND NOT EXISTS (
                     SELECT 1
                     FROM tbl_activities_lines l
                     WHERE l.student_id = s.id
-                        AND l.activities_id_header = a.id
+                    AND l.activities_id_header = a.id
                 )
             ) AS pending_count
         ");
+
         $this->db->from("tbl_activities_header a");
         $this->db->where("a.grade_level", $grade_level);
+
+        // ✅ STATUS FILTER ADDED HERE
+        $this->db->where("a.status", $status_view);
 
         if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor'])) {
             $this->db->where('a.user_id', $user_id);

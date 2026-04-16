@@ -139,70 +139,82 @@ class StudentController extends CI_Controller {
     // end add / edit / delete student
 
     //tag student
-    public function fetch_active_students() {
-        $grade_level = $this->input->post('grade_level'); 
+    public function fetch_active_students()
+    {
+        $grade_level = $this->input->post('grade_level');
         $user_id = $this->session->userdata('po_user');
 
         $this->db->select('id, fullname, section, grade_level, status');
         $this->db->from('tbl_students');
         $this->db->where('status', 'active');
 
-        if(!empty($grade_level)) {
+        if (!empty($grade_level)) {
             $this->db->where('grade_level', $grade_level);
         }
 
-        $query = $this->db->get();
+        $students = $this->db->get()->result();
 
         $data = [];
-        foreach ($query->result() as $row) {
-            $this->db->where('student_id', $row->id);
-            $this->db->where('user_id', $user_id);
-            $this->db->where('status', 'active');
-            $exists = $this->db->get('tbl_tag_students')->row();
+
+        foreach ($students as $row) {
+
+            $exists = $this->db->where('student_id', $row->id)
+                ->where('user_id', $user_id)
+                ->where('status', 'active')
+                ->get('tbl_tag_students')
+                ->row();
 
             $data[] = [
-                'id'         => $row->id,
-                'fullname'   => $row->fullname,
-                'section'    => $row->section,
-                'grade_level'=> $row->grade_level,
-                'is_tagged'  => $exists ? true : false
+                'id' => $row->id,
+                'fullname' => $row->fullname,
+                'section' => $row->section,
+                'grade_level' => $row->grade_level,
+                'is_tagged' => $exists ? true : false
             ];
         }
 
         echo json_encode(['data' => $data]);
     }
 
-    public function save_tagged_students() {
-        $add_ids = $this->input->post('add_ids');       
-        $remove_ids = $this->input->post('remove_ids'); 
+    public function save_tagged_students()
+    {
+        $add_ids = $this->input->post('add_ids');
+        $remove_ids = $this->input->post('remove_ids');
         $user_id = $this->session->userdata('po_user');
 
+        // TAG
         if (!empty($add_ids)) {
-            foreach ($add_ids as $student_id) {
-                $this->db->where('student_id', $student_id);
-                $this->db->where('user_id', $user_id);
-                $exists = $this->db->get('tbl_tag_students')->row();
+            foreach ($add_ids as $id) {
 
-                if (!$exists) {
-                    $this->db->insert('tbl_tag_students', [
-                        'student_id' => $student_id,
-                        'user_id'    => $user_id,
-                        'status'     => 'active'
-                    ]);
-                } else {
+                $exists = $this->db->where('student_id', $id)
+                    ->where('user_id', $user_id)
+                    ->get('tbl_tag_students')
+                    ->row();
+
+                if ($exists) {
                     $this->db->where('id', $exists->id)
-                            ->update('tbl_tag_students', ['status' => 'active']);
+                        ->update('tbl_tag_students', ['status' => 'active']);
+                } else {
+                    $this->db->insert('tbl_tag_students', [
+                        'student_id' => $id,
+                        'user_id' => $user_id,
+                        'status' => 'active'
+                    ]);
                 }
             }
         }
 
+        // UNTAG
         if (!empty($remove_ids)) {
             $this->db->where_in('student_id', $remove_ids)
-                    ->where('user_id', $user_id)
-                    ->update('tbl_tag_students', ['status' => 'inactive']);
+                ->where('user_id', $user_id)
+                ->update('tbl_tag_students', ['status' => 'inactive']);
         }
 
-        echo json_encode(['status' => 'success', 'message' => 'Student tags updated successfully.']);
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Updated successfully'
+        ]);
     }
     // end tag student
  
@@ -484,14 +496,39 @@ class StudentController extends CI_Controller {
     public function fetch_activitie()
     {
         $grade_level = $this->input->post('grade_level');
+        $status_view = $this->input->post('status_view');
         $user_id = $this->session->userdata('po_user');
 
-        $data = $this->StudentModel->get_by_grade($grade_level, $user_id);
+        $data = $this->StudentModel->get_by_grade($grade_level, $user_id, $status_view);
         echo json_encode(['data' => $data]);
     }
 
 
 
+    public function update_activity_status()
+    {
+        $id = $this->input->post('id');
+        $status = $this->input->post('status');
+
+        // toggle
+        $new_status = ($status === 'active') ? 'inactive' : 'active';
+
+        $this->db->where('id', $id);
+        $update = $this->db->update('tbl_activities_header', [
+            'status' => $new_status
+        ]);
+
+        if ($update) {
+            echo json_encode([
+                'success' => true,
+                'new_status' => $new_status
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false
+            ]);
+        }
+    }
 
 
 

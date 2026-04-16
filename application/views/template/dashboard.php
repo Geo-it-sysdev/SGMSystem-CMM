@@ -711,40 +711,54 @@ $(document).ready(function() {
 let my_id = <?= $this->session->userdata('po_user'); ?>;
 
 // Convert timestamp to Manila time and calculate relative time
-function timeAgo(date) {
+// Format: 1 min ago → years ago
+function timeAgo(datetime) {
     const now = new Date();
-    const msgDate = new Date(date);
 
-    // Convert both dates to Manila time
-    const options = { timeZone: 'Asia/Manila' };
-    const nowManila = new Date(now.toLocaleString('en-US', options));
-    const msgManila = new Date(msgDate.toLocaleString('en-US', options));
+    // Convert to Manila time
+    const manilaNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+    const manilaDate = new Date(new Date(datetime).toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
 
-    const diff = (nowManila - msgManila) / 1000; // difference in seconds
+    const seconds = Math.floor((manilaNow - manilaDate) / 1000);
 
-    if (diff < 5) return 'just now';
-    if (diff < 60) return Math.floor(diff) + ' second' + (Math.floor(diff) > 1 ? 's' : '') + ' ago';
-    if (diff < 3600) return Math.floor(diff / 60) + ' minute' + (Math.floor(diff / 60) > 1 ? 's' : '') + ' ago';
-    if (diff < 86400) return Math.floor(diff / 3600) + ' hour' + (Math.floor(diff / 3600) > 1 ? 's' : '') + ' ago';
-    if (diff < 604800) return Math.floor(diff / 86400) + ' day' + (Math.floor(diff / 86400) > 1 ? 's' : '') + ' ago';
-    if (diff < 2629800) return Math.floor(diff / 604800) + ' week' + (Math.floor(diff / 604800) > 1 ? 's' : '') + ' ago';
-    if (diff < 31557600) return Math.floor(diff / 2629800) + ' month' + (Math.floor(diff / 2629800) > 1 ? 's' : '') + ' ago';
-    return Math.floor(diff / 31557600) + ' year' + (Math.floor(diff / 31557600) > 1 ? 's' : '') + ' ago';
+    const intervals = [
+        { label: 'year', seconds: 31536000 },
+        { label: 'month', seconds: 2592000 },
+        { label: 'week', seconds: 604800 },
+        { label: 'day', seconds: 86400 },
+        { label: 'hour', seconds: 3600 },
+        { label: 'minute', seconds: 60 }
+    ];
+
+    for (let i = 0; i < intervals.length; i++) {
+        const interval = Math.floor(seconds / intervals[i].seconds);
+
+        if (interval >= 1) {
+            return interval + ' ' + intervals[i].label + (interval > 1 ? 's' : '') + ' ago';
+        }
+    }
+
+    return 'just now';
 }
 
-// Optional: show absolute Manila time like "Mon. 11:00 AM" for very old messages
-function formatManilaTime(date) {
-    return new Date(date).toLocaleString('en-US', {
+// Optional: if you still want absolute date after 7 days
+function formatManilaTime(datetime) {
+    const date = new Date(datetime);
+    return date.toLocaleString('en-PH', {
         timeZone: 'Asia/Manila',
-        weekday: 'short',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
     });
 }
 
+
+// LOAD MESSAGES
 function loadMessages() {
     $.get("<?= base_url('DashboardController/fetch'); ?>", function(res) {
+
         let data = JSON.parse(res);
         let html = '';
 
@@ -752,18 +766,23 @@ function loadMessages() {
             let isMe = msg.sender_id == my_id;
             let side = isMe ? 'right' : 'left';
 
-            let avatar = msg.photo ?
-                "<?= base_url(); ?>" + msg.photo :
-                "<?= base_url('assets/img/user-dummy-img.jpg'); ?>";
+            let avatar = msg.photo
+                ? "<?= base_url(); ?>" + msg.photo
+                : "<?= base_url('assets/img/user-dummy-img.jpg'); ?>";
 
-            // If older than 1 week, show absolute Manila time
+            // Time logic
             let now = new Date();
             let msgDate = new Date(msg.created_at);
+
             const manilaNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
             const manilaMsg = new Date(msgDate.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+
             let diffDays = (manilaNow - manilaMsg) / (1000 * 60 * 60 * 24);
 
-            let timeDisplay = diffDays > 7 ? formatManilaTime(msg.created_at) : timeAgo(msg.created_at);
+            // 👇 USE RELATIVE TIME
+            let timeDisplay = diffDays > 7
+                ? formatManilaTime(msg.created_at) // older → exact date
+                : timeAgo(msg.created_at);         // recent → "x ago"
 
             html += `
             <li class="chat-list ${side}">
@@ -796,7 +815,8 @@ function loadMessages() {
     });
 }
 
-// Send message
+
+// SEND MESSAGE
 $('#sendBtn').on('click', function() {
     let message = $('#chatMessage').val().trim();
     if (!message) return;
@@ -807,17 +827,18 @@ $('#sendBtn').on('click', function() {
     });
 });
 
-// Auto-refresh every 2 seconds
+
+// AUTO REFRESH (every 2 seconds)
 setInterval(loadMessages, 2000);
 loadMessages();
 
-// Reload page once on load (optional)
+
+// OPTIONAL: reload once
 window.addEventListener('load', () => {
     if (!sessionStorage.getItem('reloaded')) {
         sessionStorage.setItem('reloaded', 'true');
         location.reload();
     }
 });
-
 //end chat functionality
 </script>

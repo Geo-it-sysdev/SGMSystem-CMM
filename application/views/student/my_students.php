@@ -122,7 +122,7 @@ if (isset($user_id)) {
                                                         <button type="button"
                                                             class="btn btn-outline-success add-btn rounded-pill btn-border"
                                                             data-bs-toggle="modal" data-bs-target="#TagstudentModal">
-                                                            <i class="ri-add-line align-bottom me-1"></i>Tag | Untag Student
+                                                            <i class="ri-add-line align-bottom me-1"></i>Tag / Untag Student
                                                         </button>
                                                         <?php endif; ?>
                                                         <div class="dropdown">

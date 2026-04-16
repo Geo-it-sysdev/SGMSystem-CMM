@@ -556,10 +556,20 @@ public function save_activity()
     $user_id    = $this->session->userdata('po_user'); 
     $user_type  = $this->session->userdata('user_type'); 
 
-    $this->db->select('a.id, a.subject, a.grade_level, a.quarter, b.full_name, GROUP_CONCAT(DISTINCT c.section SEPARATOR " | ") AS section, a.activity_date');
+    $this->db->select('
+        a.id, 
+        a.subject, 
+        a.grade_level, 
+        a.quarter, 
+        b.full_name, 
+        GROUP_CONCAT(DISTINCT c.section SEPARATOR " | ") AS section, 
+        a.activity_date
+    ');
+    
     $this->db->from('tbl_activities_header AS a');
     $this->db->join('tbl_activities_lines AS c', 'c.activities_id_header = a.id', 'left');
     $this->db->join('tbl_users AS b', 'b.id = a.user_id', 'left');
+
     $this->db->where('c.section IS NOT NULL', null, false);
 
     if (!in_array($user_type, ['Principal', 'Registrar', 'Guidance Councilor', 'Admin'])) {
@@ -574,7 +584,16 @@ public function save_activity()
         $this->db->where('a.grade_level', $grade_level);
     }
 
-    $this->db->group_by(['a.subject', 'a.quarter', 'b.full_name']);
+    // ✅ FIX HERE
+    $this->db->group_by([
+        'a.id',
+        'a.subject',
+        'a.grade_level',
+        'a.quarter',
+        'b.full_name',
+        'a.activity_date'
+    ]);
+
     $query = $this->db->get()->result();
 
     $data = [];
@@ -584,14 +603,13 @@ public function save_activity()
             'grade_level' => $row->grade_level,
             'subject'     => $row->subject,
             'full_name'   => $row->full_name,
-            'section'     => $row->section, // "A | B | C"
+            'section'     => $row->section,
             'quarter'     => $row->quarter
         ];
     }
 
     echo json_encode(['data' => $data]);
 }
-
 
 
  public function fetch_final_grades() {

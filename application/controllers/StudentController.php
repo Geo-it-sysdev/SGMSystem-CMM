@@ -628,19 +628,12 @@ public function save_activity()
         $weight_WW = 0.25; $weight_PT = 0.50; $weight_QA = 0.25;
     }
 
-    $this->db->distinct();
-    $this->db->select('
-        a.description AS activity_type, 
-        a.overall AS overall_score, 
-        b.student_name, 
-        b.score, 
-        b.section, 
-        b.student_id
-    ');
+    $this->db->select('a.id, a.description AS activity_type, a.overall AS overall_score, b.student_name, b.score, b.section, b.student_id, c.full_name');
     $this->db->from('tbl_activities_header AS a');
     $this->db->join('tbl_activities_lines AS b','b.activities_id_header = a.id','left');
+    $this->db->join('tbl_users AS c','c.id = a.user_id','left');
     $this->db->join('tbl_students AS d','d.id = b.student_id','left');
-    $this->db->join('tbl_tag_students AS t','t.student_id = d.id','inner');
+    $this->db->join('tbl_tag_students AS t','t.student_id = d.id','inner'); // join tags
 
     // Filters
     $this->db->where('a.subject', $subject);
@@ -650,6 +643,7 @@ public function save_activity()
     $this->db->where('d.status','active');           
     $this->db->where('t.status','active');          
 
+    // Only show students tagged to this user (except admins)
     if (!in_array($user_type,['Principal','Registrar','Guidance Councilor','Admin'])) {
         $this->db->where('t.user_id', $user_id);
     }
@@ -658,13 +652,10 @@ public function save_activity()
 
     // Aggregate per student
     $students = [];
-
     foreach($query as $row){
-        $id = $row->student_id;
-
-        if(!isset($students[$id])){
-            $students[$id] = [
-                'student_name' => $row->student_name,
+        $name = $row->student_name;
+        if(!isset($students[$name])){
+            $students[$name] = [
                 'WW_total'=>0,'WW_count'=>0,'WW_overall'=>0,
                 'PT_total'=>0,'PT_count'=>0,'PT_overall'=>0,
                 'QA_total'=>0,'QA_count'=>0,'QA_overall'=>0,
@@ -673,29 +664,28 @@ public function save_activity()
         }
 
         if($row->activity_type == 'Written Works'){
-            $students[$id]['WW_total'] += $row->score;
-            $students[$id]['WW_overall'] += $row->overall_score;
-            $students[$id]['WW_count']++;
+            $students[$name]['WW_total'] += $row->score;
+            $students[$name]['WW_overall'] += $row->overall_score;
+            $students[$name]['WW_count']++;
         } elseif($row->activity_type == 'Performance Task'){
-            $students[$id]['PT_total'] += $row->score;
-            $students[$id]['PT_overall'] += $row->overall_score;
-            $students[$id]['PT_count']++;
+            $students[$name]['PT_total'] += $row->score;
+            $students[$name]['PT_overall'] += $row->overall_score;
+            $students[$name]['PT_count']++;
         } elseif($row->activity_type == 'Quarterly Assessment'){
-            $students[$id]['QA_total'] += $row->score;
-            $students[$id]['QA_overall'] += $row->overall_score;
-            $students[$id]['QA_count']++;
+            $students[$name]['QA_total'] += $row->score;
+            $students[$name]['QA_overall'] += $row->overall_score;
+            $students[$name]['QA_count']++;
         }
     }
 
     $data = [];
-
-    foreach($students as $s){
+    foreach($students as $student_name => $s){
         $ww = $s['WW_overall'] ? ($s['WW_total']/$s['WW_overall']*100):0;
         $pt = $s['PT_overall'] ? ($s['PT_total']/$s['PT_overall']*100):0;
         $qa = $s['QA_overall'] ? ($s['QA_total']/$s['QA_overall']*100):0;
-
         $final_grade = ($ww*$weight_WW)+($pt*$weight_PT)+($qa*$weight_QA);
 
+        // Ratings
         if($final_grade >= 90) { $rating='1.00'; $remarks='Outstanding'; }
         elseif($final_grade >= 85) { $rating='1.25'; $remarks='Very Satisfactory'; }
         elseif($final_grade >= 80) { $rating='1.50'; $remarks='Very Satisfactory'; }
@@ -708,7 +698,7 @@ public function save_activity()
         else { $rating='5.00'; $remarks='Failure'; }
 
         $data[] = [
-            'student_name' => $s['student_name'],
+            'student_name' => $student_name,
             'section'      => $s['section'],
             'final_grade'  => round($final_grade,2),
             'depEd_rating' => $rating,
